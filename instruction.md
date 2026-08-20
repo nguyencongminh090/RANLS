@@ -8,5 +8,33 @@ every task needs one). If a fix deviates from what's written here, note why in t
 
 ---
 
-_(empty — file new entries here as `## <CODE> — <slug>` with a link to
-`docs/instruction/<CODE>-<slug>.md`)_
+## RT-01 — throttle-analysis-signal
+
+Coalesce engine→UI updates without dropping the last one; do STATE-01 first.
+[detail](docs/instruction/RT-01-throttle-analysis-signal.md)
+
+## STATE-01 — stale-analysis-after-position-change
+
+One shared reset path, not six copies; needs TEST-01.
+[detail](docs/instruction/STATE-01-stale-analysis-after-position-change.md)
+
+## PROTO-01 — parser-hardening
+
+Trust-boundary hardening only — must not change how valid lines are interpreted.
+[detail](docs/instruction/PROTO-01-parser-hardening.md)
+
+## ENG-01 — engine-state-honesty-and-blocking-stop
+
+Replace the state bools with an enum first; remove the re-entrant `g_main_context_iteration`.
+[detail](docs/instruction/ENG-01-engine-state-honesty-and-blocking-stop.md)
+
+## TEST-01 — test-infrastructure
+
+Header-only framework, model/protocol only, no display server; prove the harness and stop.
+[detail](docs/instruction/TEST-01-test-infrastructure.md)
+
+---
+
+_Items without an entry here (RT-02/03/04, STATE-02/03, PROTO-02, NAV-01, UI-01/02/03, UX-01…04,
+CLEAN-01) are self-contained enough that their `docs/todo/` detail file's "Scope boundary" section
+is sufficient guidance. Add an entry here if one turns out to need it._
