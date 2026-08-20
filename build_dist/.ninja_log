@@ -1,0 +1,26 @@
+# ninja log v7
+1	309	1780574732998185108	CMakeFiles/rapfi-gui.dir/src/model/board_state.cpp.o	778f5ac08cf2e44c
+1	340	1780574732998360845	CMakeFiles/rapfi-gui.dir/src/model/move_history.cpp.o	7005a3d13165795f
+1	1057	1780574732998447069	CMakeFiles/rapfi-gui.dir/src/model/variation_tree.cpp.o	5a4b3c048f7e8e9b
+2	2247	1780574732999422771	CMakeFiles/rapfi-gui.dir/src/model/board_view_model.cpp.o	1327c283f423cee2
+309	2684	1780574733306544400	CMakeFiles/rapfi-gui.dir/src/model/settings_storage.cpp.o	95957f8b318ed565
+340	3133	1780574733334057404	CMakeFiles/rapfi-gui.dir/src/engine/engine_process.cpp.o	e690a143b3c6b3f7
+1	3152	1780574732998282358	CMakeFiles/rapfi-gui.dir/src/model/game_state.cpp.o	7cc151c3d98355aa
+0	3512	1780574732994055873	CMakeFiles/rapfi-gui.dir/src/main.cpp.o	5538191a01323e5a
+1	4555	1780574732998003898	CMakeFiles/rapfi-gui.dir/src/application.cpp.o	7b27eaf42158e9f5
+2684	4563	1780574735678067964	CMakeFiles/rapfi-gui.dir/src/command/command.cpp.o	2605d2bc7495d335
+1057	4902	1780574734051270239	CMakeFiles/rapfi-gui.dir/src/engine/engine_controller.cpp.o	b1cc089e7d37340d
+3514	5321	1780574736506071695	CMakeFiles/rapfi-gui.dir/src/ui/board_renderer.cpp.o	a74fd6b24a9132b6
+1	10153	1780574732998097657	CMakeFiles/rapfi-gui.dir/src/main_window.cpp.o	512a75edf25d993b
+3152	10648	1780574736146070073	CMakeFiles/rapfi-gui.dir/src/ui/board_view.cpp.o	8958c9fb70f9f0bc
+2247	11472	1780574735238065982	CMakeFiles/rapfi-gui.dir/src/engine/gomocup_protocol.cpp.o	27eb0c4868c0791f
+4902	11536	1780574737896886614	CMakeFiles/rapfi-gui.dir/src/ui/win_graph_view.cpp.o	d1310b6f9a198ca9
+4561	13596	1780574737558061392	CMakeFiles/rapfi-gui.dir/src/ui/analysis_panel.cpp.o	f240aa7785baf74
+4563	14126	1780574737560169904	CMakeFiles/rapfi-gui.dir/src/ui/engine_status.cpp.o	63cf9bbf022d56ec
+5321	14627	1780574738314079841	CMakeFiles/rapfi-gui.dir/src/ui/pv_view.cpp.o	57b4827089b78d9f
+3134	14666	1780574736131163165	CMakeFiles/rapfi-gui.dir/src/command/command_dispatcher.cpp.o	c0df6a7c3c7aa9d2
+10648	16744	1780574743642103845	CMakeFiles/rapfi-gui.dir/src/ui/tree_node_view.cpp.o	b7e431e0293d9fbe
+10154	16884	1780574743146101610	CMakeFiles/rapfi-gui.dir/src/ui/tree_explorer.cpp.o	8a52cf432c9f49d4
+11472	17364	1780574744466600371	CMakeFiles/rapfi-gui.dir/src/ui/bottom_panel.cpp.o	129ae81ef00b15ab
+11538	17380	1780574744534856136	CMakeFiles/rapfi-gui.dir/src/ui/settings_dialog.cpp.o	7e61e267aa8fa807
+17380	17729	1780574750374134175	rapfi-gui	1d40e7f425c84fa9

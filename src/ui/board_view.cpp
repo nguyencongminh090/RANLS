@@ -1,0 +1,78 @@
+#include "board_view.h"
+
+#include <algorithm>
+#include <cmath>
+
+static constexpr double kCoordMargin = 24.0;
+
+BoardView::BoardView(BoardViewModel &viewModel)
+    : vm_(viewModel)
+    , renderer_(viewModel)
+{
+    set_hexpand(true);
+    set_vexpand(true);
+
+    // Drawing callback.
+    set_draw_func(sigc::mem_fun(*this, &BoardView::onDraw));
+
+    // ── Mouse click ─────────────────────────────────────────────────────────
+    auto clickCtrl = Gtk::GestureClick::create();
+    clickCtrl->set_button(GDK_BUTTON_PRIMARY);
+    clickCtrl->signal_released().connect(
+        [this](int /*nPress*/, double x, double y) {
+            Coord c = pixelToCoord(x, y, get_width(), get_height());
+            if (c.isValid(vm_.boardSize)) {
+                signal_move_clicked.emit(c);
+            }
+        });
+    add_controller(clickCtrl);
+
+    // ── Mouse motion (hover) ────────────────────────────────────────────────
+    auto motionCtrl = Gtk::EventControllerMotion::create();
+    motionCtrl->signal_motion().connect(
+        [this](double x, double y) {
+            Coord c = pixelToCoord(x, y, get_width(), get_height());
+            if (c != vm_.hoverMove) {
+                vm_.hoverMove = c;
+                queue_draw();
+            }
+        });
+    motionCtrl->signal_leave().connect(
+        [this]() {
+            vm_.hoverMove = Coord{};
+            queue_draw();
+        });
+    add_controller(motionCtrl);
+}
+
+void BoardView::queueRedraw()
+{
+    queue_draw();
+}
+
+void BoardView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int height)
+{
+    // Background handled by GTK native theme transparently.
+
+    renderer_.draw(cr, width, height);
+}
+
+Coord BoardView::pixelToCoord(double px, double py, int width, int height) const
+{
+    int bs = vm_.boardSize;
+    if (bs <= 0) return {};
+
+    double usableW = width  - 2.0 * kCoordMargin;
+    double usableH = height - 2.0 * kCoordMargin;
+    double cell    = std::min(usableW, usableH) / bs;
+    double boardPx = cell * bs;
+    double mLeft   = (width  - boardPx) / 2.0;
+    double mTop    = (height - boardPx) / 2.0;
+
+    int x = static_cast<int>((px - mLeft) / cell);
+    int y = static_cast<int>((py - mTop)  / cell);
+
+    if (x >= 0 && y >= 0 && x < bs && y < bs)
+        return {x, y};
+    return {};
+}

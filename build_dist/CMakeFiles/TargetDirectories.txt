@@ -1,0 +1,7 @@
+/run/media/ngmint/Data/Programming/Programming/C++/ModifyCode/Rapfi_modif/April30/rapfi/YixinBoard/build_dist/CMakeFiles/rapfi-gui.dir
+/run/media/ngmint/Data/Programming/Programming/C++/ModifyCode/Rapfi_modif/April30/rapfi/YixinBoard/build_dist/CMakeFiles/edit_cache.dir
+/run/media/ngmint/Data/Programming/Programming/C++/ModifyCode/Rapfi_modif/April30/rapfi/YixinBoard/build_dist/CMakeFiles/rebuild_cache.dir
+/run/media/ngmint/Data/Programming/Programming/C++/ModifyCode/Rapfi_modif/April30/rapfi/YixinBoard/build_dist/CMakeFiles/list_install_components.dir
+/run/media/ngmint/Data/Programming/Programming/C++/ModifyCode/Rapfi_modif/April30/rapfi/YixinBoard/build_dist/CMakeFiles/install.dir
+/run/media/ngmint/Data/Programming/Programming/C++/ModifyCode/Rapfi_modif/April30/rapfi/YixinBoard/build_dist/CMakeFiles/install/local.dir
+/run/media/ngmint/Data/Programming/Programming/C++/ModifyCode/Rapfi_modif/April30/rapfi/YixinBoard/build_dist/CMakeFiles/install/strip.dir
