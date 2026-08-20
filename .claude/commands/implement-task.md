@@ -9,7 +9,7 @@ allowed-tools: Read, Grep, Glob, Bash, Agent
 Parse `$ARGUMENTS` as `<CODE> [project-dir]`:
 - `CODE` — the task code, e.g. `WALL-01`. Required.
 - `project-dir` — repo-relative directory holding `TODO.md`/`instruction.md`/`docs/`. Default:
-  `Rapfi` if omitted.
+  `.` (this repo's root — YixinBoard keeps its tracking files there, see `/CLAUDE.md`) if omitted.
 
 ## What to do
 
