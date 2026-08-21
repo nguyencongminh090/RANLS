@@ -90,24 +90,34 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
     int n = static_cast<int>(blackData_.size());
     double step = (n > 1) ? graphW / (n - 1) : 0;
 
+    // UI-01: an unevaluated position is encoded as NaN (see GameState::
+    // evalHistory / toDisplayWinrate). Break the line into disjoint
+    // segments around any NaN run instead of interpolating through it or
+    // silently plotting it as a confident 50%.
     cr->set_source_rgb(kBlackR, kBlackG, kBlackB);
     cr->set_line_width(1.5);
-    for (int i = 0; i < n; ++i) {
-        double x = kPadL + i * step;
-        double y = kPadT + graphH * (1.0 - std::clamp(blackData_[i], 0.0, 1.0));
-        if (i == 0) cr->move_to(x, y);
-        else        cr->line_to(x, y);
+    {
+        bool penDown = false;
+        for (int i = 0; i < n; ++i) {
+            if (std::isnan(blackData_[i])) { penDown = false; continue; }
+            double x = kPadL + i * step;
+            double y = kPadT + graphH * (1.0 - std::clamp(blackData_[i], 0.0, 1.0));
+            if (!penDown) { cr->move_to(x, y); penDown = true; }
+            else          cr->line_to(x, y);
+        }
+        cr->stroke();
     }
-    cr->stroke();
 
     if (mode_ == WinGraphMode::SingleSide && whiteData_.size() == blackData_.size()) {
         cr->set_source_rgb(kWhiteR, kWhiteG, kWhiteB);
         cr->set_line_width(1.2);
+        bool penDown = false;
         for (int i = 0; i < n; ++i) {
+            if (std::isnan(whiteData_[i])) { penDown = false; continue; }
             double x = kPadL + i * step;
             double y = kPadT + graphH * (1.0 - std::clamp(whiteData_[i], 0.0, 1.0));
-            if (i == 0) cr->move_to(x, y);
-            else        cr->line_to(x, y);
+            if (!penDown) { cr->move_to(x, y); penDown = true; }
+            else          cr->line_to(x, y);
         }
         cr->stroke();
     }
@@ -122,17 +132,23 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
         cr->line_to(x, kPadT + graphH);
         cr->stroke();
 
-        // Dot.
-        double y = kPadT + graphH * (1.0 - std::clamp(blackData_[currentIndex_], 0.0, 1.0));
-        cr->set_source_rgb(kBlackR, kBlackG, kBlackB);
-        cr->arc(x, y, 4.0, 0, 2 * M_PI);
-        cr->fill();
+        // Dot — only for an actually-evaluated position; an unevaluated
+        // current move gets no dot (its gap already reads as "no data").
+        if (!std::isnan(blackData_[currentIndex_])) {
+            double y = kPadT + graphH * (1.0 - std::clamp(blackData_[currentIndex_], 0.0, 1.0));
+            cr->set_source_rgb(kBlackR, kBlackG, kBlackB);
+            cr->arc(x, y, 4.0, 0, 2 * M_PI);
+            cr->fill();
+        }
     }
 
     // Hover tooltip.
     if (hoverIndex_ >= 0 && hoverIndex_ < n) {
         double x = kPadL + hoverIndex_ * step;
-        double y = kPadT + graphH * (1.0 - std::clamp(blackData_[hoverIndex_], 0.0, 1.0));
+        bool hasEval = !std::isnan(blackData_[hoverIndex_]);
+        double y = hasEval
+                        ? kPadT + graphH * (1.0 - std::clamp(blackData_[hoverIndex_], 0.0, 1.0))
+                        : kPadT + graphH * 0.5;
 
         // Vertical guideline.
         cr->set_source_rgba(0.7, 0.7, 0.7, 0.3);
@@ -143,8 +159,11 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
 
         // Tooltip box.
         std::ostringstream tip;
-        tip << "Move " << (hoverIndex_ + 1) << "  "
-            << std::fixed << std::setprecision(1) << (blackData_[hoverIndex_] * 100.0) << "%";
+        tip << "Move " << (hoverIndex_ + 1) << "  ";
+        if (hasEval)
+            tip << std::fixed << std::setprecision(1) << (blackData_[hoverIndex_] * 100.0) << "%";
+        else
+            tip << "(no eval)";
         std::string text = tip.str();
 
         cr->set_font_size(10.0);

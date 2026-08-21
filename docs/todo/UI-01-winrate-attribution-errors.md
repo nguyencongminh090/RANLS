@@ -1,9 +1,57 @@
 # UI-01 — Win-rate graph attributes evals to the wrong side, and evals can go unrecorded
 
-**Status:** open
+**Status:** ✅ DONE
 **Area:** win graph / eval bookkeeping
 **Priority:** P1
 **Source:** UI/UX + codebase review, 2026-08-21
+
+## Summary
+
+Fixed all three sub-issues:
+
+1. **Side-to-move attribution** — `toDisplayWinrate` (`src/ui/analysis_panel.cpp`) now computes
+   `bool blackToMove = (i % 2 == 1)` (was `== 0`). `raw[i]` is the eval of the position *after*
+   move `i`; after move 0 (Black's move) it's White to move, so side-to-move is Black only on odd
+   `i`.
+2. **Eval writeback gating** — `GameState::setAnalysisData` (`src/model/game_state.cpp`) now
+   writes whenever depth, nodes, **or** eval differ from the stored values (was: depth-or-nodes
+   only), so a revised score at the same depth/nodes (aspiration-window re-search, final
+   confirmation line) is no longer discarded. `signal_tree_updated`'s emission condition changes
+   the same way as a side effect of sharing the `if`; its *frequency* tuning is RT-04's concern,
+   left untouched otherwise.
+3. **Unevaluated vs. true 50%** — `GameState::evalHistory` (`src/model/game_state.cpp`) now
+   returns `NaN` (via `std::numeric_limits<double>::quiet_NaN()`) for a missing node or a node
+   with no analysis (`depth == 0 && nodes == 0`), instead of substituting `0.5`. Consumers
+   (`toDisplayWinrate` in `analysis_panel.cpp`, `WinGraphView::onDraw` in
+   `src/ui/win_graph_view.cpp`) propagate/check `std::isnan()`: the graph line breaks into
+   disjoint segments around NaN runs (pen-up/pen-down), the current-move dot is suppressed for an
+   unevaluated current move, and the hover tooltip shows "(no eval)" instead of a percentage.
+
+Mate scores: confirmed by tracing `parseEvalToken` (`src/engine/gomocup_protocol.cpp:121-146`,
+clamps `+M`/`−M` to winrate `1.0`/`0.0`) through `setAnalysisData` → `evalHistory` →
+`toDisplayWinrate` → `WinGraphView::onDraw`. The clamped 1.0/0.0 is a real (non-NaN) value, so it
+renders as a line pinned to the top/bottom axis with a visible dot and a "100.0%"/"0.0%" tooltip —
+a meaningful, distinguishable rendering of a forced win/loss, not silently dropped. No code change
+was needed for this part; it was a confirmation-only acceptance criterion.
+
+## Verification
+
+- Clean build verified with a fresh from-scratch `build_cmd_clean` directory (Ninja/Release) — no
+  errors, no new warnings from the changed files.
+- `ctest --output-on-failure`: 66 test cases / 279 assertions, all passing.
+- `tests/test_ui01_winrate_attribution.cpp` (new) pins: side-to-move formula per ply (guards the
+  exact original inversion), `evalHistory` per-ply raw values, eval overwrite at unchanged
+  depth/nodes, eval update when depth/nodes do change (no-regression), NaN for an unanalyzed node
+  and a NaN→real transition, and that a genuinely-analyzed 0.5 score still reads back as 0.5 (not
+  NaN). `analysis_panel.cpp`'s `toDisplayWinrate` itself is UI-layer (`gtkmm.h`) and is not linked
+  into the headless `rapfi-gui-tests` target by design (see `tests/CMakeLists.txt`); the test
+  mirrors its one-line attribution formula as a local helper instead, with a code comment
+  explaining why direct linkage isn't feasible.
+- Fixing this surfaced a pre-existing test breakage: `tests/test_rt01_throttle.cpp`'s "evalHistory
+  is cached" test asserted `first == second` on two `vector<double>` reads of an unanalyzed node,
+  which is now `[NaN] == [NaN]` — false under `operator==` even though the cache correctly
+  returned the identical value both times. Updated that assertion to a NaN-aware element-wise
+  comparison rather than weakening or dropping it.
 
 ## Problem
 

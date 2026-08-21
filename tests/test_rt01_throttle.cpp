@@ -16,6 +16,7 @@
 #include "model/game_state.h"
 #include "engine/gomocup_protocol.h"
 
+#include <cmath>
 #include <string>
 
 namespace {
@@ -164,7 +165,16 @@ TEST_CASE("RT-01: evalHistory() is cached and only recomputed when the tree/boar
 
     auto first  = gs.evalHistory();
     auto second = gs.evalHistory(); // same tree/board state -- must be the cached value
-    CHECK(first == second);
+    // UI-01: an unanalyzed node reads back as NaN (see GameState::evalHistory),
+    // and NaN != NaN under vector<double>::operator==, so a plain first == second
+    // would spuriously fail here even though the cache correctly returned the
+    // same value both times. Compare element-wise with NaN treated as equal to
+    // NaN instead of dropping this identity check.
+    REQUIRE(first.size() == second.size());
+    for (size_t i = 0; i < first.size(); ++i) {
+        bool bothNan = std::isnan(first[i]) && std::isnan(second[i]);
+        CHECK((bothNan || first[i] == second[i]));
+    }
     REQUIRE(first.size() == 1);
 
     // Feeding analysis data that changes the current node's eval/depth/nodes
