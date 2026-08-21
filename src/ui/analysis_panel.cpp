@@ -1,6 +1,8 @@
 #include "analysis_panel.h"
 
 #include <algorithm>
+#include <cmath>
+#include <limits>
 
 struct WinGraphData {
     std::vector<double> black;
@@ -14,8 +16,23 @@ static WinGraphData toDisplayWinrate(const std::vector<double> &raw, WinGraphMod
     out.white.reserve(raw.size());
 
     for (size_t i = 0; i < raw.size(); ++i) {
+        // UI-01: raw[i] is the eval of the position AFTER move i, scored
+        // from the side to move IN THAT position. Move 0 is Black's move,
+        // so after move 0 it is White to move — i.e. side-to-move is Black
+        // only when i is odd (after White's move), not when i is even.
+        bool blackToMove = (i % 2 == 1);
+
+        // UI-01: raw[i] may be NaN — an explicit "unevaluated" sentinel
+        // (see GameState::evalHistory). Propagate it as a gap rather than
+        // clamping it into a false 50% reading.
+        if (std::isnan(raw[i])) {
+            double nan = std::numeric_limits<double>::quiet_NaN();
+            out.black.push_back(nan);
+            out.white.push_back(nan);
+            continue;
+        }
+
         double sideToMove = std::clamp(raw[i], 0.0, 1.0);
-        bool blackToMove = (i % 2 == 0);
         if (mode == WinGraphMode::SingleSide) {
             double black = blackToMove ? sideToMove : (1.0 - sideToMove);
             out.black.push_back(black);

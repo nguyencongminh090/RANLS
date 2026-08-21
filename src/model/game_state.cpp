@@ -1,5 +1,7 @@
 #include "game_state.h"
 
+#include <limits>
+
 GameState::GameState(int boardSize)
     : board_(boardSize)
     , currentTreeNode_(tree_.root())
@@ -299,7 +301,12 @@ void GameState::setAnalysisData(std::vector<PVLine> pvs, EngineStatus status)
 
     if (current_node && !pvLines_.empty()) {
         const auto &bestPv = pvLines_[0];
-        if (current_node->depth != bestPv.depth || current_node->nodes != bestPv.nodes) {
+        // UI-01: write whenever ANY of depth/nodes/eval actually changed —
+        // previously this only fired on depth or node-count changes, so a
+        // revised score at the same depth/nodes (aspiration-window re-search,
+        // final confirmation line) was silently discarded.
+        if (current_node->depth != bestPv.depth || current_node->nodes != bestPv.nodes
+            || current_node->eval != bestPv.score) {
             current_node->eval = bestPv.score;
             current_node->nodes = bestPv.nodes;
             current_node->depth = bestPv.depth;
@@ -343,11 +350,17 @@ std::vector<double> GameState::evalHistory() const
     const TreeNode *node = tree_.root();
     for (int i = 0; i < history_.moveCount(); ++i) {
         node = node ? node->findChild(history_.moves()[i]) : nullptr;
+        // UI-01: a missing node or a node with no analysis yet is NOT a
+        // genuine 50% evaluation — use NaN as an "unevaluated" sentinel so
+        // the graph can render a visible gap instead of a false dead-even
+        // reading. Consumers must check std::isnan() before using a value.
         if (!node) {
-            evalHistoryCache_.push_back(0.5);
+            evalHistoryCache_.push_back(std::numeric_limits<double>::quiet_NaN());
             continue;
         }
-        evalHistoryCache_.push_back((node->depth > 0 || node->nodes > 0) ? node->eval : 0.5);
+        evalHistoryCache_.push_back((node->depth > 0 || node->nodes > 0)
+                                         ? node->eval
+                                         : std::numeric_limits<double>::quiet_NaN());
     }
     evalHistoryDirty_ = false;
     return evalHistoryCache_;
