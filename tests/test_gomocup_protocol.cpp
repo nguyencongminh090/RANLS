@@ -336,3 +336,87 @@ TEST_CASE("GomocupProtocol: A1-notation tokens inside a PV line use the real boa
     CHECK(rec.lastPVs[0].moves[0] == Coord{0, 4});  // A1 on a 5x5 board.
     CHECK(rec.lastPVs[0].moves[1] == Coord{4, 0});  // E5 on a 5x5 board.
 }
+
+// --- STATE-03: currentPVs_ never shrinks / materialises empty PV slots ---
+//
+// Rapfi's multiPV loop (search/ab/search.cpp: `for (sd.pvIdx = 0; sd.pvIdx <
+// sd.multiPv; ++sd.pvIdx)`) always reports pvIdx 0..multiPv-1 in strictly
+// increasing order within a round, on the single main search thread — real
+// engine output never skips an index or delivers them out of order. So the
+// defect this covers isn't mid-round gaps (they can't occur from a
+// spec-compliant engine, and PVView/BoardViewModel's `!moves.empty()`
+// filters would hide one harmlessly even if it did); it's specifically:
+//
+//  starting a new round with fewer PV lines than the previous one (i.e.
+//  multiPV lowered mid-search) must drop the previous round's stale
+//  high-index entries, not leave them visible forever — those entries have
+//  real (non-empty) moves from the earlier, larger round, so the UI-side
+//  empty-move filters do NOT catch them.
+//
+// Both cases below are exercised via the MESSAGE-stream paren-PV format
+// ("(n) eval | depth-selDepth | moves"), which shares a single commitPV()
+// entry point with the Bestline / UCILIKE "multipv" formats and has no
+// explicit NUMPV/count signal of its own (unlike the INFO/Detail stream).
+
+TEST_CASE("GomocupProtocol: sequential in-order PV arrival across a round leaves no empty filler") {
+    SignalRecorder rec;
+
+    // Indices arrive strictly in order 0, 1, 2, matching real engine
+    // behavior (see comment above) — currentPVs_ should grow cleanly with
+    // no gap ever materialising.
+    CHECK_NOTHROW(rec.proto.parseLine("MESSAGE (1) 55 | 9-7 | 7,8 8,7"));
+    CHECK_NOTHROW(rec.proto.parseLine("MESSAGE (2) 52 | 9-7 | 7,9 8,9"));
+    CHECK_NOTHROW(rec.proto.parseLine("MESSAGE (3) 50 | 10-8 | 7,7 8,8"));
+
+    REQUIRE(rec.lastPVs.size() == 3);
+    for (const auto &pv : rec.lastPVs) {
+        CHECK_FALSE(pv.moves.empty());
+    }
+}
+
+TEST_CASE("GomocupProtocol: MESSAGE-stream commitPV drops stale high-index PVs when a new round reports fewer lines") {
+    SignalRecorder rec;
+
+    // First round: 3 PV lines.
+    CHECK_NOTHROW(rec.proto.parseLine("MESSAGE (1) 55 | 9-7 | 7,8 8,7"));
+    CHECK_NOTHROW(rec.proto.parseLine("MESSAGE (2) 52 | 9-7 | 7,9 8,9"));
+    CHECK_NOTHROW(rec.proto.parseLine("MESSAGE (3) 50 | 10-8 | 7,7 8,8"));
+    REQUIRE(rec.lastPVs.size() == 3);
+
+    // Next round starts (multiPV lowered to 1): only index 0 is reported.
+    // The stale index-1/2 entries from the previous round must not survive.
+    CHECK_NOTHROW(rec.proto.parseLine("MESSAGE (1) 60 | 11-9 | 7,6 8,6"));
+    REQUIRE(rec.lastPVs.size() == 1);
+    CHECK_FALSE(rec.lastPVs[0].moves.empty());
+    // parseEngineCoord treats "row,col" as Coord{col, row}: "7,6" -> Coord{6, 7}.
+    CHECK(rec.lastPVs[0].moves[0] == Coord{6, 7});
+}
+
+TEST_CASE("GomocupProtocol: INFO NUMPV lowered mid-search drops stale high-index PVs") {
+    SignalRecorder rec;
+
+    // First round: NUMPV 3, all three indices reported via the INFO/Detail
+    // stream (PV n / PV DONE).
+    CHECK_NOTHROW(rec.proto.parseLine("INFO NUMPV 3"));
+    CHECK_NOTHROW(rec.proto.parseLine("INFO PV 0"));
+    CHECK_NOTHROW(rec.proto.parseLine("INFO BESTLINE 7,7 8,8"));
+    CHECK_NOTHROW(rec.proto.parseLine("INFO PV DONE"));
+    CHECK_NOTHROW(rec.proto.parseLine("INFO PV 1"));
+    CHECK_NOTHROW(rec.proto.parseLine("INFO BESTLINE 7,8 8,7"));
+    CHECK_NOTHROW(rec.proto.parseLine("INFO PV DONE"));
+    CHECK_NOTHROW(rec.proto.parseLine("INFO PV 2"));
+    CHECK_NOTHROW(rec.proto.parseLine("INFO BESTLINE 7,9 8,9"));
+    CHECK_NOTHROW(rec.proto.parseLine("INFO PV DONE"));
+    REQUIRE(rec.lastPVs.size() == 3);
+
+    // Next iteration: engine drops to NUMPV 1 (multiPV lowered).
+    CHECK_NOTHROW(rec.proto.parseLine("INFO NUMPV 1"));
+    CHECK_NOTHROW(rec.proto.parseLine("INFO PV 0"));
+    CHECK_NOTHROW(rec.proto.parseLine("INFO BESTLINE 7,6 8,6"));
+    CHECK_NOTHROW(rec.proto.parseLine("INFO PV DONE"));
+
+    REQUIRE(rec.lastPVs.size() == 1);
+    CHECK_FALSE(rec.lastPVs[0].moves.empty());
+    // parseEngineCoord treats "row,col" as Coord{col, row}: "7,6" -> Coord{6, 7}.
+    CHECK(rec.lastPVs[0].moves[0] == Coord{6, 7});
+}

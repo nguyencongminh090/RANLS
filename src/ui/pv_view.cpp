@@ -38,8 +38,21 @@ PVView::PVView()
     listBox_.add_controller(motion);
 }
 
-void PVView::update(const std::vector<PVLine> &pvLines, int boardSize)
+void PVView::update(const std::vector<PVLine> &pvLinesIn, int boardSize)
 {
+    // Never expose a PV slot with no moves (STATE-03): currentPVs_ can still
+    // carry a default-constructed filler entry (e.g. an index the engine
+    // jumped ahead of within the current round) even after the source-side
+    // fix in GomocupProtocol. Filtering here means a row like
+    // "PV #2  50.0%  d0" with nothing after it can never render, and the
+    // row count always agrees with BoardViewModel's own `!moves.empty()`
+    // filter for the board's candidate markers.
+    std::vector<PVLine> pvLines;
+    pvLines.reserve(pvLinesIn.size());
+    for (const auto &pv : pvLinesIn) {
+        if (!pv.moves.empty()) pvLines.push_back(pv);
+    }
+
     const size_t newCount = pvLines.size();
 
     // Only remove/add row widgets when the PV *count* changes (RT-03): row

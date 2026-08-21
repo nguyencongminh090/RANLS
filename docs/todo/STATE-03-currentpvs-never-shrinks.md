@@ -1,6 +1,6 @@
 # STATE-03 — `currentPVs_` never shrinks and materialises empty PV slots
 
-**Status:** open
+**Status:** ✅ FIXED — see `docs/fix-log/2026-08-21-state-03-currentpvs-never-shrinks.md`
 **Area:** gomocup protocol PV accumulation
 **Priority:** P1
 **Source:** UI/UX + codebase review, 2026-08-21
@@ -47,3 +47,19 @@ displayed as current.
 ## Related
 
 - PROTO-01 (parser hardening, same functions), STATE-01 (position-change lifetime), RT-03 (PVView)
+
+## Resolution
+
+Fixed via two independent guards, full detail in the fix-log entry:
+
+- `GomocupProtocol::commitPV` truncates `currentPVs_` to size 1 when index 0 arrives while the
+  vector holds more than one entry — an index-0 report unambiguously marks a new multi-PV round for
+  Rapfi's engine (`sd.pvIdx` loops 0..multiPv-1 strictly in order, single-threaded), so this drops a
+  previous round's stale higher-index lines the instant a smaller round starts, before they can be
+  displayed as current. Covers `INFO NUMPV` already self-shrinking every block (protocol emits it
+  once per PV line, so it was already correct); this covers the MESSAGE-stream formats (Bestline
+  paren, NORMAL, UCILIKE) that carry no explicit count.
+- `PVView::update` filters out any `PVLine` with empty `moves` before building rows, so no
+  default-constructed filler can ever render regardless of source-side state — this independently
+  satisfies "PVView never renders an empty-move row" and keeps its row count in sync with
+  `BoardViewModel`'s own `!moves.empty()` filter for board candidate markers.

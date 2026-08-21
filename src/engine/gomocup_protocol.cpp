@@ -398,6 +398,24 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
                              "GomocupProtocol: rejected out-of-range PV index " + std::to_string(idx));
             return;
         }
+        // STATE-03: a fresh primary-line (index 0) report marks the start of
+        // a new multi-PV round in the MESSAGE-stream formats (Bestline,
+        // NORMAL "(n)|...", UCILIKE "multipv ..."), none of which carry an
+        // explicit NUMPV/count signal the way the INFO/Detail stream does.
+        // Without this, a round that reports fewer PVs than the previous one
+        // (e.g. multiPV lowered mid-search) leaves the old round's surplus
+        // higher-index entries in currentPVs_ forever, since resize() below
+        // only ever grows. Truncate to just the new index 0 here so stale
+        // entries drop immediately; the round's remaining indices regrow the
+        // vector back out as they arrive right after. This relies on the
+        // engine reporting pvIdx 0..multiPv-1 in strictly increasing order
+        // per round (true for Rapfi: search/ab/search.cpp's multiPV loop is
+        // single-threaded and never skips/reorders indices), so an index-0
+        // report is unambiguously "a new round started."
+        if (idx == 0 && currentPVs_.size() > 1) {
+            currentPVs_.resize(1);
+            currentNumPV_ = 1;
+        }
         if (idx >= static_cast<int>(currentPVs_.size())) {
             currentPVs_.resize(idx + 1);
         }
