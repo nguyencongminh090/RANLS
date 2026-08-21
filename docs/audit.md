@@ -9,4 +9,4 @@ row here. Never edit/reorder/delete an existing row — a wrong past entry gets 
 
 | Date | Summary | Detail |
 |---|---|---|
-| — | — | — |
+| 2026-08-21 | Test framework choice for TEST-01: doctest (vendored), no gtkmm-transitive-dependency issue found | [docs/audit/2026-08-21-test-framework-choice.md](audit/2026-08-21-test-framework-choice.md) |

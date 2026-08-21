@@ -46,6 +46,10 @@ void EngineController::connectProtocolSignals() {
             analyzing_ = false;
             gameState_.setAnalyzing(false);
             signal_analyzing_state.emit(false);
+            // RT-01: search completion must not wait for the next throttle
+            // tick — flush any coalesced analysis update immediately so the
+            // final PV/status is never delayed or dropped.
+            gameState_.flush();
         }
         signal_engine_move.emit(move);
     });
@@ -148,6 +152,9 @@ void EngineController::stopAnalysis()
         analyzing_ = false;
         gameState_.setAnalyzing(false);
         signal_analyzing_state.emit(false);
+        // RT-01: analysis-stopped must emit immediately, not wait for the
+        // next throttle tick.
+        gameState_.flush();
     }
 }
 

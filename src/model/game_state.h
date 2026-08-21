@@ -69,8 +69,36 @@ public:
     /// Attempts to place a move. Returns true if successful, false if invalid or analyzing.
     bool makeMove(Coord pos);
     const EngineStatus        &engineStatus() const { return engineStatus_; }
+
+    /// Stores the latest engine analysis data and marks it dirty. Does NOT
+    /// emit signal_engine_analysis synchronously (see RT-01) — that would
+    /// mean one full UI rebuild per parsed engine line (up to 8x with
+    /// multiPV=8). Emission is coalesced onto tickAnalysis()/flush() instead.
     void setAnalysisData(std::vector<PVLine> pvs, EngineStatus status);
+
+    /// Cached: recomputed only when the tree/board actually changes, not on
+    /// every analysis update (evalHistory() used to walk the whole variation
+    /// tree on every call from 3 separate AnalysisPanel handlers).
     std::vector<double> evalHistory() const;
+
+    // ── Analysis update throttling (RT-01) ──────────────────────────────────
+    // GameState intentionally does NOT own a live Glib::signal_timeout itself:
+    // src/model + src/engine/gomocup_protocol.cpp are built standalone for
+    // tests/CMakeLists.txt without linking glibmm/gtkmm (see that file's
+    // header comment) so the model layer stays testable without a GTK main
+    // loop. The mechanism (dirty flag + coalesced storage) lives here; the
+    // actual periodic timer that drives tickAnalysis() lives in the UI layer
+    // (MainWindow), the documented fallback location for the throttle.
+
+    /// Called periodically (e.g. by a UI timer, target ~10-15 Hz) to emit a
+    /// coalesced signal_engine_analysis if new data arrived since the last
+    /// tick/flush. Returns true if an emission happened.
+    bool tickAnalysis();
+
+    /// Immediately emits any pending coalesced analysis update, bypassing the
+    /// timer. Callers must invoke this on search completion / analysis-stopped
+    /// so the final update of a search is never delayed or dropped.
+    void flush();
 
     // ── Database ────────────────────────────────────────────────────────────
     const std::map<Coord, DatabaseEntry>& database() const { return currentDatabase_; }
@@ -100,5 +128,25 @@ private:
     EngineStatus        engineStatus_;
     bool                analyzing_ = false;
 
+    /// True when pvLines_/engineStatus_ have changed since the last
+    /// signal_engine_analysis emission. Consumed by tickAnalysis()/flush().
+    bool analysisDirty_ = false;
+
+    /// evalHistory() cache — invalidated whenever the tree/board actually
+    /// changes (position ops, or a tree-node eval update from setAnalysisData),
+    /// not on every analysis tick.
+    mutable std::vector<double> evalHistoryCache_;
+    mutable bool                evalHistoryDirty_ = true;
+    void invalidateEvalHistoryCache() { evalHistoryDirty_ = true; }
+
     std::map<Coord, DatabaseEntry> currentDatabase_;
+
+    /// Clears pvLines_/engineStatus_ and notifies the analysis UI, but only if
+    /// there is actually something to clear (idempotent — safe to call from
+    /// every position-changing operation, including undoAll/redoAll's loops,
+    /// without flooding signal_engine_analysis on already-empty state).
+    /// Must only be called on an actual position change, never while
+    /// analyzing_ is true for the *same* position (callers already guard
+    /// entry with `if (analyzing_) return` before mutating position state).
+    void resetAnalysisState();
 };

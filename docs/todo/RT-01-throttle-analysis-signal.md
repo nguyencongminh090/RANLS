@@ -1,6 +1,15 @@
 # RT-01 — Throttle/coalesce the realtime analysis signal path
 
-**Status:** open
+**Status:** ✅ DONE
+
+**Summary (2026-08-21):** `GameState::setAnalysisData` now marks a dirty flag instead of emitting
+`signal_engine_analysis` synchronously; a UI-owned `Glib::signal_timeout` (~75ms, `MainWindow`,
+`src/main_window.cpp`) calls `GameState::tickAnalysis()` to coalesce it. `GameState::flush()` is
+called from `EngineController` on search completion (`signal_move` handler) and analysis-stopped
+(`stopAnalysis()`) so the final update is never delayed/dropped. `evalHistory()` is now cached,
+invalidated on tree/board change. `GomocupProtocol::signal_analysis` is untouched — still fires
+per line/commit. Full detail + measured before/after numbers: see
+[fix-log/2026-08-21-rt-01-throttle-analysis-signal.md](../fix-log/2026-08-21-rt-01-throttle-analysis-signal.md).
 **Area:** realtime display / engine→UI pipeline
 **Priority:** P0
 **Source:** UI/UX + codebase review, 2026-08-21

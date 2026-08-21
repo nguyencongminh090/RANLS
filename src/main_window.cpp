@@ -102,6 +102,18 @@ MainWindow::MainWindow()
         return false;
     }, false);
     add_controller(keyCtrl);
+
+    // RT-01: coalesce engine analysis UI updates to a bounded ~13 Hz instead
+    // of one full rebuild per parsed engine line. GameState::setAnalysisData
+    // marks a dirty flag; this tick consumes it. Search completion / stop
+    // still flush immediately via EngineController (see engine_controller.cpp).
+    analysisTickConn_ = Glib::signal_timeout().connect(
+        [this]() { gameState_.tickAnalysis(); return true; }, 75);
+}
+
+MainWindow::~MainWindow()
+{
+    analysisTickConn_.disconnect();
 }
 
 // ─── Menu bar (Gio::Menu + PopoverMenuBar) ───────────────────────────────────
@@ -276,9 +288,15 @@ void MainWindow::connectSignals()
 
     // Board state changed → refresh view.
     gameState_.signal_board_changed.connect([this]() {
-        // Clear analysis overlay when a new move is placed.
+        // Clear the hover preview overlay when a new move is placed (not tied to
+        // state_.pvLines(), so update() below can't refresh it on its own).
+        // candidateMoves is intentionally NOT cleared here anymore: GameState now
+        // clears pvLines_ itself on every position change (see STATE-01), so
+        // update() below already repopulates candidateMoves from the correct
+        // (now-empty, post-change) pvLines() — a separate clear here was
+        // redundant defensive code that could only ever paper over a GameState
+        // bug, not fix one.
         boardViewModel_.pvPreview.clear();
-        boardViewModel_.candidateMoves.clear();
 
         boardViewModel_.update();
         boardView_.queueRedraw();

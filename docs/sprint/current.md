@@ -1,25 +1,28 @@
 # Current sprint
 
-## Sprint 1
+## Sprint 2
 
-**Goal:** Fix the P0 memory-safety/data-correctness cluster surfaced by the 2026-08-21 `src/` review,
-in dependency order, starting with the test harness that later items need for regression coverage.
+**Goal:** Clear the remaining P0 backlog surfaced by the 2026-08-21 `src/` review — engine-state
+honesty, unbounded log growth, PVView rebuild breaking hover, and the settings dialog silently
+dropping config fields.
 **Dates:** 2026-08-21 to — (open — no fixed end date set yet)
 
-**Committed items** (in required order — `STATE-01` and `RT-01` are hard-blocked by the item before
-them per their `docs/instruction/<CODE>-*.md` entries; `PROTO-01` is priority-ordered second as the
-other P0 memory-safety item, not a technical dependency of `TEST-01`):
+**Dependency graph:** all four items are independent of each other and of Sprint 1's work — no
+ordering constraint found in any item's own detail file. They can be dispatched in parallel.
 
-| Order | CODE | Summary | Depends on | Points | Status |
-|---|---|---|---|---|---|
-| 1 | TEST-01 | Stand up test infrastructure (header-only, model/protocol only, no display server) | — | — | Active |
-| 2 | PROTO-01 | Harden Gomocup parser: OOB `currentPVs_[-1]`, unbounded `NUMPV` resize, unvalidated DB coords | — (priority only) | — | Active |
-| 3 | STATE-01 | Stale PV/status/board markers survive New Game, makeMove, undo/redo | TEST-01 | — | Active |
-| 4 | RT-01 | Throttle the 6 unthrottled engine→UI emit sites | STATE-01 | — | Active |
+| CODE | Summary | Depends on | Points | Status |
+|---|---|---|---|---|
+| STATE-02 | Settings dialog silently resets `multiPV` and wipes `customParams`, then persists it | — | — | Active |
+| ENG-01 | Engine state is dishonest ("● ON" with no process, crash ≡ never-started, no "thinking" state) and stopping blocks the UI ~2.5s | — | — | Active |
+| RT-02 | Engine log grows unbounded and writes per-line; gutter labels desync on wrap | — | — | Active |
+| RT-03 | PVView full rebuild destroys hover, breaking the board PV ghost-stone preview during analysis | — | — | Active |
 
-Points not yet estimated. Work items in this order — don't start `STATE-01` before `TEST-01`'s
-harness lands, or `RT-01` before `STATE-01`'s shared reset path exists; see each item's
-`docs/instruction/` entry for why. Dispatch each with `/implement-task <CODE>`.
+Points not yet estimated. Dispatch each with `/implement-task <CODE>`. Since all four are
+independent, they may be run concurrently — if dispatching more than one at once, use isolated git
+worktrees per agent (the `Agent` tool's `isolation: "worktree"`), same rationale as Sprint 1's
+"Running two at once" note: avoid two agents silently clobbering shared files (e.g.
+`tests/CMakeLists.txt`) in one working tree. Merge/reconcile by hand afterward if more than one
+touches the same shared file.
 
 See `docs/sprint/burndown.md` for the daily remaining-points table, and `docs/sprint/archive/` for
 closed sprints. Starting the next sprint = one edit per `/CLAUDE.md` ("Sprint cadence").

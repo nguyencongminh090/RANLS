@@ -1,9 +1,77 @@
 # PROTO-01 — Harden the Gomocup parser against malformed engine output (UB + OOM)
 
-**Status:** open
+**Status:** ✅ FIXED
 **Area:** engine protocol parsing
 **Priority:** P0 (memory safety)
 **Source:** UI/UX + codebase review, 2026-08-21
+
+## Summary
+
+Added `parseStrictInt`/`parseBoundedInt` (`src/engine/gomocup_protocol.cpp`) — small
+non-throwing helpers that parse a whole-token integer and, for `parseBoundedInt`, reject it
+outside `[minVal, maxVal]` — and a shared `kMaxPVCount = 99` constant matching `!analyze n`'s
+`1..99` bound (`src/command/command_dispatcher.cpp:283`). Routed every PV-index/count site
+through them or through an equivalent explicit bound check:
+
+- `onPVDone` now rejects (logs `Error`, returns) any `currentPVIndex_` outside `[0, 98]` instead
+  of subscripting `currentPVs_[idx]` with an unchecked value — the actual UB fix, copying
+  `commitPV`'s existing lower-bound-guard shape and adding the missing upper bound.
+- The `INFO PV <n>` branch (`parseInfo`) replaced an untried `std::stoi` with `parseBoundedInt`,
+  fixing both the missing bound *and* the missing `try/catch` (an exception here had no outer
+  handler).
+- `INFO NUMPV <n>` is clamped to `kMaxPVCount` (not rejected — spec calls for clamping here) before
+  `resize`, with an `Error` log line when clamping actually occurred.
+- The `commitPV` lambda in `parseMessage` (used by the `Bestline`/`(idx) eval | depth | moves`/
+  `Depth `/generic-token-`pv` paths) gained the same `idx >= kMaxPVCount` upper-bound rejection
+  next to its pre-existing `idx < 0` check — this was a third unbounded `resize(idx+1)` site not
+  explicitly named in the acceptance criteria but sharing the exact same hazard.
+- The `(idx) eval | depth | moves` parenthesis-index parse and the generic `multipv` token parse
+  now validate/clamp through the same bound before they can poison `currentPVIndex_`/
+  `currentNumPV_`, as defense in depth on top of `commitPV`'s own guard.
+- `parseDatabase` now rejects a coordinate failing `isValid(MAX_BOARD_SIZE)` (used instead of the
+  possibly-stale `boardSize_`, per this item's own scope note — see PROTO-02) and rejects (rather
+  than silently leaving default-constructed) a row where `value`/`depth`/`bound` fail to parse,
+  distinguishing that from the genuinely optional trailing `hasComment`/`boardText` fields. Every
+  new reject path emits `EngineMessageType::Error` via `signal_log` so a real engine hitting one of
+  these paths is visible in the Engine Log rather than silently dropped.
+
+No change to how any well-formed line is interpreted — verified by a dedicated regression test
+(see Verification) plus the pre-existing hostile-input test suite still passing unmodified.
+
+## Left out of scope
+
+- `currentNumPV_`'s own value can still grow without a hard clamp at two of its three write sites
+  (`parseMessage`'s `(idx)` branch and the `multipv` token branch) beyond what naturally follows
+  from the now-bounded `pvIndex`/`mpv` feeding them — it's a plain counter never used as a
+  subscript/resize argument, so it carries no UB/OOM risk; not touched further to stay in scope.
+- `currentPVs_` sizing *semantics* (empty slots, shrinking behavior) — STATE-03, untouched.
+- Hardcoded board-size-15 fallback in `parseEngineCoord`'s `A1`-format branch — PROTO-02,
+  untouched. `parseDatabase`'s new coordinate check deliberately uses `MAX_BOARD_SIZE` instead of
+  `boardSize_` for this same reason (`boardSize_` may be stale until PROTO-02 lands).
+- The other `std::stoi`/`std::stod` sites swept per the instruction file's list (evalToken,
+  depth-pair, node-count, time-text parsing) were left as-is: they're already wrapped in
+  `try/catch` and their results are never used as a vector index/count, so they don't share the
+  UB/OOM shape this item targets — changing their behavior would risk altering well-formed-line
+  interpretation, which is explicitly out of scope.
+
+## Verification
+
+- `cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -S . -B build_test` then
+  `cmake --build build_test --target rapfi-gui-tests` — built cleanly.
+- `./build_test/tests/rapfi-gui-tests` → `test cases: 43 | 43 passed | 0 failed | 0 skipped`,
+  `assertions: 166 | 166 passed | 0 failed`, `Status: SUCCESS!` (15 new `TEST_CASE`s added to
+  `tests/test_gomocup_protocol.cpp` covering every hostile line in this file's own "Testing" list,
+  plus a regression test pinning a well-formed `NUMPV`/`PV n`/`DEPTH`/`EVAL`/`BESTLINE`/`PV DONE`
+  sequence's exact output unchanged, and one pinning a well-formed `DATABASE` row's exact output
+  unchanged). Note: the hostile `INFO`/`PV`/`NUMPV` lines are exercised as bare `"INFO ..."`, not
+  `"MESSAGE INFO ..."` as this file's own "Testing" section literally writes them — a
+  `"MESSAGE INFO ..."` line is classified as `EngineMessageType::Message` and `parseMessage`
+  explicitly no-ops any `msg` starting with `"INFO"` before it would ever reach `parseInfo`
+  (pre-existing, unchanged by this fix), so that literal string never reaches the vulnerable code.
+  The existing test suite's own prior `INFO NUMPV`/`INFO PV` hostile cases already used the bare
+  form for the same reason; the new tests follow that established convention.
+- `cmake --build build_test --target rapfi-gui` — full GUI application built successfully
+  (pre-existing unused-function warnings in `gomocup_protocol.cpp`, not introduced by this change).
 
 ## Problem
 

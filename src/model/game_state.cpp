@@ -6,6 +6,37 @@ GameState::GameState(int boardSize)
 {
 }
 
+void GameState::resetAnalysisState()
+{
+    // Never clear analysis results out from under an in-flight search on the
+    // same position — callers already guard entry with `if (analyzing_) return`
+    // before reaching here, but keep this as a defensive discriminator too.
+    if (analyzing_) return;
+
+    // Idempotent: skip the clear (and, importantly, the signal emission) if
+    // there is nothing to clear. Keeps undoAll/redoAll's per-ply loop from
+    // adding a redundant signal_engine_analysis emission on every step once
+    // the analysis state is already empty.
+    bool alreadyEmpty = pvLines_.empty()
+        && engineStatus_.depth == 0 && engineStatus_.selDepth == 0
+        && engineStatus_.nodes == 0 && engineStatus_.nps == 0
+        && engineStatus_.timeMs == 0 && engineStatus_.winrate == 0.5
+        && engineStatus_.mateStep == 0 && engineStatus_.evalText.empty()
+        && engineStatus_.bestMove == Coord {};
+    if (alreadyEmpty) return;
+
+    pvLines_.clear();
+    engineStatus_ = {};
+    // Clear any pending coalesced update too — the data it would have
+    // delivered is now stale, and we're emitting the clear synchronously
+    // right below (position-change correctness path, not throttled: see
+    // STATE-01, which shares this signal but is unrelated to RT-01's rate
+    // throttle).
+    analysisDirty_ = false;
+    invalidateEvalHistoryCache();
+    signal_engine_analysis.emit();
+}
+
 void GameState::newGame(int boardSize)
 {
     if (analyzing_) return;
@@ -14,8 +45,8 @@ void GameState::newGame(int boardSize)
     history_.clear();
     tree_.clear();
     currentTreeNode_ = tree_.root();
-    pvLines_.clear();
-    engineStatus_ = {};
+    resetAnalysisState();
+    invalidateEvalHistoryCache();
     currentDatabase_.clear();
     signal_board_changed.emit();
     signal_tree_updated.emit();
@@ -31,8 +62,7 @@ bool GameState::loadPosition(const std::vector<std::pair<Coord, Stone>> &stones)
     history_.clear();
     tree_.clear();
     currentTreeNode_ = tree_.root();
-    pvLines_.clear();
-    engineStatus_ = {};
+    resetAnalysisState();
     currentDatabase_.clear();
 
     for (const auto &[pos, stone] : stones) {
@@ -44,6 +74,7 @@ bool GameState::loadPosition(const std::vector<std::pair<Coord, Stone>> &stones)
         currentTreeNode_ = tree_.addMove(currentTreeNode_, pos);
     }
 
+    invalidateEvalHistoryCache();
     signal_board_changed.emit();
     signal_tree_updated.emit();
     return true;
@@ -67,8 +98,8 @@ bool GameState::makeMove(Coord pos)
     currentTreeNode_ = tree_.addMove(currentTreeNode_, pos);
 
     // Clear stale analysis data so old candidate markers don't persist.
-    pvLines_.clear();
-    engineStatus_ = {};
+    resetAnalysisState();
+    invalidateEvalHistoryCache();
 
     signal_board_changed.emit();
     signal_tree_updated.emit();
@@ -90,6 +121,10 @@ bool GameState::undoMove()
     // Walk the tree node back to parent.
     if (currentTreeNode_ && currentTreeNode_->parent)
         currentTreeNode_ = currentTreeNode_->parent;
+
+    // Position changed — the previous position's analysis no longer applies.
+    resetAnalysisState();
+    invalidateEvalHistoryCache();
 
     signal_board_changed.emit();
     return true;
@@ -114,6 +149,10 @@ bool GameState::redoMove()
         if (child)
             currentTreeNode_ = child;
     }
+
+    // Position changed — the previous position's analysis no longer applies.
+    resetAnalysisState();
+    invalidateEvalHistoryCache();
 
     signal_board_changed.emit();
     return true;
@@ -156,8 +195,7 @@ bool GameState::gotoPath(const std::vector<Coord> &path)
 
     board_.clear();
     history_.clear();
-    pvLines_.clear();
-    engineStatus_ = {};
+    resetAnalysisState();
     currentTreeNode_ = tree_.root();
 
     for (const auto &pos : path) {
@@ -173,6 +211,7 @@ bool GameState::gotoPath(const std::vector<Coord> &path)
         currentTreeNode_ = child;
     }
 
+    invalidateEvalHistoryCache();
     signal_board_changed.emit();
     signal_tree_updated.emit();
     return true;
@@ -217,27 +256,49 @@ void GameState::setAnalysisData(std::vector<PVLine> pvs, EngineStatus status)
     }
 
     if (treeChanged) {
+        invalidateEvalHistoryCache();
         signal_tree_updated.emit();
     }
 
+    // RT-01: coalesce onto tickAnalysis()/flush() instead of emitting per
+    // parsed engine line — with multiPV=8 this call happens up to 8x per
+    // depth iteration.
+    analysisDirty_ = true;
+}
+
+bool GameState::tickAnalysis()
+{
+    if (!analysisDirty_) return false;
+    analysisDirty_ = false;
+    signal_engine_analysis.emit();
+    return true;
+}
+
+void GameState::flush()
+{
+    if (!analysisDirty_) return;
+    analysisDirty_ = false;
     signal_engine_analysis.emit();
 }
 
 std::vector<double> GameState::evalHistory() const
 {
-    std::vector<double> out;
-    out.reserve(history_.moveCount());
+    if (!evalHistoryDirty_) return evalHistoryCache_;
+
+    evalHistoryCache_.clear();
+    evalHistoryCache_.reserve(history_.moveCount());
 
     const TreeNode *node = tree_.root();
     for (int i = 0; i < history_.moveCount(); ++i) {
         node = node ? node->findChild(history_.moves()[i]) : nullptr;
         if (!node) {
-            out.push_back(0.5);
+            evalHistoryCache_.push_back(0.5);
             continue;
         }
-        out.push_back((node->depth > 0 || node->nodes > 0) ? node->eval : 0.5);
+        evalHistoryCache_.push_back((node->depth > 0 || node->nodes > 0) ? node->eval : 0.5);
     }
-    return out;
+    evalHistoryDirty_ = false;
+    return evalHistoryCache_;
 }
 
 void GameState::clearDatabase() {

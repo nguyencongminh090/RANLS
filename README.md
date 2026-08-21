@@ -19,6 +19,30 @@ Because Gomocup protocol has some limitations, Yixin-Board uses a new protocol w
 
 For more information, please visit www.aiexp.info and send me e-mail: sunkaicn@gmail.com
 
+## Running the tests
+
+Unit tests cover the `src/model/` and `src/engine/` layers (no GTK, no display server required).
+They use [doctest](https://github.com/doctest/doctest) (vendored, single header, at
+`tests/vendor/doctest.h`) and are wired into CMake as the `rapfi-gui-tests` target.
+
+From a build directory configured with the top-level `CMakeLists.txt`:
+
+```sh
+cmake -S . -B build
+cmake --build build --target rapfi-gui-tests
+ctest --test-dir build --output-on-failure
+```
+
+Or, to build the app and run the tests in one step:
+
+```sh
+RUN_TESTS=1 ./build.sh          # Linux/macOS
+RUN_TESTS=1 ./build_msys2.sh    # MSYS2 (MINGW64/UCRT64 shell)
+```
+
+Set `-DRAPFI_GUI_BUILD_TESTS=OFF` when configuring CMake to skip building the test target
+entirely (e.g. for a packaging build that shouldn't need `sigc++` dev headers standalone).
+
 # 弈心界面程序
 
 **本项目是[Yixin-Board](https://github.com/accreator/Yixin-Board)的修改版本，原代码由[accreator](https://github.com/accreator)开发。**

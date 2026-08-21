@@ -1,9 +1,56 @@
 # TEST-01 — No test infrastructure exists; several P0 fixes need it
 
-**Status:** open
+**Status:** ✅ DONE
 **Area:** build / test harness
 **Priority:** P1 (blocker for STATE-01 and PROTO-01)
 **Source:** codebase review, 2026-08-21
+
+## Summary
+
+Added a `tests/` CMake target (`rapfi-gui-tests`) using vendored doctest v2.4.11
+(`tests/vendor/doctest.h`), linking only `src/model/move_history.cpp`, `src/model/board_state.cpp`,
+and `src/engine/gomocup_protocol.cpp` plus `sigc++-3.0` — no gtkmm/GTK, no display server required.
+Framework choice + a confirmed absence of gtkmm-transitive dependencies in `src/model`/`src/engine`
+is recorded in `docs/audit.md` → `docs/audit/2026-08-21-test-framework-choice.md`.
+
+Wrote 8 `MoveHistory` test cases pinning the `moveCount()`/`totalMoves()`/`currentIndex()` invariant
+across clear/add/undo/redo/truncate-on-redo, and 15 `GomocupProtocol` hostile-input test cases
+(`parseLine`) covering empty lines, out-of-range and negative coordinates, truncated/garbage
+`MESSAGE`/`INFO`/`DATABASE` payloads, unterminated parenthesis blocks, a 10k-char garbage line, and
+a "still works after hostile input" recovery check.
+
+`build.sh` / `build_msys2.sh` gained an opt-in `RUN_TESTS=1` env var that runs `ctest` after the
+build (default behavior unchanged — plain `./build.sh` still only builds the app). `README.md` gained
+a "Running the tests" section with both the manual `cmake`/`ctest` invocation and the `RUN_TESTS=1`
+shortcut.
+
+## Verification
+
+Ran from a clean build directory (`build_test_verify`, deleted after verification), with
+`DISPLAY`/`WAYLAND_DISPLAY` unset to simulate a headless environment:
+
+- `cmake -DCMAKE_BUILD_TYPE=Release ..` — configured successfully (found `gtkmm-4.0` for the main
+  app, `sigc++-3.0` for the tests target).
+- `cmake --build . --target rapfi-gui-tests` — built successfully; `ldd tests/rapfi-gui-tests | grep
+  -i gtk` returned nothing (no GTK linked).
+- `env -u DISPLAY -u WAYLAND_DISPLAY ./tests/rapfi-gui-tests` →
+  `[doctest] test cases: 23 | 23 passed | 0 failed | 0 skipped` /
+  `[doctest] assertions: 69 | 69 passed | 0 failed` / `Status: SUCCESS!`
+- `env -u DISPLAY -u WAYLAND_DISPLAY ctest --output-on-failure` → `1/1 Test #1: rapfi-gui-tests
+  ... Passed` / `100% tests passed, 0 tests failed out of 1`.
+- `cmake --build . --target rapfi-gui` — main application still builds successfully (unrelated
+  pre-existing unused-function warnings in `gomocup_protocol.cpp`, not introduced by this change).
+- Re-ran the same sequence through `RUN_TESTS=1 bash build.sh build_test_verify2` (also deleted
+  after verification) end-to-end: app + tests both built, `ctest` passed.
+
+## Out of scope (left for other items)
+
+- No tests written for `board_state.cpp` (beyond linking it for `Coord`), `variation_tree.cpp`,
+  `game_state.cpp`, or `settings_storage.cpp` — these are optional "also testable" targets per this
+  item's own scope boundary, not required here. STATE-01 and future items should add coverage there.
+- No `doctest_discover_tests`-style per-`TEST_CASE` ctest registration — the whole binary is
+  registered as a single `ctest` case, which is sufficient for this harness's current size.
+- No gtkmm-transitive-dependency problem was found (see audit entry) — nothing to work around.
 
 ## Problem
 

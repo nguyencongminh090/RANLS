@@ -77,3 +77,10 @@ add_custom_command(TARGET rapfi-gui POST_BUILD
 # ── Install rules (used by package.sh via cmake --install) ──────────────────
 install(TARGETS rapfi-gui RUNTIME DESTINATION .)
 install(FILES src/resources/style.css DESTINATION .)
+
+# ── Tests (model/engine layers only, no gtkmm/display server required) ──────
+option(RAPFI_GUI_BUILD_TESTS "Build the rapfi-gui-tests target" ON)
+if(RAPFI_GUI_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

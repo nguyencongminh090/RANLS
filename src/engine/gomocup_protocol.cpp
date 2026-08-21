@@ -193,6 +193,45 @@ static std::vector<Coord> parseMoveTokens(const std::string &movesText, int boar
     return moves;
 }
 
+// ── Hardening: bounded index/count parsing ──────────────────────────────────
+// GomocupProtocol::parseLine is a trust boundary: the engine is a separate
+// process that can crash, desync, or simply not be Rapfi. Every index/count
+// derived from its stdout that ends up as a vector subscript or resize()
+// argument must be bounds-checked before use. `kMaxPVCount` reuses the same
+// 1..99 MultiPV bound `!analyze n` already enforces
+// (src/command/command_dispatcher.cpp:283) so the two entry points can't
+// disagree about how many simultaneous PV lines are legal.
+static constexpr int kMaxPVCount = 99;
+
+/// Parse `s` as a plain signed integer, requiring the *entire* token to be
+/// consumed. Returns false (leaving `out` untouched) on empty/non-numeric/
+/// partially-numeric text or on over/underflow. Never throws -- `std::stol`'s
+/// exceptions are caught here so callers don't need their own try/catch.
+static bool parseStrictInt(const std::string &s, long &out) {
+    if (s.empty()) return false;
+    try {
+        size_t idx = 0;
+        long value = std::stol(s, &idx);
+        if (idx != s.size()) return false;
+        out = value;
+        return true;
+    } catch (...) {
+        return false;
+    }
+}
+
+/// Parse a bounded engine-derived index/count (PV slot, NUMPV, ...) from
+/// text. Returns false if the token isn't a clean integer or falls outside
+/// [minVal, maxVal]; `out` is left untouched on failure so callers can keep
+/// prior state instead of adopting a hostile value.
+static bool parseBoundedInt(const std::string &s, int minVal, int maxVal, int &out) {
+    long value = 0;
+    if (!parseStrictInt(s, value)) return false;
+    if (value < minVal || value > maxVal) return false;
+    out = static_cast<int>(value);
+    return true;
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 
 GomocupProtocol::GomocupProtocol(int boardSize) : boardSize_(boardSize) {}
@@ -351,7 +390,11 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
     }
 
     auto commitPV = [this](int idx, PVLine pv) {
-        if (idx < 0) return;
+        if (idx < 0 || idx >= kMaxPVCount) {
+            signal_log.emit(EngineMessageType::Error,
+                             "GomocupProtocol: rejected out-of-range PV index " + std::to_string(idx));
+            return;
+        }
         if (idx >= static_cast<int>(currentPVs_.size())) {
             currentPVs_.resize(idx + 1);
         }
@@ -386,6 +429,12 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
             int pvIndex = parseIntToken(msg.substr(1, close - 1), 1) - 1;
             auto parts = splitPipe(msg);
             if (parts.size() >= 3) {
+                if (pvIndex < 0 || pvIndex >= kMaxPVCount) {
+                    signal_log.emit(EngineMessageType::Error,
+                                     "GomocupProtocol: rejected out-of-range PV index in '("
+                                     + msg.substr(1, close - 1) + ")'");
+                    return;
+                }
                 std::istringstream head(parts[0].substr(close + 1));
                 std::string eval;
                 head >> eval;
@@ -503,14 +552,12 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
         } else if (token == "multipv") {
             std::string val;
             if (ss >> val) {
-                try {
-                    int mpv = std::stoi(val);
-                    if (mpv > 0) {
-                        parsedPVIndex = mpv - 1;
-                        currentPVIndex_ = parsedPVIndex;
-                        if (currentNumPV_ < mpv) currentNumPV_ = mpv;
-                    }
-                } catch (...) {}
+                int mpv = 0;
+                if (parseBoundedInt(val, 1, kMaxPVCount, mpv)) {
+                    parsedPVIndex = mpv - 1;
+                    currentPVIndex_ = parsedPVIndex;
+                    if (currentNumPV_ < mpv) currentNumPV_ = mpv;
+                }
                 updatedAny = true;
             }
         } else if (token == "ev" || token == "eval") {
@@ -621,8 +668,14 @@ void GomocupProtocol::parseInfo(const std::string &info) {
     if (key == "NUMPV") {
         int n = 0;
         if (ss >> n && n > 0) {
-            currentNumPV_ = n;
-            currentPVs_.resize(n);
+            int clamped = std::min(n, kMaxPVCount);
+            if (clamped != n) {
+                signal_log.emit(EngineMessageType::Error,
+                                 "GomocupProtocol: NUMPV " + std::to_string(n) +
+                                 " exceeds max " + std::to_string(kMaxPVCount) + "; clamped");
+            }
+            currentNumPV_ = clamped;
+            currentPVs_.resize(clamped);
         }
     } else if (key == "DEPTH") {
         if (ss >> currentPvDepth_) {
@@ -671,10 +724,15 @@ void GomocupProtocol::parseInfo(const std::string &info) {
             if (sub == "DONE") {
                 onPVDone();
             } else {
-                try {
-                    currentPVIndex_ = std::stoi(sub);
+                int idx = 0;
+                if (parseBoundedInt(sub, 0, kMaxPVCount - 1, idx)) {
+                    currentPVIndex_ = idx;
                     resetCurrentPVState();
-                } catch (...) {}
+                } else {
+                    signal_log.emit(EngineMessageType::Error,
+                                     "GomocupProtocol: rejected out-of-range/non-numeric PV index '"
+                                     + sub + "'");
+                }
             }
         }
     }
@@ -682,6 +740,12 @@ void GomocupProtocol::parseInfo(const std::string &info) {
 
 void GomocupProtocol::onPVDone() {
     int idx = currentPVIndex_;
+
+    if (idx < 0 || idx >= kMaxPVCount) {
+        signal_log.emit(EngineMessageType::Error,
+                         "GomocupProtocol: PV DONE with out-of-range index " + std::to_string(idx));
+        return;
+    }
 
     if (idx >= static_cast<int>(currentPVs_.size())) {
         currentPVs_.resize(idx + 1);
@@ -734,12 +798,32 @@ void GomocupProtocol::parseDatabase(const std::string &dbLine) {
     // Format: y x labelValue value depth bound hasComment boardText
     std::istringstream ss(trimLine);
     int row, col, labelVal;
-    if (!(ss >> row >> col >> labelVal)) return;
+    if (!(ss >> row >> col >> labelVal)) {
+        signal_log.emit(EngineMessageType::Error,
+                         "GomocupProtocol: malformed DATABASE row (missing row/col/label): '"
+                         + dbLine + "'");
+        return;
+    }
 
     DatabaseEntry entry;
     entry.pos = Coord{col, row};
+    // boardSize_ may lag the engine's actual board size (see PROTO-02, out of
+    // scope here); validate against MAX_BOARD_SIZE as a safe interim floor so
+    // this never rejects a coordinate that's valid for the real board.
+    if (!entry.pos.isValid(MAX_BOARD_SIZE)) {
+        signal_log.emit(EngineMessageType::Error,
+                         "GomocupProtocol: rejected out-of-range DATABASE coordinate ("
+                         + std::to_string(row) + "," + std::to_string(col) + ")");
+        return;
+    }
     entry.label = decodeLabel(labelVal);
-    ss >> entry.value >> entry.depth >> entry.bound;
+
+    if (!(ss >> entry.value >> entry.depth >> entry.bound)) {
+        signal_log.emit(EngineMessageType::Error,
+                         "GomocupProtocol: malformed DATABASE row (missing value/depth/bound): '"
+                         + dbLine + "'");
+        return;
+    }
     int hasComment;
     if (ss >> hasComment) entry.hasComment = (hasComment != 0);
     

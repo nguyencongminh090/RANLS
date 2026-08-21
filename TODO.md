@@ -13,10 +13,14 @@ feature-area prefix + running number (e.g. `WALL-01`, `UI-07`). `✅` marks a fi
 ---
 
 ## Active
-- **TEST-01.** No test infrastructure exists — blocks the regression tests STATE-01 and PROTO-01 require [Model: Sonnet 5] — [detail](docs/todo/TEST-01-test-infrastructure.md)
-- **PROTO-01.** Harden the Gomocup parser: out-of-bounds `currentPVs_[-1]` in `onPVDone`, unbounded `NUMPV` resize, unvalidated database coords [Model: Sonnet 5] — [detail](docs/todo/PROTO-01-parser-hardening.md)
-- **STATE-01.** Stale PV / engine status / board markers survive New Game, makeMove, and undo/redo [Model: Sonnet 5] — [detail](docs/todo/STATE-01-stale-analysis-after-position-change.md)
-- **RT-01.** No throttle anywhere on the engine→UI analysis path; 6 emit sites drive a full UI rebuild per parsed line [Model: Sonnet 5] — [detail](docs/todo/RT-01-throttle-analysis-signal.md)
+- ✅ **TEST-01.** No test infrastructure exists — blocks the regression tests STATE-01 and PROTO-01 require [Model: Sonnet 5] — [detail](docs/todo/TEST-01-test-infrastructure.md)
+- ✅ **PROTO-01.** Harden the Gomocup parser: out-of-bounds `currentPVs_[-1]` in `onPVDone`, unbounded `NUMPV` resize, unvalidated database coords [Model: Sonnet 5] — [detail](docs/todo/PROTO-01-parser-hardening.md)
+- ✅ **STATE-01.** Stale PV / engine status / board markers survive New Game, makeMove, and undo/redo [Model: Sonnet 5] — [detail](docs/todo/STATE-01-stale-analysis-after-position-change.md)
+- ✅ **RT-01.** No throttle anywhere on the engine→UI analysis path; 6 emit sites drive a full UI rebuild per parsed line [Model: Sonnet 5] — [detail](docs/todo/RT-01-throttle-analysis-signal.md)
+- **STATE-02.** Settings dialog silently resets `multiPV` and wipes `customParams`, then persists it — [detail](docs/todo/STATE-02-settings-dialog-drops-config-fields.md)
+- **ENG-01.** Engine state is dishonest ("● ON" with no process, crash ≡ never-started, no "thinking" state) and stopping blocks the UI ~2.5s — [detail](docs/todo/ENG-01-engine-state-honesty-and-blocking-stop.md)
+- **RT-02.** Engine log grows unbounded and writes per-line; gutter labels desync on wrap — [detail](docs/todo/RT-02-engine-log-unbounded.md)
+- **RT-03.** PVView full rebuild destroys hover, breaking the board PV ghost-stone preview during analysis — [detail](docs/todo/RT-03-pvview-rebuild-breaks-hover.md)
 
 ## Backlog
 
@@ -24,13 +28,6 @@ Filed 2026-08-21 from a full read of `src/` (UI/UX + codebase review). Ordered b
 Prefixes: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engine protocol ·
 `ENG` engine lifecycle · `NAV` navigation · `UI` display logic · `UX` usability · `TEST` harness ·
 `CLEAN` hygiene.
-
-### P0 — memory safety and incorrect data on screen
-
-- **STATE-02.** Settings dialog silently resets `multiPV` and wipes `customParams`, then persists it — [detail](docs/todo/STATE-02-settings-dialog-drops-config-fields.md)
-- **ENG-01.** Engine state is dishonest ("● ON" with no process, crash ≡ never-started, no "thinking" state) and stopping blocks the UI ~2.5s — [detail](docs/todo/ENG-01-engine-state-honesty-and-blocking-stop.md)
-- **RT-02.** Engine log grows unbounded and writes per-line; gutter labels desync on wrap — [detail](docs/todo/RT-02-engine-log-unbounded.md)
-- **RT-03.** PVView full rebuild destroys hover, breaking the board PV ghost-stone preview during analysis — [detail](docs/todo/RT-03-pvview-rebuild-breaks-hover.md)
 
 ### P1 — wrong results, wasted work
 

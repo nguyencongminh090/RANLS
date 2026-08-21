@@ -10,6 +10,7 @@
 #include "command/command_dispatcher.h"
 
 #include <gtkmm.h>
+#include <sigc++/sigc++.h>
 #include <memory>
 
 /// Main application window.
@@ -17,7 +18,7 @@
 class MainWindow : public Gtk::ApplicationWindow {
 public:
     MainWindow();
-    ~MainWindow() override = default;
+    ~MainWindow() override;
 
 private:
     void buildMenuBar();
@@ -48,6 +49,13 @@ private:
     EngineProcess        engine_;
     EngineController     controller_;
     std::unique_ptr<CommandDispatcher> commandDispatcher_;
+
+    // RT-01: periodic tick that coalesces gameState_.signal_engine_analysis
+    // emissions to a bounded rate instead of one per parsed engine line. See
+    // GameState::tickAnalysis()/flush() (src/model/game_state.h) — GameState
+    // itself stays free of glibmm so it remains buildable in tests/CMakeLists.txt
+    // (no GTK main loop there); the live Glib::signal_timeout lives here instead.
+    sigc::connection analysisTickConn_;
 
     // ── Layout ──────────────────────────────────────────────────────────────
     Gtk::HeaderBar     headerBar_;
