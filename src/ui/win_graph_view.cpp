@@ -1,5 +1,7 @@
 #include "win_graph_view.h"
 
+#include "empty_state.h"
+
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
@@ -70,7 +72,7 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
 
     // Background is now handled by GTK+ CSS / Native theme.
 
-    if (blackData_.empty() || graphW <= 0 || graphH <= 0) return;
+    if (graphW <= 0 || graphH <= 0) return;
 
     // 50% center line.
     cr->set_source_rgba(0.4, 0.4, 0.4, 0.5);
@@ -85,6 +87,15 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
     cr->move_to(4, kPadT + 8);            cr->show_text("100%");
     cr->move_to(4, kPadT + graphH / 2 + 4); cr->show_text("50%");
     cr->move_to(4, kPadT + graphH - 2);    cr->show_text("0%");
+
+    // UX-01: no series yet — the axis scaffold above already reads as an
+    // empty chart rather than a void; add a centered placeholder explaining
+    // what will populate it and stop (nothing further to plot).
+    if (blackData_.empty()) {
+        EmptyState::drawPlaceholder(cr, *this, width, height,
+                                     "No analysis yet — press Analyze (F5)");
+        return;
+    }
 
     // Plot line.
     int n = static_cast<int>(blackData_.size());

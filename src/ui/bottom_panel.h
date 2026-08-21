@@ -1,6 +1,7 @@
 #pragma once
 
 #include "engine_log_model.h"
+#include "empty_state.h"
 #include <gtkmm.h>
 #include <sigc++/sigc++.h>
 #include <string>
@@ -54,6 +55,16 @@ private:
     // Engine log — single TextView, tagged prefix inline with content.
     Gtk::ScrolledWindow scrolledEngineLog_;
     Gtk::TextView       engineLogView_;
+
+    /// UX-01: placeholders shown while their respective TextView buffer is
+    /// empty (fresh launch, or back to empty after New Game/clear()).
+    EmptyStateOverlay moveLogOverlay_{"No moves yet — moves will appear here as you play"};
+    EmptyStateOverlay engineLogOverlay_{"No engine activity yet — start the engine to see log output"};
+
+    /// Toggles moveLogOverlay_/engineLogOverlay_ from the current buffer
+    /// character count. Called after every mutation of the respective buffer.
+    void updateMoveLogEmptyState();
+    void updateEngineLogEmptyState();
 
     Glib::RefPtr<Gtk::TextTag> tagSend_;
     Glib::RefPtr<Gtk::TextTag> tagRecvOutput_;

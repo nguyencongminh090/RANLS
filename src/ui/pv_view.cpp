@@ -28,7 +28,9 @@ PVView::PVView()
     set_vexpand(true);
 
     listBox_.set_selection_mode(Gtk::SelectionMode::NONE);
-    set_child(listBox_);
+    overlay_.setContent(listBox_);
+    overlay_.setEmpty(true);  // No PV rows yet at construction.
+    set_child(overlay_);
 
     // When the mouse leaves the list box, emit the hover-left signal.
     auto motion = Gtk::EventControllerMotion::create();
@@ -54,6 +56,12 @@ void PVView::update(const std::vector<PVLine> &pvLinesIn, int boardSize)
     }
 
     const size_t newCount = pvLines.size();
+
+    // UX-01: show/hide the placeholder as the row count crosses zero. This
+    // reacts to whatever cleared pvLinesIn back to empty (New Game/undo via
+    // STATE-01, or simply no analysis run yet) without duplicating that
+    // clearing logic here.
+    overlay_.setEmpty(newCount == 0);
 
     // Only remove/add row widgets when the PV *count* changes (RT-03): row
     // widgets — and the Gtk::EventControllerMotion attached to each — must

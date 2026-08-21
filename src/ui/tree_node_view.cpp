@@ -1,5 +1,7 @@
 #include "tree_node_view.h"
 
+#include "empty_state.h"
+
 #include <algorithm>
 #include <cmath>
 
@@ -7,6 +9,11 @@
 static constexpr double kBgR = 0.17, kBgG = 0.17, kBgB = 0.17;
 static constexpr double kLineR = 0.4, kLineG = 0.4, kLineB = 0.4;
 static constexpr double kHighlightR = 0.33, kHighlightG = 0.60, kHighlightB = 0.87;
+
+// UX-01: minimum drawing-area size when the tree is empty, so the empty-state
+// placeholder message has room to render instead of collapsing to ~0px.
+static constexpr int kMinEmptyWidth  = 220;
+static constexpr int kMinEmptyHeight = 90;
 
 // ═════════════════════════════════════════════════════════════════════════════
 TreeNodeView::TreeNodeView()
@@ -87,14 +94,23 @@ void TreeNodeView::update(const TreeNode *root, const std::vector<Coord> &curren
     maxRow_ = 0;
     hoverIndex_ = -1;
 
-    if (!root) return;
+    if (!root) {
+        // UX-01: no tree yet (fresh launch, or back to the start after New
+        // Game/undo — STATE-01 clears root and notifies us here). Without an
+        // explicit size the DrawingArea would collapse to ~0px and its empty
+        // placeholder (drawn in onDraw) would never be visible, so give it
+        // room to show the message rather than leaving the old tree's size.
+        drawArea_.set_size_request(kMinEmptyWidth, kMinEmptyHeight);
+        drawArea_.queue_draw();
+        return;
+    }
 
     int nextCol = 0;
     layoutTree(root, 0, nextCol, currentPath, 0, {}, -1);
 
     // Size the drawing area to fit all nodes.
-    int w = static_cast<int>((maxCol_ + 1) * kCellW + 2 * kPadding);
-    int h = static_cast<int>((maxRow_ + 1) * kCellH + 2 * kPadding);
+    int w = std::max(kMinEmptyWidth, static_cast<int>((maxCol_ + 1) * kCellW + 2 * kPadding));
+    int h = std::max(kMinEmptyHeight, static_cast<int>((maxRow_ + 1) * kCellH + 2 * kPadding));
     drawArea_.set_size_request(w, h);
     drawArea_.queue_draw();
 }
@@ -149,11 +165,16 @@ void TreeNodeView::layoutTree(const TreeNode *node, int depth, int &nextCol,
 }
 
 // ─── Drawing ─────────────────────────────────────────────────────────────────
-void TreeNodeView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int /*width*/, int /*height*/)
+void TreeNodeView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int height)
 {
     // Background handled naturally by GTK native theme.
 
-    if (nodes_.empty()) return;
+    // UX-01: no moves played yet — placeholder instead of a blank rectangle.
+    if (nodes_.empty()) {
+        EmptyState::drawPlaceholder(cr, drawArea_, width, height,
+                                     "No moves yet — play or load a game to see the move tree");
+        return;
+    }
 
     // ── Draw connecting lines first ─────────────────────────────────────────
     cr->set_line_width(1.5);

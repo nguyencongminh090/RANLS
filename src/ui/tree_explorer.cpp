@@ -75,7 +75,9 @@ TreeExplorer::TreeExplorer()
                 signal_node_selected.emit(row->path);
         });
 
-    set_child(columnView_);
+    overlay_.setContent(columnView_);
+    overlay_.setEmpty(true);  // No rows yet at construction.
+    set_child(overlay_);
 }
 
 void TreeExplorer::update(const MoveHistory &history, const VariationTree &tree, int boardSize)
@@ -177,4 +179,8 @@ void TreeExplorer::update(const MoveHistory &history, const VariationTree &tree,
     else
         selection_->unselect_all();
     inUpdate_ = false;
+
+    // UX-01: reacts to whatever cleared the history back to empty (New
+    // Game/undo via STATE-01, or simply nothing played yet).
+    overlay_.setEmpty(newSize == 0);
 }
