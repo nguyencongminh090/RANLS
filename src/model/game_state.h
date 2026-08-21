@@ -132,6 +132,18 @@ private:
     /// signal_engine_analysis emission. Consumed by tickAnalysis()/flush().
     bool analysisDirty_ = false;
 
+    /// True when the current tree node's eval/depth/nodes changed since the
+    /// last signal_tree_updated emission (RT-04: reuses the RT-01 dirty-flag/
+    /// tick mechanism instead of emitting signal_tree_updated synchronously
+    /// from setAnalysisData, which previously drove a full tree-view rebuild
+    /// on essentially every parsed engine line). Always set alongside
+    /// analysisDirty_ and consumed together by tickAnalysis()/flush() — never
+    /// set true while analysisDirty_ is false, so no separate guard is needed
+    /// when clearing it. Structural tree changes (new move, gotoPath, etc.)
+    /// still emit signal_tree_updated synchronously elsewhere; this flag only
+    /// covers the per-tick eval/depth/nodes refresh of the current node.
+    bool treeDirty_ = false;
+
     /// evalHistory() cache — invalidated whenever the tree/board actually
     /// changes (position ops, or a tree-node eval update from setAnalysisData),
     /// not on every analysis tick.
