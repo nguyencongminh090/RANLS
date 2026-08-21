@@ -7,7 +7,14 @@
 // ── Board colors ─────────────────────────────────────────────────────────────
 static constexpr double kBoardR = 0.87, kBoardG = 0.72, kBoardB = 0.53; // Wood
 static constexpr double kGridR  = 0.20, kGridG  = 0.20, kGridB  = 0.18;
-static constexpr double kCoordR = 0.60, kCoordG = 0.60, kCoordB = 0.55;
+// UX-03: this used to be a light gray (0.60, 0.60, 0.55) against the wood
+// board background (0.87, 0.72, 0.53) -- a WCAG contrast ratio of only
+// ~1.55:1 (need >=4.5:1 for text; measured with the standard relative-
+// luminance formula). The board doesn't follow the GTK theme (see kBoardR
+// above), so this can't rely on theme contrast guarantees the way most of
+// the app can -- it needs its own dark, warm-brown value. This one measures
+// ~8.0:1 against the board background.
+static constexpr double kCoordR = 0.20, kCoordG = 0.14, kCoordB = 0.08;
 static constexpr double kLastR  = 0.85, kLastG  = 0.20, kLastB  = 0.20;
 static constexpr double kHoverAlpha   = 0.4;
 static constexpr double kGhostAlpha   = 0.35;
@@ -339,13 +346,25 @@ void BoardRenderer::drawDatabaseMarkers(const Cairo::RefPtr<Cairo::Context> &cr)
         cr->close_path();
         cr->fill();
 
-        // Label text.
+        // Label text. UX-03: plain white-on-heatmap text drops to ~1.5:1
+        // contrast for winrates in the yellow-green band (hue ~65-95° in
+        // set_source_from_winrate above); add a dark shadow behind it, the
+        // same fix already used for the candidate-move labels below
+        // (drawCandidateMoves) -- keeps the label legible across the whole
+        // heat-map hue range regardless of the marker's own color.
         if (!m.label.empty()) {
-            cr->set_source_rgba(1.0, 1.0, 1.0, 0.9);
             cr->set_font_size(std::max(8.0, cellSize_ * 0.28));
             Cairo::TextExtents ext;
             cr->get_text_extents(m.label, ext);
-            cr->move_to(cx - ext.width / 2.0, cy + ext.height / 2.0);
+            double tx = cx - ext.width / 2.0;
+            double ty = cy + ext.height / 2.0;
+
+            cr->set_source_rgba(0.0, 0.0, 0.0, 0.6);
+            cr->move_to(tx + 1, ty + 1);
+            cr->show_text(m.label);
+
+            cr->set_source_rgba(1.0, 1.0, 1.0, 0.95);
+            cr->move_to(tx, ty);
             cr->show_text(m.label);
         }
     }

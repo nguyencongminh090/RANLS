@@ -1,9 +1,33 @@
 # UX-03 — Unlabelled icon buttons, no focus indication, no confirmation before destroying a game
 
-**Status:** open
+**Status:** ✅ DONE
 **Area:** toolbar / custom-drawn widgets / destructive actions
 **Priority:** P2
 **Source:** UI/UX + codebase review, 2026-08-21
+
+## Resolution (2026-08-21)
+
+Full summary and verification: `docs/fix-log.md` → `docs/fix-log/2026-08-21-ux-03-accessibility-and-destructive-actions.md`.
+
+- **#1 (icon-only buttons)** — fixed: `setButtonTooltipAndLabel()` added to all four nav buttons in
+  `src/main_window.cpp` (`set_tooltip_text()` + `Gtk::Accessible::Property::LABEL`).
+- **#2 (custom-drawn widgets, no focus indicator/accessible role)** — **not fixed, recorded as an
+  accepted limitation** instead: `docs/audit.md` → `docs/audit/2026-08-21-custom-drawn-widgets-no-keyboard-focus.md`.
+  None of `BoardView`/`TreeNodeView`/`WinGraphView` has any keyboard focus mechanism today, and
+  building one is exactly the out-of-scope keyboard-navigation feature this item's own scope
+  boundary excludes — so there is no existing focus to draw an indicator for.
+- **#3 (no confirmation before destroying a game)** — fixed: `MainWindow::confirmDiscardGame()`
+  guards both `onNewGame()` and the board-size Apply handler, skipping the prompt when the board is
+  already empty. Verified interactively (Yes/No/empty-board-no-nag all confirmed working).
+- **Colour-only-meaning check** — database/candidate markers already pair hue with text (no change
+  needed); win-graph black/white series now also differ by line dash pattern, not hue alone.
+- **Contrast check** — found and fixed a real failure: board coordinate labels measured ~1.55:1
+  against the board's fixed wood background (need ≥4.5:1), now ~8.0:1. Also fixed database-marker
+  label contrast (added shadow) and made win-graph axis labels theme-aware via `get_color()` instead
+  of a fixed gray that measured ~3.9-4.0:1 in both themes.
+
+Build verified clean (including `tests/`, 89/89 passing — no test infra covers `src/main_window.cpp`/
+`src/ui/*`, noted explicitly). Manual interactive verification done via headless Xvfb + xdotool.
 
 ## Problem
 

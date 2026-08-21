@@ -11,6 +11,7 @@
 
 #include <gtkmm.h>
 #include <sigc++/sigc++.h>
+#include <functional>
 #include <memory>
 
 /// Main application window.
@@ -25,6 +26,12 @@ private:
     void buildToolbar();
     void buildLayout();
     void connectSignals();
+
+    // UX-03: confirm before discarding the current game (board/history/tree)
+    // when it's non-empty. Shared by onNewGame() and the board-size Apply
+    // handler in onBoardSize(). Runs `onConfirmed` only if the user accepts,
+    // or immediately if the board is already empty (no prompt needed).
+    void confirmDiscardGame(const Glib::ustring &action, std::function<void()> onConfirmed);
 
     // ── Menu actions ────────────────────────────────────────────────────────
     void onNewGame();

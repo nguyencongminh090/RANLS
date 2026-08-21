@@ -5,6 +5,22 @@
 #include <algorithm>
 #include <cctype>
 
+// UX-03: icon-only glyph buttons need both a hover tooltip (sighted users)
+// and an accessible name (screen readers). set_tooltip_text() alone does
+// NOT populate the accessible name in GTK4 -- Gtk::Accessible::Property::
+// LABEL must be set explicitly too. See EngineStatusView's btnStart_/
+// btnStop_/btnReload_ (src/ui/engine_status.cpp) for the existing in-repo
+// pattern this mirrors (that widget only calls set_tooltip_text(), so the
+// accessible-label half is the new part introduced here).
+static void setButtonTooltipAndLabel(Gtk::Button &button, const Glib::ustring &text)
+{
+    button.set_tooltip_text(text);
+    Glib::Value<Glib::ustring> value;
+    value.init(value.value_type());
+    value.set(text);
+    button.update_property(Gtk::Accessible::Property::LABEL, value);
+}
+
 static std::string trim(const std::string &s)
 {
     size_t b = 0, e = s.size();
@@ -244,6 +260,12 @@ void MainWindow::buildToolbar()
     btnUndo_  = Gtk::make_managed<Gtk::Button>("↶");
     btnRedo_  = Gtk::make_managed<Gtk::Button>("↷");
     btnLast_  = Gtk::make_managed<Gtk::Button>("⏭");
+
+    // UX-03: these were bare glyphs with no tooltip/accessible name.
+    setButtonTooltipAndLabel(*btnFirst_, "Jump to first move");
+    setButtonTooltipAndLabel(*btnUndo_,  "Undo move");
+    setButtonTooltipAndLabel(*btnRedo_,  "Redo move");
+    setButtonTooltipAndLabel(*btnLast_,  "Jump to last move");
 
     btnFirst_->signal_clicked().connect(sigc::mem_fun(*this, &MainWindow::onUndoAll));
     btnUndo_->signal_clicked().connect(sigc::mem_fun(*this, &MainWindow::onUndo));
@@ -485,13 +507,47 @@ void MainWindow::connectSignals()
 }
 
 // ── Actions ──────────────────────────────────────────────────────────────────
+
+// UX-03: New Game and board-size Apply both discard the current board,
+// move history, and variation tree with no confirmation. Guard both behind
+// this helper -- but only when there is actually something to lose (an
+// empty board doesn't need a nag prompt). The dialog is fire-and-forget:
+// `onConfirmed` runs from the response handler, and the dialog deletes
+// itself when it closes.
+void MainWindow::confirmDiscardGame(const Glib::ustring &action, std::function<void()> onConfirmed)
+{
+    if (gameState_.history().moveCount() == 0) {
+        // Board already empty -- nothing to lose, don't nag.
+        onConfirmed();
+        return;
+    }
+
+    auto *dialog = new Gtk::MessageDialog(
+        *this,
+        action + " will discard the current game (board, move history, and variation tree). Continue?",
+        /*use_markup=*/false,
+        Gtk::MessageType::WARNING,
+        Gtk::ButtonsType::YES_NO,
+        /*modal=*/true);
+    dialog->set_secondary_text("This cannot be undone.");
+    dialog->signal_response().connect([dialog, onConfirmed](int response) {
+        if (response == static_cast<int>(Gtk::ResponseType::YES)) {
+            onConfirmed();
+        }
+        delete dialog;
+    });
+    dialog->set_visible(true);
+}
+
 void MainWindow::onNewGame()
 {
-    // newGame() resets to DEFAULT_BOARD_SIZE, which can differ from whatever
-    // size the engine protocol last saw (PROTO-02) -- resync unconditionally,
-    // same as every other newGame()/board-size call site.
-    gameState_.newGame();
-    controller_.sendConfig();
+    confirmDiscardGame("Starting a new game", [this]() {
+        // newGame() resets to DEFAULT_BOARD_SIZE, which can differ from whatever
+        // size the engine protocol last saw (PROTO-02) -- resync unconditionally,
+        // same as every other newGame()/board-size call site.
+        gameState_.newGame();
+        controller_.sendConfig();
+    });
 }
 
 void MainWindow::onLoadGame()
@@ -558,8 +614,13 @@ void MainWindow::onBoardSize()
     btn->add_css_class("suggested-action");
     btn->signal_clicked().connect([this, spin, dialog]() {
         int size = static_cast<int>(spin->get_value());
-        gameState_.newGame(size);
-        controller_.sendConfig();
+        // UX-03: changing the board size discards the game as a side effect
+        // of what the user framed as a *setting* change, not "start a new
+        // game" -- worse than the New Game case, so it gets the same guard.
+        confirmDiscardGame("Changing the board size", [this, size]() {
+            gameState_.newGame(size);
+            controller_.sendConfig();
+        });
         dialog->close();
     });
 
