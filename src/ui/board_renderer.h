@@ -26,6 +26,10 @@ private:
     void drawCandidateMoves(const Cairo::RefPtr<Cairo::Context> &cr);
     void drawPVHighlight(const Cairo::RefPtr<Cairo::Context> &cr);
     void drawHover(const Cairo::RefPtr<Cairo::Context> &cr);
+    /// UI-03: draws vm_.forbiddenPoints (already computed by the model --
+    /// RenjuRule, src/model/renju_rule.h). Indication only: a marked point is
+    /// still fully clickable/playable, this layer never blocks input.
+    void drawForbiddenPoints(const Cairo::RefPtr<Cairo::Context> &cr);
 
     // ── Coordinate helpers ──────────────────────────────────────────────────
     /// Convert board coordinate (x, y) to pixel center.

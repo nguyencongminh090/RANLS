@@ -79,6 +79,7 @@ void BoardRenderer::draw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int
     drawGrid(cr);
     drawStones(cr);
     drawLastMove(cr);
+    drawForbiddenPoints(cr);
     drawDatabaseMarkers(cr);
     drawVariantMarkers(cr);
     drawCandidateMoves(cr);
@@ -231,6 +232,51 @@ void BoardRenderer::drawLastMove(const Cairo::RefPtr<Cairo::Context> &cr)
     cr->set_line_width(2.0);
     cr->arc(cx, cy, mr, 0, 2 * M_PI);
     cr->stroke();
+}
+
+// ── 3b. ForbiddenPointLayer (UI-03) ──────────────────────────────────────────
+// UI-03 / UX-03: indication only -- these points remain fully clickable (see
+// GameState::makeMove, which never consults RenjuRule). The marker uses both
+// a distinct shape (a ring with a diagonal cross through it, like a "no
+// entry" sign) AND a text glyph, per UX-03's "don't rely on colour alone".
+void BoardRenderer::drawForbiddenPoints(const Cairo::RefPtr<Cairo::Context> &cr)
+{
+    if (vm_.forbiddenPoints.empty()) return;
+
+    static constexpr double kForbidR = 0.75, kForbidG = 0.10, kForbidB = 0.10;
+    double r = stoneRadius() * 0.55;
+
+    for (const auto &pos : vm_.forbiddenPoints) {
+        if (!pos.isValid(vm_.boardSize)) continue;
+        double cx = cellCenterX(pos.x);
+        double cy = cellCenterY(pos.y);
+
+        // Ring (the "no entry" shape).
+        cr->set_source_rgba(kForbidR, kForbidG, kForbidB, 0.85);
+        cr->set_line_width(std::max(1.5, cellSize_ * 0.045));
+        cr->arc(cx, cy, r, 0, 2 * M_PI);
+        cr->stroke();
+
+        // Diagonal cross through the ring.
+        double dr = r * 0.75;
+        cr->move_to(cx - dr, cy - dr);
+        cr->line_to(cx + dr, cy + dr);
+        cr->move_to(cx - dr, cy + dr);
+        cr->line_to(cx + dr, cy - dr);
+        cr->stroke();
+
+        // "X" text glyph below the point -- UX-03: shape alone (the ring +
+        // cross) already avoids colour-only meaning, but a text glyph makes
+        // the "forbidden" meaning legible even at a glance/low zoom.
+        cr->set_source_rgba(kForbidR, kForbidG, kForbidB, 0.9);
+        cr->select_font_face("sans-serif", Cairo::ToyFontFace::Slant::NORMAL,
+                             Cairo::ToyFontFace::Weight::BOLD);
+        cr->set_font_size(std::max(7.0, cellSize_ * 0.24));
+        Cairo::TextExtents ext;
+        cr->get_text_extents("X", ext);
+        cr->move_to(cx - ext.width / 2.0, cy + r + ext.height + 1.0);
+        cr->show_text("X");
+    }
 }
 
 // ── 4. DatabaseMarkerLayer ───────────────────────────────────────────────────

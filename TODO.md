@@ -37,7 +37,7 @@ Prefixes: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engine pro
 
 ### P2/P3 — usability and hygiene
 
-- **UI-03.** Selected rule (Renju/Standard) has no effect on what the board shows — [detail](docs/todo/UI-03-rule-not-visible-on-board.md)
+- ✅ **UI-03.** Selected rule (Renju/Standard) has no effect on what the board shows — [detail](docs/todo/UI-03-rule-not-visible-on-board.md)
 - **UX-01.** Three panels render as blank rectangles instead of empty states — [detail](docs/todo/UX-01-empty-states.md)
 - **UX-02.** Settings dialog accepts an invalid engine path with no feedback — [detail](docs/todo/UX-02-settings-validation.md)
 - **UX-03.** Unlabelled icon buttons, no focus indication on custom-drawn widgets, no confirmation before destroying a game — [detail](docs/todo/UX-03-accessibility-and-destructive-actions.md)

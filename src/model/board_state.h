@@ -16,6 +16,16 @@ enum class Stone : uint8_t {
     White = 2,
 };
 
+/// Gomoku game rules. Defined here (not game_state.h) so BoardState::checkWin()
+/// can be rule-aware without a circular include; game_state.h includes this
+/// header and re-exposes GameRule transitively, so existing `#include
+/// "model/game_state.h"` call sites are unaffected.
+enum class GameRule {
+    Freestyle = 0,   ///< Freestyle Gomoku (rule 0)
+    Standard  = 1,   ///< Standard Gomoku / exact-5 (rule 1)
+    Renju     = 2    ///< Free Renju with forbidden moves (rule 2)
+};
+
 /// A single point on the board.
 struct Coord {
     int x = -1; ///< Column (0-indexed, left to right)
@@ -62,8 +72,23 @@ public:
     /// Number of stones on the board.
     int plyCount() const { return plyCount_; }
 
-    /// Check if placing a stone at pos would complete 5-in-a-row.
-    bool checkWin(Coord pos) const;
+    /// Check if placing a stone at pos would complete a win, given the active
+    /// rule (the color checked is whatever stone is actually at `pos`).
+    /// UI-03: rule-aware overline handling —
+    ///   - Freestyle: any run of 5 or more in a row wins.
+    ///   - Standard: only an EXACT run of 5 wins, for either color; a run of
+    ///     6+ ("overline") does NOT win — the game continues. Previously this
+    ///     function ignored `rule` entirely and treated every overline as a
+    ///     win, which diverged from the engine's own `RULE 1` (Standard) win
+    ///     condition (see game/wincheck.h / game/pattern.cpp in the Rapfi
+    ///     engine: `CheckOverline = R == STANDARD || (R == RENJU && Black)`).
+    ///   - Renju: White follows the Freestyle any-5-or-more rule; Black
+    ///     follows the Standard exact-5 rule (an overline is not a win for
+    ///     Black — under Renju, Black overline is actually a forbidden move
+    ///     in the first place; see RenjuRule::isForbidden in renju_rule.h,
+    ///     which decides legality, while checkWin() only decides win/no-win
+    ///     for a move that was already allowed to be played).
+    bool checkWin(Coord pos, GameRule rule) const;
 
 private:
     int                                                  size_;

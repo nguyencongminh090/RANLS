@@ -10,13 +10,8 @@
 #include <vector>
 #include <map>
 
-/// Gomoku game rules.
-enum class GameRule {
-    Freestyle = 0,   ///< Freestyle Gomoku (rule 0)
-    Standard  = 1,   ///< Standard Gomoku / exact-5 (rule 1)
-    Renju     = 2    ///< Free Renju with forbidden moves (rule 2)
-};
-
+// GameRule is defined in board_state.h (included above) so BoardState::checkWin()
+// can be rule-aware without a circular include; re-exposed here transitively.
 
 /// Central data model. Holds board, history, tree, and emits signals for UI.
 class GameState {
