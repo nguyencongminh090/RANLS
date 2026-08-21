@@ -12,10 +12,15 @@ ordering constraint found in any item's own detail file. They can be dispatched 
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| STATE-02 | Settings dialog silently resets `multiPV` and wipes `customParams`, then persists it | — | — | Active |
-| ENG-01 | Engine state is dishonest ("● ON" with no process, crash ≡ never-started, no "thinking" state) and stopping blocks the UI ~2.5s | — | — | Active |
-| RT-02 | Engine log grows unbounded and writes per-line; gutter labels desync on wrap | — | — | Active |
-| RT-03 | PVView full rebuild destroys hover, breaking the board PV ghost-stone preview during analysis | — | — | Active |
+| STATE-02 | Settings dialog silently resets `multiPV` and wipes `customParams`, then persists it | — | — | ✅ Done |
+| ENG-01 | Engine state is dishonest ("● ON" with no process, crash ≡ never-started, no "thinking" state) and stopping blocks the UI ~2.5s | — | — | ✅ Done |
+| RT-02 | Engine log grows unbounded and writes per-line; gutter labels desync on wrap | — | — | ✅ Done |
+| RT-03 | PVView full rebuild destroys hover, breaking the board PV ghost-stone preview during analysis | — | — | ✅ Done |
+
+All four items landed 2026-08-21, dispatched in parallel via `/implement-task` in isolated
+worktrees and reconciled by hand onto `main` (see each item's fix-log entry). Sprint 2 is
+functionally complete — see `docs/sprint/burndown.md` and the "Sprint cadence" section of
+`/CLAUDE.md` for closing it out (archive + reset `current.md`) when ready to open Sprint 3.
 
 Points not yet estimated. Dispatch each with `/implement-task <CODE>`. Since all four are
 independent, they may be run concurrently — if dispatching more than one at once, use isolated git

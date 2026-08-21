@@ -1,6 +1,7 @@
 #pragma once
 
 #include "model/game_state.h"
+#include "engine/engine_controller.h"
 
 #include <gtkmm.h>
 
@@ -12,8 +13,17 @@ public:
     /// Update displayed values from an EngineStatus snapshot.
     void update(const EngineStatus &status, const std::vector<PVLine> &pvLines = {});
 
-    /// Set engine state indicator.
-    void setEngineState(bool running);
+    /// Set engine state indicator. Renders not-started / starting / idle /
+    /// thinking / stopping / crashed as visibly distinct states (ENG-01) —
+    /// crashed is additionally announced via signal_crashed so the caller can
+    /// raise an active notification (toast/banner), not just flip a label.
+    void setEngineState(EngineController::EngineState state);
+
+    /// Emitted whenever setEngineState() is called with EngineState::Crashed.
+    /// No libadwaita is linked in this build (see CMakeLists.txt), so the
+    /// active crash announcement is an inline banner in the analysis panel
+    /// rather than an Adw::Toast — see AnalysisPanel::showEngineCrashBanner().
+    sigc::signal<void()> signal_crashed;
 
     /// Signal emitted when the user clicks Start / Stop / Reload.
     sigc::signal<void()> signal_start;

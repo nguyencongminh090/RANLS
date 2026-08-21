@@ -37,6 +37,41 @@
     font-weight:      bold;
 }
 
+.engine-starting {
+    color:            #d99a1b;
+    font-weight:      bold;
+}
+
+.engine-thinking {
+    color:            #3584e4;
+    font-weight:      bold;
+}
+
+.engine-stopping {
+    color:            #d99a1b;
+    font-weight:      bold;
+}
+
+.engine-crashed {
+    color:            #ffffff;
+    background-color: #e03c3c;
+    font-weight:      bold;
+    padding:          0 4px;
+    border-radius:    3px;
+}
+
+/* ── Engine crash banner (ENG-01: active announcement, not just a label) ─── */
+.crash-banner {
+    padding:          8px 12px;
+    background-color: #e03c3c;
+    color:            #ffffff;
+}
+
+.crash-banner label {
+    color:            #ffffff;
+    font-weight:      bold;
+}
+
 .engine-status button {
     padding:          2px 6px;
     min-height:       0;

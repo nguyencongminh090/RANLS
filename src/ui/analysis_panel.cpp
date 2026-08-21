@@ -40,6 +40,29 @@ AnalysisPanel::AnalysisPanel(GameState &gameState)
     // ── Engine Status (always visible, fixed height) ────────────────────────
     append(engineStatus_);
 
+    // ── Crash announcement banner (ENG-01) ──────────────────────────────────
+    // No libadwaita linked in this build, so a crash is announced with an
+    // inline dismissible banner instead of an Adw::Toast.
+    auto *bannerBox = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 8);
+    bannerBox->add_css_class("crash-banner");
+    crashBannerLabel_.set_hexpand(true);
+    crashBannerLabel_.set_xalign(0.0f);
+    crashBannerLabel_.set_wrap(true);
+    auto *dismissBtn = Gtk::make_managed<Gtk::Button>("Dismiss");
+    dismissBtn->signal_clicked().connect([this]() { hideEngineCrashBanner(); });
+    bannerBox->append(crashBannerLabel_);
+    bannerBox->append(*dismissBtn);
+
+    crashBannerRevealer_.set_child(*bannerBox);
+    crashBannerRevealer_.set_reveal_child(false);
+    crashBannerRevealer_.set_transition_type(Gtk::RevealerTransitionType::SLIDE_DOWN);
+    append(crashBannerRevealer_);
+
+    // Engine crashed → active announcement (not just a label flip).
+    engineStatus_.signal_crashed.connect([this]() {
+        showEngineCrashBanner(gameState_.engineConfig().enginePath);
+    });
+
     // ── Upper section: WinGraph + PV ────────────────────────────────────────
     auto *upperBox = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 0);
     upperBox->append(winGraph_);
@@ -109,4 +132,16 @@ void AnalysisPanel::connectSignals()
     treeNodeView_.signal_node_clicked.connect([this](std::vector<Coord> path) {
         gameState_.gotoPath(path);
     });
+}
+
+void AnalysisPanel::showEngineCrashBanner(const std::string &enginePath)
+{
+    std::string path = enginePath.empty() ? "(no engine path configured)" : enginePath;
+    crashBannerLabel_.set_text("Engine crashed: " + path);
+    crashBannerRevealer_.set_reveal_child(true);
+}
+
+void AnalysisPanel::hideEngineCrashBanner()
+{
+    crashBannerRevealer_.set_reveal_child(false);
 }

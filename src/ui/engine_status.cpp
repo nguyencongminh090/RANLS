@@ -122,15 +122,39 @@ void EngineStatusView::update(const EngineStatus &s, const std::vector<PVLine> &
     valueBest_.set_text(coordStr(bestMove, 15));
 }
 
-void EngineStatusView::setEngineState(bool running)
+void EngineStatusView::setEngineState(EngineController::EngineState state)
 {
-    if (running) {
-        labelState_.set_text("● ON");
-        labelState_.remove_css_class("engine-off");
-        labelState_.add_css_class("engine-on");
-    } else {
-        labelState_.set_text("● OFF");
-        labelState_.remove_css_class("engine-on");
-        labelState_.add_css_class("engine-off");
+    static const char *kAllClasses[] = {
+        "engine-off", "engine-starting", "engine-on", "engine-thinking",
+        "engine-stopping", "engine-crashed",
+    };
+    for (const char *cls : kAllClasses) labelState_.remove_css_class(cls);
+
+    switch (state) {
+        case EngineController::EngineState::NotStarted:
+            labelState_.set_text("● OFF");
+            labelState_.add_css_class("engine-off");
+            break;
+        case EngineController::EngineState::Starting:
+            labelState_.set_text("● STARTING");
+            labelState_.add_css_class("engine-starting");
+            break;
+        case EngineController::EngineState::Idle:
+            labelState_.set_text("● ON");
+            labelState_.add_css_class("engine-on");
+            break;
+        case EngineController::EngineState::Analyzing:
+            labelState_.set_text("● THINKING");
+            labelState_.add_css_class("engine-thinking");
+            break;
+        case EngineController::EngineState::Stopping:
+            labelState_.set_text("● STOPPING");
+            labelState_.add_css_class("engine-stopping");
+            break;
+        case EngineController::EngineState::Crashed:
+            labelState_.set_text("● CRASHED");
+            labelState_.add_css_class("engine-crashed");
+            signal_crashed.emit();
+            break;
     }
 }

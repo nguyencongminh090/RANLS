@@ -1,6 +1,6 @@
 # ENG-01 — Engine state is dishonest, and stopping the engine freezes the UI
 
-**Status:** open
+**Status:** ✅ FIXED — see [fix-log](../fix-log/2026-08-21-eng-01-engine-state-honesty-and-blocking-stop.md)
 **Area:** engine lifecycle / status indicator
 **Priority:** P0
 **Source:** UI/UX + codebase review, 2026-08-21

@@ -21,12 +21,22 @@ public:
     TreeExplorer     &tree()         { return treeExplorer_; }
     TreeNodeView     &treeNodeView() { return treeNodeView_; }
 
+    /// Actively announce an engine crash (ENG-01). No libadwaita is linked in
+    /// this build (see CMakeLists.txt), so this is an inline dismissible
+    /// banner rather than an Adw::Toast.
+    void showEngineCrashBanner(const std::string &enginePath);
+    void hideEngineCrashBanner();
+
 private:
     void connectSignals();
 
     GameState &gameState_;
 
     EngineStatusView engineStatus_;
+
+    // ── Crash announcement banner ───────────────────────────────────────────
+    Gtk::Revealer crashBannerRevealer_;
+    Gtk::Label    crashBannerLabel_;
     WinGraphView     winGraph_;
     PVView           pvView_;
     TreeNodeView     treeNodeView_;

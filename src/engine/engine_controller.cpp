@@ -12,20 +12,24 @@ EngineController::EngineController(GameState &gameState, EngineProcess &engine)
 
     engine_.signal_line_received.connect(
         sigc::mem_fun(*this, &EngineController::onEngineLine));
-        
+
     engine_.signal_process_died.connect([this]() {
-        if (started_) {
-            started_ = false;
-            analyzing_ = false;
-            signal_engine_state.emit(false);
-            signal_analyzing_state.emit(false);
-        }
+        // Only a real transition: dying while NotStarted (nothing to crash)
+        // or already Crashed/Stopping-to-completion is not a fresh event.
+        if (state_ == EngineState::NotStarted || state_ == EngineState::Crashed) return;
+        gameState_.setAnalyzing(false);
+        setState(EngineState::Crashed);
     });
 }
 
 EngineController::~EngineController()
 {
-    stopEngine();
+    // No GLib main loop is guaranteed to be running by the time this runs, so
+    // we cannot rely on stopEngine()'s async completion callback ever firing.
+    // Force-kill synchronously instead (EngineProcess::stop() — immediate,
+    // no g_usleep, no g_main_context_iteration). This is deliberately not
+    // stopEngine(): see docs/instruction/ENG-01-engine-state-honesty-and-blocking-stop.md.
+    engine_.stop();
 }
 
 void EngineController::connectProtocolSignals() {
@@ -42,10 +46,9 @@ void EngineController::connectProtocolSignals() {
     });
 
     protocol_->signal_move.connect([this](Coord move) {
-        if (analyzing_) {
-            analyzing_ = false;
+        if (state_ == EngineState::Analyzing) {
             gameState_.setAnalyzing(false);
-            signal_analyzing_state.emit(false);
+            setState(EngineState::Idle);
             // RT-01: search completion must not wait for the next throttle
             // tick — flush any coalesced analysis update immediately so the
             // final PV/status is never delayed or dropped.
@@ -69,51 +72,110 @@ void EngineController::connectProtocolSignals() {
     });
 }
 
+void EngineController::setState(EngineState next)
+{
+    if (state_ == next) return;
+    state_ = next;
+    signal_state_changed.emit(state_);
+}
+
+bool EngineController::isUsable() const
+{
+    return state_ == EngineState::Starting || state_ == EngineState::Idle
+        || state_ == EngineState::Analyzing;
+}
+
 // ─── Engine lifecycle ────────────────────────────────────────────────────────
 void EngineController::startEngine()
 {
-    if (started_) return;
+    // Already starting/running: no-op. Crashed is a legitimate restart point.
+    if (state_ != EngineState::NotStarted && state_ != EngineState::Crashed) return;
 
     const auto &cfg = gameState_.engineConfig();
     if (cfg.enginePath.empty()) return;
 
-    engine_.start(cfg.enginePath);
-    started_ = true;
-    signal_engine_state.emit(true);
+    setState(EngineState::Starting);
+
+    bool ok = engine_.start(cfg.enginePath);
+    if (!ok) {
+        // ENG-01: honor EngineProcess::start()'s return value. Do not claim
+        // a running state, and surface a visible error naming the path that
+        // failed (routed to the bottom-panel console via signal_engine_output,
+        // the same path used for all other engine-originated messages).
+        signal_engine_output.emit("Error", "Failed to start engine: " + cfg.enginePath);
+        setState(EngineState::NotStarted);
+        return;
+    }
+
+    setState(EngineState::Idle);
 }
 
-void EngineController::stopEngine()
+void EngineController::stopEngine(std::function<void()> onComplete)
 {
-    if (started_ && engine_.isRunning()) {
+    if (state_ == EngineState::NotStarted) {
+        if (onComplete) onComplete();
+        return;
+    }
+
+    if (state_ == EngineState::Stopping) {
+        // Already stopping — chain this caller's completion onto the
+        // in-flight shutdown instead of firing it early. Firing early would
+        // let a caller (e.g. MainWindow::onQuit()) close/destroy `this`
+        // before the original async stop has actually settled.
+        if (onComplete) {
+            auto prev = std::move(pendingStopComplete_);
+            pendingStopComplete_ = [prev, onComplete]() {
+                if (prev) prev();
+                onComplete();
+            };
+        }
+        return;
+    }
+
+    if (engine_.isRunning()) {
         sendRawCommand("YXSAVEDATABASE");
         sendRawCommand("END");
-        // We wait for the engine to flush its buffers.
-        g_usleep(500000); // 500ms
     }
-    engine_.stop();
-    started_ = false;
-    analyzing_ = false;
-    signal_engine_state.emit(false);
-    signal_analyzing_state.emit(false);
+
+    gameState_.setAnalyzing(false);
+    setState(EngineState::Stopping);
+
+    // Non-blocking: no g_usleep, no g_main_context_iteration (ENG-01). The UI
+    // stays responsive and shows "Stopping" until this completes, either when
+    // the process exits or when EngineProcess's grace-period timeout forces it.
+    //
+    // This completion callback may run long after this call returns (see
+    // EngineProcess::stopAsync()) — possibly after `this` has been destroyed.
+    // Guard with a weak_ptr to lifetimeGuard_ rather than touching `this`
+    // unconditionally.
+    std::weak_ptr<void> guard = lifetimeGuard_;
+    engine_.stopAsync([this, guard, onComplete]() {
+        if (guard.expired()) return; // EngineController was destroyed meanwhile.
+        setState(EngineState::NotStarted);
+        auto pending = std::move(pendingStopComplete_);
+        if (onComplete) onComplete();
+        if (pending) pending();
+    });
 }
 
 void EngineController::reloadEngine()
 {
-    stopEngine();
-    startEngine();
-    if (started_) sendConfig();
+    stopEngine([this]() {
+        startEngine();
+        if (state_ == EngineState::Idle) sendConfig();
+    });
 }
 
 void EngineController::sendConfig()
 {
-    if (!started_) return;
+    if (!isUsable()) return;
 
     const auto &cfg = gameState_.engineConfig();
 
     for (const auto& cmd : protocol_->generateStart(gameState_.boardSize())) {
         engine_.sendLine(cmd);
     }
-    
+
     for (const auto& cmd : protocol_->generateConfig(cfg)) {
         engine_.sendLine(cmd);
     }
@@ -126,32 +188,29 @@ void EngineController::sendConfig()
 // ─── Analysis ────────────────────────────────────────────────────────────────
 void EngineController::analyze()
 {
-    if (!started_ || analyzing_) return;
+    if (state_ != EngineState::Idle) return;
 
-    analyzing_ = true;
-    
     auto path = gameState_.currentPath();
     const auto &cfg = gameState_.engineConfig();
 
     for (const auto& cmd : protocol_->generateAnalyzeRequest(path, cfg.multiPV)) {
         engine_.sendLine(cmd);
     }
-    
+
     gameState_.setAnalyzing(true);
-    signal_analyzing_state.emit(true);
+    setState(EngineState::Analyzing);
 }
 
 void EngineController::stopAnalysis()
 {
-    // Always forward STOP when the engine is running.
-    if (!started_) return;
+    // Always forward STOP when the engine is usable.
+    if (!isUsable()) return;
 
     engine_.sendLine(protocol_->generateStop());
 
-    if (analyzing_) {
-        analyzing_ = false;
+    if (state_ == EngineState::Analyzing) {
         gameState_.setAnalyzing(false);
-        signal_analyzing_state.emit(false);
+        setState(EngineState::Idle);
         // RT-01: analysis-stopped must emit immediately, not wait for the
         // next throttle tick.
         gameState_.flush();
@@ -159,7 +218,7 @@ void EngineController::stopAnalysis()
 }
 
 void EngineController::queryDatabase() {
-    if (!started_) return;
+    if (!isUsable()) return;
     auto cmds = protocol_->generateDatabaseQuery(gameState_.currentPath());
     for (const auto& cmd : cmds) {
         engine_.sendLine(cmd);
@@ -168,7 +227,7 @@ void EngineController::queryDatabase() {
 
 void EngineController::sendRawCommand(const std::string &command)
 {
-    if (!started_) return;
+    if (!isUsable()) return;
     engine_.sendLine(command);
 }
 

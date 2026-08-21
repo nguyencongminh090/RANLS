@@ -382,8 +382,8 @@ void MainWindow::connectSignals()
     });
 
     // Engine state changes → update indicator.
-    controller_.signal_engine_state.connect([this](bool running) {
-        analysisPanel_.engineStatus().setEngineState(running);
+    controller_.signal_state_changed.connect([this](EngineController::EngineState state) {
+        analysisPanel_.engineStatus().setEngineState(state);
     });
 
     // Config changes → update view and theme.
@@ -420,8 +420,8 @@ void MainWindow::connectSignals()
     });
     
     // Analysis state changes → toggle UI interaction.
-    controller_.signal_analyzing_state.connect([this](bool analyzing) {
-        bool sensitive = !analyzing;
+    controller_.signal_state_changed.connect([this](EngineController::EngineState state) {
+        bool sensitive = (state != EngineController::EngineState::Analyzing);
         if (btnFirst_) btnFirst_->set_sensitive(sensitive);
         if (btnUndo_)  btnUndo_ ->set_sensitive(sensitive);
         if (btnRedo_)  btnRedo_ ->set_sensitive(sensitive);
@@ -485,8 +485,12 @@ void MainWindow::onSaveGame()
 
 void MainWindow::onQuit()
 {
-    controller_.stopEngine();
-    close();
+    // ENG-01: stopEngine() is now asynchronous. Closing the window
+    // immediately (as before) could destroy EngineController/EngineProcess
+    // mid-shutdown, dangling the pending async completion. Wait for the
+    // (non-blocking) stop to actually finish — or complete synchronously if
+    // there was nothing to stop — before closing.
+    controller_.stopEngine([this]() { close(); });
 }
 
 void MainWindow::onSetRule(GameRule rule)
@@ -535,9 +539,12 @@ void MainWindow::onSettings()
         SettingsStorage::save(eConfig, vConfig);
 
         if (pathChanged && !eConfig.enginePath.empty()) {
-            controller_.stopEngine();
-            controller_.startEngine();
-            controller_.sendConfig();
+            // ENG-01: stopEngine() completes asynchronously now, so a
+            // stopEngine(); startEngine(); pair back-to-back would have
+            // startEngine() see state Stopping and no-op. reloadEngine()
+            // already sequences stop -> start -> sendConfig() (only once
+            // the stop has actually finished) via a completion callback.
+            controller_.reloadEngine();
         } else {
             controller_.sendConfig();
         }
@@ -561,11 +568,16 @@ void MainWindow::onStartAnalysis()
     if (!engine_.isRunning()) {
         // Engine not running — start it first, but do NOT analyze yet.
         auto &cfg = gameState_.engineConfig();
-        if (!cfg.enginePath.empty()) {
-            controller_.startEngine();
-            controller_.sendConfig();
-            controller_.analyze();
+        if (cfg.enginePath.empty()) {
+            // ENG-01: reuse the same "open Settings" fallback used by
+            // EngineStatusView's own Start button (see signal_start handler
+            // above) instead of doing nothing silently.
+            onSettings();
+            return;
         }
+        controller_.startEngine();
+        controller_.sendConfig();
+        controller_.analyze();
         return;
     }
     controller_.analyze();

@@ -5,9 +5,17 @@
 # (the source list below), not by a build flag — if a future change to src/model or
 # src/engine starts pulling in gtkmm headers transitively, this target will fail to
 # compile and that is the intended signal (see docs/audit/2026-08-21-test-framework-choice.md).
+#
+# ENG-01 adds engine_process.cpp/engine_controller.cpp to this target, which
+# pulls in giomm/glibmm (Gio::Subprocess, Glib::signal_timeout) — NOT gtkmm.
+# giomm/glibmm need no display server (confirmed: no DISPLAY/WAYLAND_DISPLAY
+# required, same headless-safe property documented for sigc++-3.0 above), so
+# this does not violate the "no gtkmm" invariant this target enforces by
+# construction.
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SIGCXX REQUIRED IMPORTED_TARGET sigc++-3.0)
+pkg_check_modules(GIOMM REQUIRED IMPORTED_TARGET giomm-2.68)
 
 add_executable(rapfi-gui-tests
     test_main.cpp
@@ -17,6 +25,7 @@ add_executable(rapfi-gui-tests
     test_rt01_throttle.cpp
     test_engine_log_model.cpp
     test_settings_storage.cpp
+    test_eng01_engine_state.cpp
 
     # Sources under test (model/engine only — no UI, no gtkmm).
     ${CMAKE_SOURCE_DIR}/src/model/move_history.cpp
@@ -25,6 +34,8 @@ add_executable(rapfi-gui-tests
     ${CMAKE_SOURCE_DIR}/src/model/variation_tree.cpp
     ${CMAKE_SOURCE_DIR}/src/model/settings_storage.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/gomocup_protocol.cpp
+    ${CMAKE_SOURCE_DIR}/src/engine/engine_process.cpp
+    ${CMAKE_SOURCE_DIR}/src/engine/engine_controller.cpp
 )
 
 target_include_directories(rapfi-gui-tests PRIVATE
@@ -34,6 +45,7 @@ target_include_directories(rapfi-gui-tests PRIVATE
 
 target_link_libraries(rapfi-gui-tests PRIVATE
     PkgConfig::SIGCXX
+    PkgConfig::GIOMM
 )
 
 target_compile_features(rapfi-gui-tests PRIVATE cxx_std_20)
