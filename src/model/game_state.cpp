@@ -316,7 +316,11 @@ void GameState::setAnalysisData(std::vector<PVLine> pvs, EngineStatus status)
 
     if (treeChanged) {
         invalidateEvalHistoryCache();
-        signal_tree_updated.emit();
+        // RT-04: don't emit signal_tree_updated synchronously here — that drove
+        // a full rebuild of both tree views on essentially every parsed engine
+        // line. Coalesce onto the same tick/flush that RT-01 already uses for
+        // signal_engine_analysis instead of inventing a second mechanism.
+        treeDirty_ = true;
     }
 
     // RT-01: coalesce onto tickAnalysis()/flush() instead of emitting per
@@ -330,6 +334,10 @@ bool GameState::tickAnalysis()
     if (!analysisDirty_) return false;
     analysisDirty_ = false;
     signal_engine_analysis.emit();
+    if (treeDirty_) {
+        treeDirty_ = false;
+        signal_tree_updated.emit();
+    }
     return true;
 }
 
@@ -338,6 +346,10 @@ void GameState::flush()
     if (!analysisDirty_) return;
     analysisDirty_ = false;
     signal_engine_analysis.emit();
+    if (treeDirty_) {
+        treeDirty_ = false;
+        signal_tree_updated.emit();
+    }
 }
 
 std::vector<double> GameState::evalHistory() const

@@ -90,7 +90,7 @@ void TreeNodeView::update(const TreeNode *root, const std::vector<Coord> &curren
     if (!root) return;
 
     int nextCol = 0;
-    layoutTree(root, 0, nextCol, currentPath, 0);
+    layoutTree(root, 0, nextCol, currentPath, 0, {}, -1);
 
     // Size the drawing area to fit all nodes.
     int w = static_cast<int>((maxCol_ + 1) * kCellW + 2 * kPadding);
@@ -100,7 +100,8 @@ void TreeNodeView::update(const TreeNode *root, const std::vector<Coord> &curren
 }
 
 void TreeNodeView::layoutTree(const TreeNode *node, int depth, int &nextCol,
-                               const std::vector<Coord> &currentPath, int pathIdx)
+                               const std::vector<Coord> &currentPath, int pathIdx,
+                               const std::vector<Coord> &parentPath, int parentIndex)
 {
     // col = horizontal (branch), row = vertical (depth).
     // Main line goes straight down; siblings spread right.
@@ -121,29 +122,29 @@ void TreeNodeView::layoutTree(const TreeNode *node, int depth, int &nextCol,
         }
 
         NodeLayout nl;
-        nl.node   = child.get();
-        nl.col    = nextCol;   // X = branch position
-        nl.row    = depth;     // Y = move depth
-        nl.onPath = onPath;
+        nl.node        = child.get();
+        nl.col         = nextCol;   // X = branch position
+        nl.row         = depth;     // Y = move depth
+        nl.onPath      = onPath;
+        nl.parentIndex = parentIndex;
 
-        // Build path from parent.
-        if (!nodes_.empty() && depth > 0) {
-            for (int j = static_cast<int>(nodes_.size()) - 1; j >= 0; --j) {
-                if (nodes_[j].node == node) {
-                    nl.path = nodes_[j].path;
-                    break;
-                }
-            }
-        }
+        // O(1): parent's path is threaded down through the recursion, so we
+        // just copy it and append this move — no scan of nodes_ needed (RT-04:
+        // the previous backward scan for the parent's path made the whole
+        // layout O(n^2) in tree size).
+        nl.path = parentPath;
         nl.path.push_back(child->move);
 
         maxCol_ = std::max(maxCol_, nl.col);
         maxRow_ = std::max(maxRow_, nl.row);
         nodes_.push_back(nl);
 
-        // Recurse into this child's subtree.
+        int childIndex = static_cast<int>(nodes_.size()) - 1;
+
+        // Recurse into this child's subtree, passing this node's own path/index
+        // down as the next level's parent path/index.
         layoutTree(child.get(), depth + 1, nextCol, currentPath,
-                   onPath ? pathIdx + 1 : -1);
+                   onPath ? pathIdx + 1 : -1, nl.path, childIndex);
     }
 }
 
@@ -158,39 +159,37 @@ void TreeNodeView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int /*width*/
     cr->set_line_width(1.5);
 
     for (const auto &nl : nodes_) {
-        if (!nl.node || !nl.node->parent) continue;
+        // parentIndex < 0 means the parent is the invisible tree root (no
+        // NodeLayout entry to draw a line from) — same case the old
+        // `!nl.node->parent` check excluded, but found in O(1) instead of
+        // scanning nodes_ for the matching TreeNode* (RT-04).
+        if (!nl.node || nl.parentIndex < 0) continue;
 
-        // Find parent's layout position.
-        const TreeNode *parent = nl.node->parent;
-        for (const auto &pl : nodes_) {
-            if (pl.node == parent) {
-                double x1 = kPadding + pl.col * kCellW;
-                double y1 = kPadding + pl.row * kCellH;
-                double x2 = kPadding + nl.col * kCellW;
-                double y2 = kPadding + nl.row * kCellH;
+        const auto &pl = nodes_[nl.parentIndex];
+        double x1 = kPadding + pl.col * kCellW;
+        double y1 = kPadding + pl.row * kCellH;
+        double x2 = kPadding + nl.col * kCellW;
+        double y2 = kPadding + nl.row * kCellH;
 
-                // Highlight line if both nodes are on the current path.
-                if (pl.onPath && nl.onPath) {
-                    cr->set_source_rgb(kHighlightR, kHighlightG, kHighlightB);
-                    cr->set_line_width(2.0);
-                } else {
-                    cr->set_source_rgb(kLineR, kLineG, kLineB);
-                    cr->set_line_width(1.0);
-                }
-
-                // Draw an elbow: down then across (or direct).
-                cr->move_to(x1, y1);
-                if (std::abs(x2 - x1) > 1.0) {
-                    // Elbow: go down to child's row, then across.
-                    cr->line_to(x1, y2);
-                    cr->line_to(x2, y2);
-                } else {
-                    cr->line_to(x2, y2);
-                }
-                cr->stroke();
-                break;
-            }
+        // Highlight line if both nodes are on the current path.
+        if (pl.onPath && nl.onPath) {
+            cr->set_source_rgb(kHighlightR, kHighlightG, kHighlightB);
+            cr->set_line_width(2.0);
+        } else {
+            cr->set_source_rgb(kLineR, kLineG, kLineB);
+            cr->set_line_width(1.0);
         }
+
+        // Draw an elbow: down then across (or direct).
+        cr->move_to(x1, y1);
+        if (std::abs(x2 - x1) > 1.0) {
+            // Elbow: go down to child's row, then across.
+            cr->line_to(x1, y2);
+            cr->line_to(x2, y2);
+        } else {
+            cr->line_to(x2, y2);
+        }
+        cr->stroke();
     }
 
     // ── Draw nodes ──────────────────────────────────────────────────────────

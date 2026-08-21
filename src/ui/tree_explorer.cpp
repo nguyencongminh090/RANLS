@@ -1,6 +1,7 @@
 #include "tree_explorer.h"
 #include "model/move_history.h"
 
+#include <algorithm>
 #include <iomanip>
 #include <sstream>
 
@@ -69,17 +70,26 @@ TreeExplorer::TreeExplorer()
 
 void TreeExplorer::update(const MoveHistory &history, const VariationTree &tree, int boardSize)
 {
-    store_->remove_all();
-
     const TreeNode *node = tree.root();
     const auto &moves = history.moves();
     int count = history.moveCount();
 
     std::vector<Coord> currentPath;
 
+    // RT-04: build the new rows off to the side first, then diff them into
+    // store_ in place instead of remove_all()+re-append every row. remove_all()
+    // drops the store to zero items for an instant on every analysis tick
+    // (this used to be called at ~10-15 Hz once RT-01's throttle tick fires),
+    // which resets the ColumnView's scroll position/adjustment even though the
+    // move list itself rarely changes. Diffing means only genuinely-changed
+    // rows are replaced, so an unchanged view (structure and data both
+    // unchanged) touches the store not at all.
+    std::vector<Glib::RefPtr<RowData>> newRows;
+    newRows.reserve(count);
+
     for (int i = 0; i < count; ++i) {
         Coord playedMove = moves[i];
-        
+
         // Advance node if possible
         const TreeNode *nextNode = nullptr;
         if (node) {
@@ -97,23 +107,50 @@ void TreeExplorer::update(const MoveHistory &history, const VariationTree &tree,
             std::ostringstream evStr;
             evStr << std::fixed << std::setprecision(2) << node->eval;
             evalStr = evStr.str();
-            
+
             if (node->nodes > 0)
                 nodesStr = formatNodes(node->nodes);
             if (node->depth > 0)
                 depthStr = std::to_string(node->depth);
         }
-        
+
         currentPath.push_back(playedMove);
-        
-        auto row = RowData::create(
+
+        newRows.push_back(RowData::create(
             noStr,
             moveStr,
             evalStr,
             nodesStr,
             depthStr,
-            currentPath);
+            currentPath));
+    }
 
-        store_->append(row);
+    guint oldSize = store_->get_n_items();
+    guint newSize = static_cast<guint>(newRows.size());
+    guint common  = std::min(oldSize, newSize);
+
+    // Replace only rows whose data actually differs (e.g. eval/nodes/depth
+    // refreshed for the last row on the path) — leaves untouched rows'
+    // widgets/scroll position alone.
+    for (guint i = 0; i < common; ++i) {
+        auto existing = store_->get_item(i);
+        const auto &fresh = newRows[i];
+        bool same = existing
+            && existing->noStr == fresh->noStr
+            && existing->moveStr == fresh->moveStr
+            && existing->evalStr == fresh->evalStr
+            && existing->nodesStr == fresh->nodesStr
+            && existing->depthStr == fresh->depthStr
+            && existing->path == fresh->path;
+        if (!same) {
+            store_->splice(i, 1, {fresh});
+        }
+    }
+
+    if (newSize > oldSize) {
+        std::vector<Glib::RefPtr<RowData>> tail(newRows.begin() + common, newRows.end());
+        store_->splice(oldSize, 0, tail);
+    } else if (oldSize > newSize) {
+        store_->splice(newSize, oldSize - newSize, {});
     }
 }

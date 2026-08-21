@@ -23,7 +23,7 @@ feature-area prefix + running number (e.g. `WALL-01`, `UI-07`). `✅` marks a fi
 - ✅ **RT-03.** PVView full rebuild destroys hover, breaking the board PV ghost-stone preview during analysis — [detail](docs/todo/RT-03-pvview-rebuild-breaks-hover.md)
 - ✅ **PROTO-02.** Hardcoded board size 15 in coordinate parsing, `Best:` readout, and star points — breaks every non-15×15 board — [detail](docs/todo/PROTO-02-hardcoded-board-size-15.md)
 - ✅ **STATE-03.** `currentPVs_` never shrinks and materialises empty PV slots rendered as garbage rows — [detail](docs/todo/STATE-03-currentpvs-never-shrinks.md)
-- **RT-04.** Both tree views fully rebuild many times per second during analysis; `layoutTree` is O(n²) — [detail](docs/todo/RT-04-tree-views-full-rebuild.md)
+- ✅ **RT-04.** Both tree views fully rebuild many times per second during analysis; `layoutTree` is O(n²) — [detail](docs/todo/RT-04-tree-views-full-rebuild.md)
 - ✅ **NAV-01.** `undoAll`/`redoAll` send one database query and rebuild the whole UI per ply — [detail](docs/todo/NAV-01-undoall-floods-engine-and-ui.md)
 - ✅ **UI-01.** Win-rate graph attributes evals to the wrong side (off by one ply); evals can go unrecorded — [detail](docs/todo/UI-01-winrate-attribution-errors.md)
 - **UI-02.** Tree "Table" tab can't click-to-jump and shows no current path; the two tree views disagree — [detail](docs/todo/UI-02-tree-view-parity.md)

@@ -28,11 +28,22 @@ private:
         int             row    = 0;   ///< Row (vertical position, unique per branch)
         bool            onPath = false; ///< Is this node on the current game path?
         std::vector<Coord> path;       ///< Full path from root to this node
+        /// Index into nodes_ of this node's parent's NodeLayout, or -1 if the
+        /// parent is the (invisible) tree root. Lets onDraw() find the parent's
+        /// position in O(1) instead of scanning nodes_ (RT-04).
+        int             parentIndex = -1;
     };
 
     void onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int height);
+    /// Lays out `node`'s children (col/row/path) and recurses. `parentPath` is
+    /// the already-built path to `node` and `parentIndex` is node's own index
+    /// in nodes_ (-1 for the root) — both threaded down from the caller so each
+    /// child's path is built in O(1) (append one move) instead of scanning
+    /// nodes_ backwards to find its parent, which made the whole layout O(n^2)
+    /// in tree size (RT-04).
     void layoutTree(const TreeNode *node, int depth, int &nextCol,
-                    const std::vector<Coord> &currentPath, int pathIdx);
+                    const std::vector<Coord> &currentPath, int pathIdx,
+                    const std::vector<Coord> &parentPath, int parentIndex);
 
     Gtk::DrawingArea drawArea_;
     std::vector<NodeLayout> nodes_;
