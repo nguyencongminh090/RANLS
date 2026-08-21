@@ -110,6 +110,11 @@ public:
     sigc::signal<void()>    signal_board_changed;
     sigc::signal<void()>    signal_engine_analysis;
     sigc::signal<void()>    signal_tree_updated;
+    /// NAV-01: emitted once at the end of gotoMove() with the resulting
+    /// history index, whether or not the position actually changed (e.g. a
+    /// no-op jump to the already-current move still selects it in the UI).
+    /// Not emitted by undoMove/redoMove/undoAll/redoAll/gotoPath — those are
+    /// stepping or path operations, not an index-based "jump to move" pick.
     sigc::signal<void(int)> signal_move_selected;
     sigc::signal<void()>    signal_rule_changed;
     sigc::signal<void()>    signal_config_changed;
@@ -138,6 +143,17 @@ private:
     mutable std::vector<double> evalHistoryCache_;
     mutable bool                evalHistoryDirty_ = true;
     void invalidateEvalHistoryCache() { evalHistoryDirty_ = true; }
+
+    /// NAV-01: position-mutation-only halves of undoMove()/redoMove() — walk
+    /// history/board/tree back or forward one ply WITHOUT calling
+    /// clearDatabase() or emitting signal_board_changed. Bulk navigation
+    /// (undoAll/redoAll/gotoMove) loops these and does the clearDatabase()
+    /// call + resetAnalysisState()/invalidateEvalHistoryCache() +
+    /// signal_board_changed.emit() exactly once for the whole operation,
+    /// instead of once per ply. undoMove()/redoMove() themselves still do
+    /// the clear+emit per call since each is a single user-visible step.
+    bool undoMoveSilent();
+    bool redoMoveSilent();
 
     std::map<Coord, DatabaseEntry> currentDatabase_;
 
