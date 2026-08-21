@@ -16,6 +16,23 @@ public:
     /// @param height  Available pixel height.
     void draw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int height);
 
+    /// Layout geometry for a given widget size and the view model's current
+    /// board size: cell size, board-area margins, and board pixel extent.
+    struct Geometry {
+        double cellSize   = 0.0;
+        double marginLeft = 0.0;
+        double marginTop  = 0.0;
+        int    boardPx    = 0;
+    };
+
+    /// Compute the board layout geometry for (width, height). UX-04: this is
+    /// the single source of truth for board geometry -- draw() and
+    /// BoardView::pixelToCoord() both call this instead of each keeping an
+    /// independent copy of the cell-size/margin formula (previously these
+    /// diverged silently since board_view.cpp:6 duplicated
+    /// board_renderer.cpp's kCoordMargin constant and formula).
+    Geometry computeGeometry(int width, int height) const;
+
 private:
     // ── Layer methods (called in order) ─────────────────────────────────────
     void drawGrid(const Cairo::RefPtr<Cairo::Context> &cr);
