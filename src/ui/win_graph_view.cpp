@@ -79,8 +79,17 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
     cr->line_to(kPadL + graphW, kPadT + graphH * 0.5);
     cr->stroke();
 
-    // Y-axis labels (0%, 50%, 100%).
-    cr->set_source_rgb(0.5, 0.5, 0.5);
+    // Y-axis labels (0%, 50%, 100%). UX-03: a fixed mid-gray (0.5,0.5,0.5)
+    // measures ~4.0:1 against both the light and dark Adwaita background --
+    // just under the 4.5:1 text minimum, and no single fixed gray can clear
+    // 4.5:1 against a near-white AND a near-black background at once. Unlike
+    // the board (which paints its own fixed wood color and can't follow the
+    // theme), this widget's background *does* track GTK theme via CSS, so
+    // its text should track the theme's own foreground color too -- the
+    // same mechanism Gtk::Label uses, and covered by the theme's own
+    // contrast guarantees in both light and dark.
+    Gdk::RGBA fg = get_color();
+    cr->set_source_rgba(fg.get_red(), fg.get_green(), fg.get_blue(), fg.get_alpha());
     cr->set_font_size(9.0);
     cr->move_to(4, kPadT + 8);            cr->show_text("100%");
     cr->move_to(4, kPadT + graphH / 2 + 4); cr->show_text("50%");
@@ -109,8 +118,12 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
     }
 
     if (mode_ == WinGraphMode::SingleSide && whiteData_.size() == blackData_.size()) {
+        // UX-03: the black/white series were told apart by hue alone
+        // (blue vs. yellow). Dash the white series so the two lines also
+        // differ by shape, not just color.
         cr->set_source_rgb(kWhiteR, kWhiteG, kWhiteB);
         cr->set_line_width(1.2);
+        cr->set_dash(std::vector<double>{4.0, 3.0}, 0.0);
         bool penDown = false;
         for (int i = 0; i < n; ++i) {
             if (std::isnan(whiteData_[i])) { penDown = false; continue; }
@@ -120,6 +133,7 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
             else          cr->line_to(x, y);
         }
         cr->stroke();
+        cr->unset_dash();
     }
 
     // Current move highlight.
