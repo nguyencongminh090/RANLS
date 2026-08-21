@@ -1,27 +1,23 @@
 # Current sprint
 
-## Sprint 3
+## Sprint 4
 
-**Goal:** Clear the P1 backlog surfaced by the 2026-08-21 `src/` review — wrong results and wasted
-work: hardcoded board size, unbounded PV-slot growth, tree-view rebuild cost, `undoAll`/`redoAll`
-flooding, and win-rate/tree-table attribution errors.
+**Goal:** Clear the remaining P2/P3 backlog from the 2026-08-21 `src/` review — usability and
+hygiene: rule not reflected on the board, blank empty states, unvalidated settings, accessibility
+and destructive-action gaps, unverified board-size extremes, and leaked dialogs/dead code.
 **Dates:** 2026-08-21 to — (open — no fixed end date set yet)
 
-**Dependency graph:** all six items' own detail files cross-reference each other only
-informationally (shared root causes, related symptoms), not as blocking dependencies — no item's
-"Related" section says it depends on another. They can be dispatched in parallel, same as Sprint 2.
-Two pairs share a root cause and may be worth eyeballing together even though neither blocks the
-other: RT-04 ↔ UI-02 (both about the tree views), and UI-01 ↔ UI-02 (both about eval values shown
-in the tree table).
+**Dependency graph:** all six items' own detail files don't declare a blocking dependency on each
+other. They can be dispatched in parallel, same as Sprint 2 and Sprint 3.
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| PROTO-02 | Hardcoded board size 15 in coordinate parsing, `Best:` readout, and star points — breaks every non-15×15 board | — | — | Active |
-| STATE-03 | `currentPVs_` never shrinks and materialises empty PV slots rendered as garbage rows | — | — | Active |
-| RT-04 | Both tree views fully rebuild many times per second during analysis; `layoutTree` is O(n²) | — | — | Active |
-| NAV-01 | `undoAll`/`redoAll` send one database query and rebuild the whole UI per ply | — | — | Active |
-| UI-01 | Win-rate graph attributes evals to the wrong side (off by one ply); evals can go unrecorded | — | — | Active |
-| UI-02 | Tree "Table" tab can't click-to-jump and shows no current path; the two tree views disagree | — | — | Active |
+| UI-03 | Selected rule (Renju/Standard) has no effect on what the board shows | — | — | Active |
+| UX-01 | Three panels render as blank rectangles instead of empty states | — | — | Active |
+| UX-02 | Settings dialog accepts an invalid engine path with no feedback | — | — | Active |
+| UX-03 | Unlabelled icon buttons, no focus indication on custom-drawn widgets, no confirmation before destroying a game | — | — | Active |
+| UX-04 | Board rendering never verified at the extremes of the supported 5–22 range (investigation) | — | — | Active |
+| CLEAN-01 | Leaked dialogs, dead signals, leftover debug output, duplicated constant | — | — | Active |
 
 Points not yet estimated. Dispatch each with `/implement-task <CODE>`. Since all six are
 independent, they may be run concurrently — if dispatching more than one at once, use isolated git
