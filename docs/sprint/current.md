@@ -18,10 +18,12 @@ other. They can be dispatched in parallel, same as Sprint 2 and Sprint 3.
 | UX-03 | Unlabelled icon buttons, no focus indication on custom-drawn widgets, no confirmation before destroying a game | — | — | Active |
 | UX-04 | Board rendering never verified at the extremes of the supported 5–22 range (investigation) | — | — | Active |
 | CLEAN-01 | Leaked dialogs, dead signals, leftover debug output, duplicated constant | — | — | Active |
+| UX-05 | `Gtk::Paned` divider position doesn't rescale when the window is resized back up after being shrunk, leaving the board squeezed | — | — | Active |
 
-Points not yet estimated. Dispatch each with `/implement-task <CODE>`. Since all six are
-independent, they may be run concurrently — if dispatching more than one at once, use isolated git
-worktrees per agent (the `Agent` tool's `isolation: "worktree"`).
+Points not yet estimated. Dispatch each with `/implement-task <CODE>`. UX-05 was surfaced by UX-04's
+own investigation (not the original 2026-08-21 review) and pulled straight into Active rather than
+sitting in Backlog, since the other six items in this sprint are already done and it's a small,
+independent follow-up in the same area.
 
 **Lesson carried over from Sprint 2** (see `docs/sprint/archive/sprint-2.md`'s "Process note"):
 commit all finished work — including `tests/` and any uncommitted fixes sitting in the working
