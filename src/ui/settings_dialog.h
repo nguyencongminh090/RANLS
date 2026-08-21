@@ -15,6 +15,8 @@ public:
 private:
     void onApply();
     void onChooseEngine();
+    void onEnginePathChanged();
+    void updateApplySensitivity();
 
     // Snapshot of the config the dialog was opened with. onApply() starts
     // from these (not a fresh default-constructed struct) and mutates only
@@ -26,6 +28,9 @@ private:
     ViewConfig          baseViewConfig_;
 
     Gtk::Entry          entryEnginePath_;
+    Gtk::Label          lblEnginePathStatus_;
+    Gtk::Button        *btnApply_ = nullptr;
+    bool                enginePathValid_ = false;
     Gtk::DropDown       dropTheme_;
     Gtk::DropDown       dropWinGraphMode_;
     Gtk::DropDown       dropProfile_;
