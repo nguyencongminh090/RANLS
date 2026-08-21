@@ -84,6 +84,10 @@ MainWindow::MainWindow()
 
     connectSignals();
 
+    // UI-03: seed the persistent rule indicator once at startup so it never
+    // starts out blank before the first setRule() call.
+    updateRuleLabel();
+
     // Load persisted user settings (with defaults fallback).
     auto saved = SettingsStorage::load();
     gameState_.setEngineConfig(saved.engine);
@@ -212,6 +216,12 @@ void MainWindow::buildToolbar()
     fileGroup->append(*btnSave);
     headerBar_.pack_start(*fileGroup);
 
+    // UI-03: persistent rule indicator -- always visible in the header bar,
+    // not only inside the Game > Rule menu. Kept current by updateRuleLabel().
+    ruleLabel_.add_css_class("dim-label");
+    ruleLabel_.set_margin_start(8);
+    headerBar_.pack_start(ruleLabel_);
+
     // ── Center: analysis group (linked) ─────────────────────────────────────
     auto *analysisGroup = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 0);
     analysisGroup->add_css_class("linked");
@@ -318,6 +328,16 @@ void MainWindow::connectSignals()
         }
         bottomPanel_.clear();
         bottomPanel_.appendMoveLog(log);
+    });
+
+    // UI-03: rule changed → refresh the persistent rule indicator and
+    // re-derive board-view state that depends on the rule (Renju forbidden
+    // points -- see BoardViewModel::update()/RenjuRule::forbiddenPoints()).
+    // Previously nothing listened to this signal at all.
+    gameState_.signal_rule_changed.connect([this]() {
+        updateRuleLabel();
+        boardViewModel_.update();
+        boardView_.queueRedraw();
     });
 
     // Move selected → jump and redraw.
@@ -498,6 +518,20 @@ void MainWindow::onSetRule(GameRule rule)
 {
     gameState_.setRule(rule);
     controller_.sendConfig();
+}
+
+// UI-03: keeps the persistent header-bar rule indicator in sync with
+// gameState_.rule(). Connected to gameState_.signal_rule_changed in
+// connectSignals() and called once at startup in the constructor.
+void MainWindow::updateRuleLabel()
+{
+    const char *text = "Rule: Freestyle Gomoku";
+    switch (gameState_.rule()) {
+        case GameRule::Freestyle: text = "Rule: Freestyle Gomoku"; break;
+        case GameRule::Standard:  text = "Rule: Standard Gomoku";  break;
+        case GameRule::Renju:     text = "Rule: Free Renju";       break;
+    }
+    ruleLabel_.set_text(text);
 }
 
 void MainWindow::onBoardSize()

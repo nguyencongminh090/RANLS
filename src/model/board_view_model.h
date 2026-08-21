@@ -37,6 +37,15 @@ public:
     Coord                        hoverMove;             ///< Current mouse hover position
     Stone                        hoverStone = Stone::Empty;
 
+    /// UI-03: Black's currently-forbidden points under Free Renju, computed by
+    /// RenjuRule::forbiddenPoints() (src/model/renju_rule.h) -- domain logic,
+    /// not BoardRenderer's job. Populated only when the active rule is Renju
+    /// AND it is currently Black's turn to move (forbidden points are a
+    /// Black-only, to-move concept; showing them on White's turn would be
+    /// meaningless). Indication only -- BoardRenderer draws these, it never
+    /// blocks a click on them (see docs/todo/UI-03-rule-not-visible-on-board.md).
+    std::vector<Coord>           forbiddenPoints;
+
 private:
     GameState &state_;
 };

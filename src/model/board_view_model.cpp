@@ -1,5 +1,6 @@
 #include "board_view_model.h"
 #include "game_state.h"
+#include "renju_rule.h"
 #include <cmath>
 #include <algorithm>
 
@@ -77,6 +78,15 @@ void BoardViewModel::update()
             m.eval  = 1.0 / (1.0 + std::exp(-static_cast<double>(entry.value) / 200.0));
             databaseMarkers.push_back(m);
         }
+    }
+
+    // ── Renju forbidden points (UI-03) ──────────────────────────────────────
+    // Domain logic lives in RenjuRule (src/model/renju_rule.h) -- this just
+    // pulls the already-computed coordinates for BoardRenderer to draw.
+    // Black-only, and only meaningful on Black's turn to move.
+    forbiddenPoints.clear();
+    if (state_.rule() == GameRule::Renju && state_.board().sideToMove() == Stone::Black) {
+        forbiddenPoints = RenjuRule::forbiddenPoints(state_.board());
     }
 
     // pvPreview is set externally (by UI interactions).

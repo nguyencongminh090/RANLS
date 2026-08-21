@@ -49,11 +49,18 @@ Stone BoardState::sideToMove() const
     return (plyCount_ % 2 == 0) ? Stone::Black : Stone::White;
 }
 
-bool BoardState::checkWin(Coord pos) const
+bool BoardState::checkWin(Coord pos, GameRule rule) const
 {
     Stone s = stoneAt(pos);
     if (s == Stone::Empty)
         return false;
+
+    // UI-03: overline (a run of 6+) counts as a win only under Freestyle, or
+    // under Renju for White specifically -- Standard (either color) and
+    // Renju-Black require an EXACT run of 5. See board_state.h's checkWin()
+    // doc comment for the rationale/engine cross-reference.
+    bool overlineWins = (rule == GameRule::Freestyle)
+                      || (rule == GameRule::Renju && s == Stone::White);
 
     // 4 directions: horizontal, vertical, diagonal-down, diagonal-up.
     static constexpr int dx[] = {1, 0, 1, 1};
@@ -75,7 +82,9 @@ bool BoardState::checkWin(Coord pos) const
                 break;
             count++;
         }
-        if (count >= 5)
+        if (count == 5)
+            return true;
+        if (count > 5 && overlineWins)
             return true;
     }
     return false;

@@ -43,6 +43,12 @@ private:
     void onRedo();
     void onRedoAll();
 
+    /// UI-03: refreshes ruleLabel_'s text from gameState_.rule(). Called once
+    /// at startup and on every gameState_.signal_rule_changed emission, so
+    /// the active rule stays visible in the header bar (persistent, not
+    /// hidden inside the Game > Rule menu) regardless of how it was changed.
+    void updateRuleLabel();
+
     // ── Data ────────────────────────────────────────────────────────────────
     GameState          gameState_;
     BoardViewModel     boardViewModel_;
@@ -60,6 +66,11 @@ private:
     // ── Layout ──────────────────────────────────────────────────────────────
     Gtk::HeaderBar     headerBar_;
     Gtk::PopoverMenuBar menuBar_;
+    /// UI-03: persistent rule indicator, always visible in the header bar
+    /// (not just inside the Game > Rule menu) -- kept in sync with
+    /// gameState_.rule() via updateRuleLabel(), called at startup and on
+    /// every gameState_.signal_rule_changed emission.
+    Gtk::Label         ruleLabel_;
     Gtk::Paned         mainHPaned_;
     Gtk::Paned         mainVPaned_;
     Gtk::Box           rootBox_{Gtk::Orientation::VERTICAL};
