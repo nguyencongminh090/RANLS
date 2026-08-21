@@ -124,6 +124,12 @@ columnview row {
     padding:          2px 8px;
 }
 
+/* Current-position row (UI-02: parity with TreeNodeView's path highlight). */
+.tree-explorer .current-row {
+    color:            #3584e4;
+    font-weight:      bold;
+}
+
 /* ── Bottom panel / notebook ────────────────────────────────────────────── */
 .bottom-panel {
     border-top:       1px solid rgba(128, 128, 128, 0.3);

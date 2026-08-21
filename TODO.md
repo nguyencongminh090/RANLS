@@ -26,7 +26,7 @@ feature-area prefix + running number (e.g. `WALL-01`, `UI-07`). `✅` marks a fi
 - ✅ **RT-04.** Both tree views fully rebuild many times per second during analysis; `layoutTree` is O(n²) — [detail](docs/todo/RT-04-tree-views-full-rebuild.md)
 - ✅ **NAV-01.** `undoAll`/`redoAll` send one database query and rebuild the whole UI per ply — [detail](docs/todo/NAV-01-undoall-floods-engine-and-ui.md)
 - ✅ **UI-01.** Win-rate graph attributes evals to the wrong side (off by one ply); evals can go unrecorded — [detail](docs/todo/UI-01-winrate-attribution-errors.md)
-- **UI-02.** Tree "Table" tab can't click-to-jump and shows no current path; the two tree views disagree — [detail](docs/todo/UI-02-tree-view-parity.md)
+- ✅ **UI-02.** Tree "Table" tab can't click-to-jump and shows no current path; the two tree views disagree — [detail](docs/todo/UI-02-tree-view-parity.md)
 
 ## Backlog
 

@@ -13,7 +13,7 @@ public:
     /// Rebuild the view from the given move history and variation tree.
     void update(const class MoveHistory &history, const class VariationTree &tree, int boardSize);
 
-    /// Signal emitted when the user clicks a node (sends the path to that node).
+    /// Signal emitted when the user selects a row (sends the path to that node).
     sigc::signal<void(std::vector<Coord>)> signal_node_selected;
 
 private:
@@ -25,11 +25,13 @@ private:
         std::string         nodesStr;
         std::string         depthStr;
         std::vector<Coord>  path;      ///< Full path from root to this node.
+        bool                isCurrent = false; ///< Is this row the current game position?
 
         static Glib::RefPtr<RowData> create(
             const std::string &no, const std::string &move,
             const std::string &eval, const std::string &nodes,
-            const std::string &depth, std::vector<Coord> path)
+            const std::string &depth, std::vector<Coord> path,
+            bool isCurrent)
         {
             auto obj       = Glib::make_refptr_for_instance<RowData>(new RowData());
             obj->noStr     = no;
@@ -38,11 +40,17 @@ private:
             obj->nodesStr  = nodes;
             obj->depthStr  = depth;
             obj->path      = std::move(path);
+            obj->isCurrent = isCurrent;
             return obj;
         }
     };
 
     Gtk::ColumnView                           columnView_;
     Glib::RefPtr<Gio::ListStore<RowData>>     store_;
-    Glib::RefPtr<Gtk::NoSelection>            selection_;
+    Glib::RefPtr<Gtk::SingleSelection>        selection_;
+
+    /// Guards selection_->set_selected() calls made by update() itself (to
+    /// reflect the current position) from being mistaken for a user click and
+    /// re-emitted as signal_node_selected, which would re-trigger gotoPath.
+    bool inUpdate_ = false;
 };

@@ -28,6 +28,7 @@ add_executable(rapfi-gui-tests
     test_settings_storage.cpp
     test_eng01_engine_state.cpp
     test_ui01_winrate_attribution.cpp
+    test_ui02_tree_row_highlight.cpp
 
     # Sources under test (model/engine only — no UI, no gtkmm).
     ${CMAKE_SOURCE_DIR}/src/model/move_history.cpp
