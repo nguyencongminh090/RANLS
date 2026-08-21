@@ -61,15 +61,15 @@ Coord BoardView::pixelToCoord(double px, double py, int width, int height) const
     int bs = vm_.boardSize;
     if (bs <= 0) return {};
 
-    double usableW = width  - 2.0 * kCoordMargin;
-    double usableH = height - 2.0 * kCoordMargin;
-    double cell    = std::min(usableW, usableH) / bs;
-    double boardPx = cell * bs;
-    double mLeft   = (width  - boardPx) / 2.0;
-    double mTop    = (height - boardPx) / 2.0;
+    // UX-04: geometry comes from the same BoardRenderer::computeGeometry()
+    // call that draw() uses, so hit-testing can never silently disagree with
+    // rendering (previously this function kept its own copy of the
+    // cell-size/margin formula and its own kCoordMargin constant).
+    BoardRenderer::Geometry geo = renderer_.computeGeometry(width, height);
+    if (geo.cellSize <= 0.0) return {};
 
-    int x = static_cast<int>((px - mLeft) / cell);
-    int y = static_cast<int>((py - mTop)  / cell);
+    int x = static_cast<int>((px - geo.marginLeft) / geo.cellSize);
+    int y = static_cast<int>((py - geo.marginTop)  / geo.cellSize);
 
     if (x >= 0 && y >= 0 && x < bs && y < bs)
         return {x, y};

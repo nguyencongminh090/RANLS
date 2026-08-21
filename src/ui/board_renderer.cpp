@@ -44,6 +44,21 @@ BoardRenderer::BoardRenderer(const BoardViewModel &viewModel)
 {
 }
 
+BoardRenderer::Geometry BoardRenderer::computeGeometry(int width, int height) const
+{
+    Geometry g;
+    int bs = vm_.boardSize;
+    if (bs <= 0) return g;
+
+    double usableW = width  - 2.0 * kCoordMargin;
+    double usableH = height - 2.0 * kCoordMargin;
+    g.cellSize   = std::min(usableW, usableH) / bs;
+    g.boardPx    = static_cast<int>(g.cellSize * bs);
+    g.marginLeft = (width  - g.boardPx) / 2.0;
+    g.marginTop  = (height - g.boardPx) / 2.0;
+    return g;
+}
+
 // ── Coordinate helpers ──────────────────────────────────────────────────────
 double BoardRenderer::cellCenterX(int x) const
 {
@@ -67,12 +82,11 @@ void BoardRenderer::draw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int
     if (bs <= 0) return;
 
     // Compute cell size to fit the available area (leaving coord margins).
-    double usableW = width  - 2.0 * kCoordMargin;
-    double usableH = height - 2.0 * kCoordMargin;
-    cellSize_   = std::min(usableW, usableH) / bs;
-    boardPx_    = static_cast<int>(cellSize_ * bs);
-    marginLeft_ = (width  - boardPx_) / 2.0;
-    marginTop_  = (height - boardPx_) / 2.0;
+    Geometry geo = computeGeometry(width, height);
+    cellSize_   = geo.cellSize;
+    boardPx_    = geo.boardPx;
+    marginLeft_ = geo.marginLeft;
+    marginTop_  = geo.marginTop;
 
     // ── Layer pipeline ──────────────────────────────────────────────────────
     drawGrid(cr);
@@ -141,7 +155,13 @@ void BoardRenderer::drawGrid(const Cairo::RefPtr<Cairo::Context> &cr)
         cr->set_source_rgb(kCoordR, kCoordG, kCoordB);
         cr->select_font_face("sans-serif", Cairo::ToyFontFace::Slant::NORMAL,
                              Cairo::ToyFontFace::Weight::NORMAL);
-        cr->set_font_size(std::max(9.0, cellSize_ * 0.35));
+        // UX-04 (confirmed defect): with only a floor and no ceiling, this
+        // scaled unboundedly with cellSize_ -- on a 5x5 board (large cells)
+        // it grew past the fixed kCoordMargin reserve and the labels were
+        // visibly clipped by the menu bar / left edge of the drawing area.
+        // Cap it so the label always fits the fixed-size margin regardless
+        // of board size.
+        cr->set_font_size(std::clamp(cellSize_ * 0.35, 9.0, 16.0));
 
         Cairo::TextExtents ext;
         for (int i = 0; i < bs; ++i) {
@@ -205,6 +225,21 @@ void BoardRenderer::drawStones(const Cairo::RefPtr<Cairo::Context> &cr)
                 cr->set_font_size(std::max(8.0, cellSize_ * 0.45));
                 Cairo::TextExtents ext;
                 cr->get_text_extents(num, ext);
+
+                // UX-04 (confirmed defect): on a 22x22 board with small cells,
+                // 3-digit move numbers (100+) measured visibly wider than the
+                // stone -- the fixed cellSize_*0.45 formula has no ceiling
+                // relative to how many digits it must fit. Shrink the font so
+                // the label stays inside the stone's diameter regardless of
+                // digit count, instead of adding a general font-scaling
+                // system (out of this fix's scope).
+                double maxTextWidth = 2.0 * r * 0.85;
+                if (ext.width > maxTextWidth && ext.width > 0.0) {
+                    double scale = maxTextWidth / ext.width;
+                    cr->set_font_size(std::max(6.0, cellSize_ * 0.45 * scale));
+                    cr->get_text_extents(num, ext);
+                }
+
                 cr->move_to(cx - ext.width / 2.0, cy + ext.height / 2.0);
                 cr->show_text(num);
             }

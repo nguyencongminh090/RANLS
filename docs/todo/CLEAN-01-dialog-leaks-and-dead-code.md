@@ -81,6 +81,11 @@ gameMenu->append_submenu("Rule", ruleSection);
 `src/ui/board_view.cpp:6`. The two must stay equal for clicks to land where stones are drawn, but
 nothing enforces that. See UX-04, which covers unifying the geometry calculation.
 
+**Update 2026-08-21:** UX-04 fixed this — `BoardRenderer::computeGeometry()` is now the single
+definition, and both `BoardRenderer::draw()` and `BoardView::pixelToCoord()` call it. This item's
+"`kCoordMargin` defined once" acceptance criterion below is satisfied; the rest of CLEAN-01 (dialog
+leaks, dead signals, debug output, unused local) is untouched and still open.
+
 ## Acceptance criteria
 
 - No `new`-allocated dialog leaks.
