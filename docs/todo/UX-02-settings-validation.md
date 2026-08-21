@@ -1,6 +1,17 @@
 # UX-02 — Settings dialog accepts an invalid engine path with no feedback
 
-**Status:** open
+**Status:** ✅ DONE
+
+Engine path is now validated live via `SettingsDialog::onEnginePathChanged()` (connected to
+`entryEnginePath_.signal_changed()`), checking existence / regular-file / executable via
+`std::filesystem` + POSIX `access(X_OK)`. Result shown inline in a new `lblEnginePathStatus_`
+label directly under the field (✓/✗ + reason), not a popup and not console-only. Apply is
+desensitized while the path is invalid (plus a redundant guard in `onApply()`). `Browse…` is
+untouched — `set_text()` already fires `changed`, so it re-validates through the same path.
+Confirmed via a standalone check that `spinMaxNodes_`'s `100000000000` adjustment max round-trips
+through `double`→`int64_t` exactly (needs 37 bits; doubles are exact up to 2^53) — no precision
+loss, no code change required there. Verified: clean build (`build.sh`), `ctest` passes, app runs
+under `xvfb-run` without crashing. Full detail: `docs/fix-log/2026-08-21-ux-02-settings-dialog-engine-path-validation.md`.
 **Area:** settings dialog
 **Priority:** P2
 **Source:** UI/UX + codebase review, 2026-08-21

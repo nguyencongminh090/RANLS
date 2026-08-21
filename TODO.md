@@ -39,7 +39,7 @@ Prefixes: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engine pro
 
 - **UI-03.** Selected rule (Renju/Standard) has no effect on what the board shows — [detail](docs/todo/UI-03-rule-not-visible-on-board.md)
 - **UX-01.** Three panels render as blank rectangles instead of empty states — [detail](docs/todo/UX-01-empty-states.md)
-- **UX-02.** Settings dialog accepts an invalid engine path with no feedback — [detail](docs/todo/UX-02-settings-validation.md)
+- ✅ **UX-02.** Settings dialog accepts an invalid engine path with no feedback — [detail](docs/todo/UX-02-settings-validation.md)
 - **UX-03.** Unlabelled icon buttons, no focus indication on custom-drawn widgets, no confirmation before destroying a game — [detail](docs/todo/UX-03-accessibility-and-destructive-actions.md)
 - **UX-04.** Board rendering never verified at the extremes of the supported 5–22 range (investigation) — [detail](docs/todo/UX-04-board-size-ergonomics.md)
 - **CLEAN-01.** Leaked dialogs, dead signals, leftover debug output, duplicated constant — [detail](docs/todo/CLEAN-01-dialog-leaks-and-dead-code.md)

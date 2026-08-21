@@ -1,5 +1,38 @@
 #include "settings_dialog.h"
 
+#include <filesystem>
+#include <unistd.h>
+
+namespace {
+
+/// Checks whether `path` is usable as an engine executable: exists, is a
+/// regular file (not a directory/socket/etc.), and has execute permission
+/// for the current user. Returns false with a human-readable `reason` set
+/// on the first failing check.
+bool isValidEnginePath(const std::string &path, std::string &reason)
+{
+    if (path.empty()) {
+        reason = "Path is empty";
+        return false;
+    }
+    std::error_code ec;
+    if (!std::filesystem::exists(path, ec) || ec) {
+        reason = "Path does not exist";
+        return false;
+    }
+    if (!std::filesystem::is_regular_file(path, ec) || ec) {
+        reason = "Not a regular file";
+        return false;
+    }
+    if (access(path.c_str(), X_OK) != 0) {
+        reason = "Not executable";
+        return false;
+    }
+    return true;
+}
+
+} // namespace
+
 // ═════════════════════════════════════════════════════════════════════════════
 SettingsDialog::SettingsDialog(Gtk::Window &parent, const EngineConfig &eConfig, const ViewConfig &vConfig)
     : baseEngineConfig_(eConfig), baseViewConfig_(vConfig)
@@ -50,9 +83,20 @@ SettingsDialog::SettingsDialog(Gtk::Window &parent, const EngineConfig &eConfig,
     btnBrowse->signal_clicked().connect(sigc::mem_fun(*this, &SettingsDialog::onChooseEngine));
     pathBox->append(entryEnginePath_);
     pathBox->append(*btnBrowse);
-
     pathBox->set_hexpand(true);
-    addEngineRow("Engine Path", *pathBox);
+
+    // Inline validation feedback shown right under the field itself (not a
+    // dialog popup on Apply, not console-only) — see UX-02. Updated live as
+    // the entry changes, and re-checked whenever Browse… sets a new path.
+    lblEnginePathStatus_.set_halign(Gtk::Align::START);
+    lblEnginePathStatus_.set_xalign(0.0f);
+    lblEnginePathStatus_.add_css_class("dim-label");
+    entryEnginePath_.signal_changed().connect(sigc::mem_fun(*this, &SettingsDialog::onEnginePathChanged));
+
+    auto *pathContainer = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 2);
+    pathContainer->append(*pathBox);
+    pathContainer->append(lblEnginePathStatus_);
+    addEngineRow("Engine Path", *pathContainer);
 
     // ── UI Setting ──────────────────────────────────────────────────────────
     auto themeModel = Gtk::StringList::create({"System", "Light", "Dark"});
@@ -139,6 +183,7 @@ SettingsDialog::SettingsDialog(Gtk::Window &parent, const EngineConfig &eConfig,
     auto *btnCancel = Gtk::make_managed<Gtk::Button>("Cancel");
     auto *btnApply  = Gtk::make_managed<Gtk::Button>("Apply");
     btnApply->add_css_class("suggested-action");
+    btnApply_ = btnApply;
 
     btnCancel->signal_clicked().connect([this]() { close(); });
     btnApply->signal_clicked().connect(sigc::mem_fun(*this, &SettingsDialog::onApply));
@@ -147,10 +192,44 @@ SettingsDialog::SettingsDialog(Gtk::Window &parent, const EngineConfig &eConfig,
     btnBox->append(*btnApply);
     root->append(*btnBox);
     set_child(*root);
+
+    // Run the initial validation pass now that entryEnginePath_ has its
+    // starting text and btnApply_ exists to be (in)sensitized.
+    onEnginePathChanged();
+}
+
+void SettingsDialog::onEnginePathChanged()
+{
+    std::string path = entryEnginePath_.get_text();
+    std::string reason;
+    enginePathValid_ = isValidEnginePath(path, reason);
+
+    if (enginePathValid_) {
+        lblEnginePathStatus_.set_text("✓ Executable found");
+        lblEnginePathStatus_.remove_css_class("error");
+        entryEnginePath_.remove_css_class("error");
+    } else {
+        lblEnginePathStatus_.set_text("✗ " + reason);
+        lblEnginePathStatus_.add_css_class("error");
+        entryEnginePath_.add_css_class("error");
+    }
+    updateApplySensitivity();
+}
+
+void SettingsDialog::updateApplySensitivity()
+{
+    if (btnApply_)
+        btnApply_->set_sensitive(enginePathValid_);
 }
 
 void SettingsDialog::onApply()
 {
+    // Defense in depth: btnApply_ is desensitized while the engine path is
+    // invalid, but guard here too in case Apply is ever reachable another
+    // way (e.g. a future default-activation binding on the entry).
+    if (!enginePathValid_)
+        return;
+
     // Start from the config the dialog was opened with (not a fresh
     // default-constructed struct) so any field the dialog doesn't expose a
     // control for — multiPV set via console command, customParams, and
