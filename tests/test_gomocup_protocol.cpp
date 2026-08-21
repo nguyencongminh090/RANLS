@@ -278,3 +278,61 @@ TEST_CASE("GomocupProtocol: well-formed INFO PV n / PV DONE sequence is unchange
     CHECK(rec.lastPVs[0].moves[0] == Coord{7, 7});
     CHECK(rec.lastPVs[0].moves[1] == Coord{8, 8});
 }
+
+// ── PROTO-02: A1-notation coordinates must use the real board size ─────────
+//
+// parseEngineCoord() used to hardcode `15 - rowNumber` when decoding A1-style
+// tokens (Yixin's flipY_X mode reports A1 as the bottom-left cell), which
+// silently corrupted move data on any board that wasn't 15x15. These cases
+// pin the correct flip at two non-15 sizes, through the same
+// "MESSAGE REALTIME BEST <token>" path a real engine uses.
+
+TEST_CASE("GomocupProtocol: A1-notation coordinate flips against a 5x5 board, not a hardcoded 15") {
+    SignalRecorder rec(5);
+    CHECK_NOTHROW(rec.proto.parseLine("MESSAGE REALTIME BEST A1"));
+    // A1 is bottom-left: col 'A' -> x=0, row 1 -> y = boardSize(5) - 1 = 4.
+    REQUIRE(rec.analysisCount == 1);
+    CHECK(rec.lastStatus.bestMove == Coord{0, 4});
+}
+
+TEST_CASE("GomocupProtocol: A1-notation coordinate flips against a 22x22 board, not a hardcoded 15") {
+    SignalRecorder rec(22);
+    CHECK_NOTHROW(rec.proto.parseLine("MESSAGE REALTIME BEST A1"));
+    // col 'A' -> x=0, row 1 -> y = boardSize(22) - 1 = 21.
+    REQUIRE(rec.analysisCount == 1);
+    CHECK(rec.lastStatus.bestMove == Coord{0, 21});
+}
+
+TEST_CASE("GomocupProtocol: A1-notation top-right corner resolves correctly at board size 22") {
+    SignalRecorder rec(22);
+    // Column 'V' is the 22nd letter (A..V), row 22 is the top row.
+    CHECK_NOTHROW(rec.proto.parseLine("MESSAGE REALTIME BEST V22"));
+    // x = 'V'-'A' = 21, y = boardSize(22) - 22 = 0.
+    REQUIRE(rec.analysisCount == 1);
+    CHECK(rec.lastStatus.bestMove == Coord{21, 0});
+}
+
+TEST_CASE("GomocupProtocol: A1-notation coordinate still flips against 15 for a default-sized board") {
+    // Regression guard: the old hardcoded-15 behavior must be preserved when
+    // the board actually is 15x15.
+    SignalRecorder rec(15);
+    CHECK_NOTHROW(rec.proto.parseLine("MESSAGE REALTIME BEST A1"));
+    REQUIRE(rec.analysisCount == 1);
+    CHECK(rec.lastStatus.bestMove == Coord{0, 14});
+}
+
+TEST_CASE("GomocupProtocol: A1-notation tokens inside a PV line use the real board size") {
+    // Exercises parseMoveTokens() -> parseEngineCoord() at a non-15 size, the
+    // same call path INFO BESTLINE and Bestline-message PV lists use.
+    SignalRecorder rec(5);
+    CHECK_NOTHROW(rec.proto.parseLine("INFO NUMPV 1"));
+    CHECK_NOTHROW(rec.proto.parseLine("INFO PV 0"));
+    CHECK_NOTHROW(rec.proto.parseLine("INFO BESTLINE A1 E5"));
+    CHECK_NOTHROW(rec.proto.parseLine("INFO PV DONE"));
+
+    REQUIRE(rec.analysisCount >= 1);
+    REQUIRE(rec.lastPVs.size() >= 1);
+    REQUIRE(rec.lastPVs[0].moves.size() == 2);
+    CHECK(rec.lastPVs[0].moves[0] == Coord{0, 4});  // A1 on a 5x5 board.
+    CHECK(rec.lastPVs[0].moves[1] == Coord{4, 0});  // E5 on a 5x5 board.
+}

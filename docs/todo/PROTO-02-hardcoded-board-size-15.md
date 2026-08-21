@@ -1,6 +1,8 @@
 # PROTO-02 — Hardcoded board size 15 breaks every non-15×15 board
 
-**Status:** open
+**Status:** ✅ DONE — see [fix-log detail](../fix-log/2026-08-21-proto-02-hardcoded-board-size-15.md)
+for the full change list and verification notes (clean build; full suite 65/65 test cases, 260/260
+assertions pass, including 5 new PROTO-02 regression cases at 5×5/15×15/22×22).
 **Area:** protocol parsing + engine status display + board rendering
 **Priority:** P1
 **Source:** UI/UX + codebase review, 2026-08-21

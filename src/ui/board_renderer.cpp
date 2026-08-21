@@ -113,10 +113,23 @@ void BoardRenderer::drawGrid(const Cairo::RefPtr<Cairo::Context> &cr)
     }
     cr->stroke();
 
-    // Star points (tengen and corners for 15×15).
-    if (bs == 15) {
+    // Star points (tengen, corners, and edge midpoints), generalized from the
+    // traditional 15×15 layout: offset-3-from-edge points plus the true
+    // center. PROTO-02: this used to be hardcoded to `bs == 15`, so every
+    // other board size silently lost its star points. Only odd sizes have a
+    // single-intersection center, and sizes below 9 have no room for corner
+    // and center star points to stay distinct -- both are cleanly omitted
+    // rather than drawing something misleading.
+    if (bs % 2 == 1 && bs >= 9) {
         double dotR = cellSize_ * 0.08;
-        int stars[][2] = {{3,3},{3,11},{11,3},{11,11},{7,7},{3,7},{11,7},{7,3},{7,11}};
+        int offset = 3;
+        int center = bs / 2;
+        int far    = bs - 1 - offset;
+        int stars[][2] = {
+            {offset, offset}, {offset, far}, {far, offset}, {far, far},
+            {center, center},
+            {offset, center}, {far, center}, {center, offset}, {center, far},
+        };
         cr->set_source_rgb(kGridR, kGridG, kGridB);
         for (auto &s : stars) {
             cr->arc(cellCenterX(s[0]), cellCenterY(s[1]), dotR, 0, 2 * M_PI);

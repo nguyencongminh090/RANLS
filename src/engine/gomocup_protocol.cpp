@@ -30,7 +30,11 @@ static int64_t parseNodeCount(const std::string &s) {
     return static_cast<int64_t>(val);
 }
 
-static Coord parseEngineCoord(const std::string &s) {
+/// Parse a single engine-reported coordinate token. `boardSize` is required
+/// for the A1-notation branch: Yixin's flipY_X mode reports A1 as the
+/// bottom-left cell, so the row label must be flipped against the *actual*
+/// board size, not an assumed 15 (see PROTO-02).
+static Coord parseEngineCoord(const std::string &s, int boardSize) {
     if (s.empty()) return Coord{-1, -1};
 
     // Try y,x format (Yixin standard)
@@ -45,8 +49,7 @@ static Coord parseEngineCoord(const std::string &s) {
         try {
             int rowNumber = std::stoi(s.substr(1));
             // In Yixin flipY_X mode, A1 is bottom-left.
-            // 15 is the board size.
-            return Coord{col, 15 - rowNumber};
+            return Coord{col, boardSize - rowNumber};
         } catch (...) {
             return Coord{-1, -1};
         }
@@ -185,7 +188,7 @@ static std::vector<Coord> parseMoveTokens(const std::string &movesText, int boar
     std::istringstream ss(movesText);
     std::string token;
     while (ss >> token) {
-        Coord c = parseEngineCoord(token);
+        Coord c = parseEngineCoord(token, boardSize);
         if (c.isValid(boardSize)) {
             moves.push_back(c);
         }
@@ -325,7 +328,7 @@ void GomocupProtocol::parseLine(const std::string& line) {
     }
 
     if (type == EngineMessageType::Coord) {
-        Coord move = parseEngineCoord(line);
+        Coord move = parseEngineCoord(line, boardSize_);
         if (move.isValid(boardSize_)) {
             signal_move.emit(move);
             return;
@@ -361,7 +364,7 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
     if (msg.rfind("REALTIME ", 0) == 0) {
         std::string sub = msg.substr(9);
         if (sub.rfind("BEST ", 0) == 0) {
-            Coord best = parseEngineCoord(sub.substr(5));
+            Coord best = parseEngineCoord(sub.substr(5), boardSize_);
             if (best.isValid(boardSize_)) {
                 currentStatus_.bestMove = best;
                 signal_analysis.emit(currentPVs_, currentStatus_);
@@ -612,7 +615,7 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
         pv.evalText = parsedEvalText;
 
         for (const auto &mt : pvTokens) {
-            Coord c = parseEngineCoord(mt);
+            Coord c = parseEngineCoord(mt, boardSize_);
             if (c.isValid(boardSize_)) pv.moves.push_back(c);
         }
 
@@ -643,7 +646,7 @@ void GomocupProtocol::parseRealtimePV(const std::string &data) {
     std::istringstream ss(data);
     std::string token;
     while (ss >> token) {
-        Coord c = parseEngineCoord(token);
+        Coord c = parseEngineCoord(token, boardSize_);
         if (c.isValid(boardSize_)) {
             pv.moves.push_back(c);
         }

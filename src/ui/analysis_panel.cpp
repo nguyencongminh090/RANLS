@@ -92,7 +92,7 @@ void AnalysisPanel::connectSignals()
 {
     // Engine analysis → update all sub-panels.
     gameState_.signal_engine_analysis.connect([this]() {
-        engineStatus_.update(gameState_.engineStatus(), gameState_.pvLines());
+        engineStatus_.update(gameState_.engineStatus(), gameState_.pvLines(), gameState_.boardSize());
         pvView_.update(gameState_.pvLines(), gameState_.boardSize());
         auto data = toDisplayWinrate(gameState_.evalHistory(), gameState_.viewConfig().winGraphMode);
         winGraph_.setData(data.black, data.white, gameState_.history().currentIndex(),

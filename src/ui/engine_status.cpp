@@ -104,7 +104,7 @@ EngineStatusView::EngineStatusView()
     addPair(labelBest_,  valueBest_,  "Best:");
 }
 
-void EngineStatusView::update(const EngineStatus &s, const std::vector<PVLine> &pvLines)
+void EngineStatusView::update(const EngineStatus &s, const std::vector<PVLine> &pvLines, int boardSize)
 {
     const PVLine *bestPv = !pvLines.empty() && !pvLines[0].moves.empty() ? &pvLines[0] : nullptr;
 
@@ -119,7 +119,7 @@ void EngineStatusView::update(const EngineStatus &s, const std::vector<PVLine> &
                                : evalSummary(s.winrate, s.mateStep, s.evalText));
 
     Coord bestMove = bestPv ? bestPv->moves.front() : s.bestMove;
-    valueBest_.set_text(coordStr(bestMove, 15));
+    valueBest_.set_text(coordStr(bestMove, boardSize));
 }
 
 void EngineStatusView::setEngineState(EngineController::EngineState state)

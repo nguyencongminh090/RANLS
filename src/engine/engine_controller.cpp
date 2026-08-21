@@ -168,13 +168,22 @@ void EngineController::reloadEngine()
 
 void EngineController::sendConfig()
 {
+    // PROTO-02: generateStart() is also what keeps protocol_'s cached
+    // boardSize_ in sync with the model. Call it unconditionally -- even
+    // when the engine isn't usable yet -- so a board-size change made while
+    // the engine is stopped doesn't leave the protocol's parser working off
+    // a stale size until some later successful sendConfig(). Only the actual
+    // wire commands are gated on isUsable(); a not-yet-started engine has
+    // nothing to send them to.
+    auto startCmds = protocol_->generateStart(gameState_.boardSize());
+
     if (!isUsable()) return;
 
-    const auto &cfg = gameState_.engineConfig();
-
-    for (const auto& cmd : protocol_->generateStart(gameState_.boardSize())) {
+    for (const auto& cmd : startCmds) {
         engine_.sendLine(cmd);
     }
+
+    const auto &cfg = gameState_.engineConfig();
 
     for (const auto& cmd : protocol_->generateConfig(cfg)) {
         engine_.sendLine(cmd);

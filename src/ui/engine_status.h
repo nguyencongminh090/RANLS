@@ -10,8 +10,11 @@ class EngineStatusView : public Gtk::Box {
 public:
     EngineStatusView();
 
-    /// Update displayed values from an EngineStatus snapshot.
-    void update(const EngineStatus &status, const std::vector<PVLine> &pvLines = {});
+    /// Update displayed values from an EngineStatus snapshot. `boardSize`
+    /// must be the real current board size (PROTO-02) -- it drives the
+    /// "Best:" coordinate label, which is otherwise wrong on any non-15
+    /// board.
+    void update(const EngineStatus &status, const std::vector<PVLine> &pvLines, int boardSize);
 
     /// Set engine state indicator. Renders not-started / starting / idle /
     /// thinking / stopping / crashed as visibly distinct states (ENG-01) —

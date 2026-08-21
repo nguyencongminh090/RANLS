@@ -470,7 +470,11 @@ void MainWindow::connectSignals()
 void MainWindow::onNewGame()
 {
     std::cerr << "[DBG] onNewGame called" << std::endl;
+    // newGame() resets to DEFAULT_BOARD_SIZE, which can differ from whatever
+    // size the engine protocol last saw (PROTO-02) -- resync unconditionally,
+    // same as every other newGame()/board-size call site.
     gameState_.newGame();
+    controller_.sendConfig();
 }
 
 void MainWindow::onLoadGame()
