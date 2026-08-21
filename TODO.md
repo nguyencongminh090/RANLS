@@ -20,7 +20,7 @@ feature-area prefix + running number (e.g. `WALL-01`, `UI-07`). `✅` marks a fi
 - **STATE-02.** Settings dialog silently resets `multiPV` and wipes `customParams`, then persists it — [detail](docs/todo/STATE-02-settings-dialog-drops-config-fields.md)
 - **ENG-01.** Engine state is dishonest ("● ON" with no process, crash ≡ never-started, no "thinking" state) and stopping blocks the UI ~2.5s — [detail](docs/todo/ENG-01-engine-state-honesty-and-blocking-stop.md)
 - **RT-02.** Engine log grows unbounded and writes per-line; gutter labels desync on wrap — [detail](docs/todo/RT-02-engine-log-unbounded.md)
-- **RT-03.** PVView full rebuild destroys hover, breaking the board PV ghost-stone preview during analysis — [detail](docs/todo/RT-03-pvview-rebuild-breaks-hover.md)
+- ✅ **RT-03.** PVView full rebuild destroys hover, breaking the board PV ghost-stone preview during analysis — [detail](docs/todo/RT-03-pvview-rebuild-breaks-hover.md)
 
 ## Backlog
 

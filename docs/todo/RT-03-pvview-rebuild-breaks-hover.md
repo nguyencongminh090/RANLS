@@ -1,6 +1,6 @@
 # RT-03 — PVView full rebuild destroys hover, breaking the board PV preview
 
-**Status:** open
+**Status:** ✅ DONE — see [fix-log](../fix-log/2026-08-21-rt-03-pvview-rebuild-breaks-hover.md)
 **Area:** PV view / board overlay interaction
 **Priority:** P0
 **Source:** UI/UX + codebase review, 2026-08-21

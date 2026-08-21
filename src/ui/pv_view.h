@@ -19,5 +19,18 @@ public:
     sigc::signal<void()> signal_pv_hover_left;
 
 private:
+    /// Widgets for one PV row, kept alive across update() calls so its
+    /// Gtk::EventControllerMotion (and any in-progress hover) survives a
+    /// content refresh instead of being destroyed and recreated. See RT-03.
+    struct RowWidgets {
+        Gtk::Box   *row         = nullptr;
+        Gtk::Label *idxLabel    = nullptr;
+        Gtk::Label *scoreLabel  = nullptr;
+        Gtk::Label *depthLabel  = nullptr;
+        Gtk::Label *movesLabel  = nullptr;
+        std::vector<Coord> moves; // kept in sync with the row's current content
+    };
+
     Gtk::ListBox listBox_;
+    std::vector<RowWidgets> rows_;
 };

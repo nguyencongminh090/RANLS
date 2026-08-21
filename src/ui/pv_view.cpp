@@ -40,42 +40,39 @@ PVView::PVView()
 
 void PVView::update(const std::vector<PVLine> &pvLines, int boardSize)
 {
-    // Remove all existing rows.
-    while (auto *child = listBox_.get_first_child()) {
-        listBox_.remove(*child);
+    const size_t newCount = pvLines.size();
+
+    // Only remove/add row widgets when the PV *count* changes (RT-03): row
+    // widgets — and the Gtk::EventControllerMotion attached to each — must
+    // stay alive across a content-only refresh, or an in-progress hover gets
+    // torn down (synthetic `leave`) and the replacement widget under a
+    // stationary pointer never receives a fresh `enter`.
+
+    // Shrink: drop rows from the tail.
+    while (rows_.size() > newCount) {
+        listBox_.remove(*rows_.back().row);
+        rows_.pop_back();
     }
 
-    for (size_t i = 0; i < pvLines.size(); ++i) {
-        const auto &pv = pvLines[i];
+    // Grow: append new rows (with their motion controller) for the tail.
+    while (rows_.size() < newCount) {
+        const size_t i = rows_.size();
 
         auto *row = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 8);
 
-        // PV index.
-        int displayPvIndex = pv.pvIndex > 0 ? pv.pvIndex : static_cast<int>(i + 1);
-        auto *idxLabel = Gtk::make_managed<Gtk::Label>("PV #" + std::to_string(displayPvIndex));
+        auto *idxLabel = Gtk::make_managed<Gtk::Label>();
         idxLabel->add_css_class("pv-index");
         row->append(*idxLabel);
 
-        // Score.
-        auto *scoreLabel = Gtk::make_managed<Gtk::Label>(evalText(pv));
+        auto *scoreLabel = Gtk::make_managed<Gtk::Label>();
         scoreLabel->add_css_class("pv-score");
         row->append(*scoreLabel);
 
-        // Depth.
-        std::string depthText = "d" + std::to_string(pv.depth);
-        if (pv.selDepth > 0) depthText += "/" + std::to_string(pv.selDepth);
-        auto *depthLabel = Gtk::make_managed<Gtk::Label>(depthText);
+        auto *depthLabel = Gtk::make_managed<Gtk::Label>();
         depthLabel->add_css_class("pv-score");
         row->append(*depthLabel);
 
-        // Move sequence.
-        std::string movesStr;
-        for (size_t j = 0; j < pv.moves.size() && j < 12; ++j) {
-            if (j > 0) movesStr += " → ";
-            movesStr += coordStr(pv.moves[j], boardSize);
-        }
-        if (pv.moves.size() > 12) movesStr += " …";
-        auto *movesLabel = Gtk::make_managed<Gtk::Label>(movesStr);
+        auto *movesLabel = Gtk::make_managed<Gtk::Label>();
         movesLabel->add_css_class("pv-moves");
         movesLabel->set_ellipsize(Pango::EllipsizeMode::END);
         movesLabel->set_hexpand(true);
@@ -84,13 +81,43 @@ void PVView::update(const std::vector<PVLine> &pvLines, int boardSize)
 
         listBox_.append(*row);
 
-        // Hover → emit PV preview signal.
+        // Hover → emit PV preview signal. Looks up the row's *current* moves
+        // by index at hover time (rather than capturing them by value here)
+        // so a later content-only refresh of this same row can't leave a
+        // stale PV attached to an in-progress hover.
         auto motion = Gtk::EventControllerMotion::create();
-        std::vector<Coord> pvMoves = pv.moves;
         motion->signal_enter().connect(
-            [this, pvMoves](double, double) {
-                signal_pv_hovered.emit(pvMoves);
+            [this, i](double, double) {
+                if (i < rows_.size())
+                    signal_pv_hovered.emit(rows_[i].moves);
             });
         row->add_controller(motion);
+
+        rows_.push_back({row, idxLabel, scoreLabel, depthLabel, movesLabel, {}});
+    }
+
+    // Update content in place for every row (existing rows are reused as-is;
+    // newly appended rows get their initial content here too).
+    for (size_t i = 0; i < newCount; ++i) {
+        const auto &pv = pvLines[i];
+        auto &rw = rows_[i];
+
+        int displayPvIndex = pv.pvIndex > 0 ? pv.pvIndex : static_cast<int>(i + 1);
+        rw.idxLabel->set_text("PV #" + std::to_string(displayPvIndex));
+        rw.scoreLabel->set_text(evalText(pv));
+
+        std::string depthText = "d" + std::to_string(pv.depth);
+        if (pv.selDepth > 0) depthText += "/" + std::to_string(pv.selDepth);
+        rw.depthLabel->set_text(depthText);
+
+        std::string movesStr;
+        for (size_t j = 0; j < pv.moves.size() && j < 12; ++j) {
+            if (j > 0) movesStr += " → ";
+            movesStr += coordStr(pv.moves[j], boardSize);
+        }
+        if (pv.moves.size() > 12) movesStr += " …";
+        rw.movesLabel->set_text(movesStr);
+
+        rw.moves = pv.moves;
     }
 }
