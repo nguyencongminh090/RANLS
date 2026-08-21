@@ -106,11 +106,9 @@ bool GameState::makeMove(Coord pos)
     return true;
 }
 
-bool GameState::undoMove()
+bool GameState::undoMoveSilent()
 {
     if (analyzing_ || history_.moveCount() == 0) return false;
-
-    clearDatabase();
 
     Coord pos = history_.undoMove();
     if (!pos.isValid(board_.size()))
@@ -122,19 +120,12 @@ bool GameState::undoMove()
     if (currentTreeNode_ && currentTreeNode_->parent)
         currentTreeNode_ = currentTreeNode_->parent;
 
-    // Position changed — the previous position's analysis no longer applies.
-    resetAnalysisState();
-    invalidateEvalHistoryCache();
-
-    signal_board_changed.emit();
     return true;
 }
 
-bool GameState::redoMove()
+bool GameState::redoMoveSilent()
 {
     if (analyzing_) return false;
-
-    clearDatabase();
 
     Coord pos = history_.redoMove();
     if (!pos.isValid(board_.size()))
@@ -150,6 +141,15 @@ bool GameState::redoMove()
             currentTreeNode_ = child;
     }
 
+    return true;
+}
+
+bool GameState::undoMove()
+{
+    if (!undoMoveSilent()) return false;
+
+    clearDatabase();
+
     // Position changed — the previous position's analysis no longer applies.
     resetAnalysisState();
     invalidateEvalHistoryCache();
@@ -158,30 +158,82 @@ bool GameState::redoMove()
     return true;
 }
 
+bool GameState::redoMove()
+{
+    if (!redoMoveSilent()) return false;
+
+    clearDatabase();
+
+    // Position changed — the previous position's analysis no longer applies.
+    resetAnalysisState();
+    invalidateEvalHistoryCache();
+
+    signal_board_changed.emit();
+    return true;
+}
+
+// NAV-01: undoAll/redoAll/gotoMove used to loop the single-step undoMove()/
+// redoMove(), each of which calls clearDatabase() (-> signal_database_updated)
+// and signal_board_changed.emit(). On a 100-move game that meant 100 engine
+// database queries and 100 full UI rebuilds for one click of <<. These now
+// loop the *Silent() position-mutation halves and do exactly one
+// clearDatabase()/resetAnalysisState()/invalidateEvalHistoryCache()/
+// signal_board_changed.emit() for the whole bulk operation, only if the
+// position actually moved.
 void GameState::undoAll()
 {
-    while (undoMove()) {}
+    bool moved = false;
+    while (undoMoveSilent()) moved = true;
+
+    if (!moved) return;
+
+    clearDatabase();
+    resetAnalysisState();
+    invalidateEvalHistoryCache();
+    signal_board_changed.emit();
 }
 
 void GameState::redoAll()
 {
-    while (redoMove()) {}
+    bool moved = false;
+    while (redoMoveSilent()) moved = true;
+
+    if (!moved) return;
+
+    clearDatabase();
+    resetAnalysisState();
+    invalidateEvalHistoryCache();
+    signal_board_changed.emit();
 }
 
 void GameState::gotoMove(int moveIndex)
 {
     if (analyzing_) return;
 
-    clearDatabase();
-
     int current = history_.currentIndex();
+    bool moved  = false;
     if (moveIndex < current) {
         // Need to undo.
-        while (history_.currentIndex() > moveIndex && undoMove()) {}
+        while (history_.currentIndex() > moveIndex && undoMoveSilent()) moved = true;
     } else if (moveIndex > current) {
         // Need to redo.
-        while (history_.currentIndex() < moveIndex && redoMove()) {}
+        while (history_.currentIndex() < moveIndex && redoMoveSilent()) moved = true;
     }
+
+    if (moved) {
+        clearDatabase();
+        resetAnalysisState();
+        invalidateEvalHistoryCache();
+        signal_board_changed.emit();
+    }
+
+    // NAV-01: signal_move_selected was declared and connected but never
+    // emitted anywhere (dead signal). gotoMove is the operation it exists
+    // for — wire it up here, once per call, with the index actually landed
+    // on (not the requested one, in case moveIndex was out of range and the
+    // loop stopped early). Emitted even when moved is false so a UI click on
+    // the already-current move still gets acknowledged/highlighted.
+    signal_move_selected.emit(history_.currentIndex());
 }
 
 bool GameState::gotoPath(const std::vector<Coord> &path)
