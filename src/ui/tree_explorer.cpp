@@ -1,5 +1,6 @@
 #include "tree_explorer.h"
 #include "model/move_history.h"
+#include "model/tree_row_highlight.h"
 
 #include <iomanip>
 #include <sstream>
@@ -26,7 +27,10 @@ TreeExplorer::TreeExplorer()
     set_hexpand(true);
 
     store_ = Gio::ListStore<RowData>::create();
-    selection_ = Gtk::NoSelection::create(store_);
+    // SingleSelection (not NoSelection) so ColumnView handles row activation for
+    // us — clicking/keyboard-navigating a row fires signal_selection_changed,
+    // which we translate into signal_node_selected below (UI-02).
+    selection_ = Gtk::SingleSelection::create(store_);
     columnView_.set_model(selection_);
 
     // ── Column factories ────────────────────────────────────────────────────
@@ -41,6 +45,12 @@ TreeExplorer::TreeExplorer()
             auto  row   = std::dynamic_pointer_cast<RowData>(item->get_item());
             if (label && row) {
                 label->set_text(getter(row));
+                // Highlight the row that matches the current game position
+                // (UI-02: current-path highlight, parity with TreeNodeView).
+                if (row->isCurrent)
+                    label->add_css_class("current-row");
+                else
+                    label->remove_css_class("current-row");
             }
         });
         auto col = Gtk::ColumnViewColumn::create(title, factory);
@@ -54,15 +64,15 @@ TreeExplorer::TreeExplorer()
     makeColumn("Nodes", [](const Glib::RefPtr<RowData> &r) { return r->nodesStr; });
     makeColumn("Depth", [](const Glib::RefPtr<RowData> &r) { return r->depthStr; });
 
-    // Click handler.
-    auto click = Gtk::GestureClick::create();
-    click->set_button(GDK_BUTTON_PRIMARY);
-    click->signal_released().connect(
-        [](int, double, double) {
-            // In GTK4 ColumnView with NoSelection, we use position-based lookup.
-            // For now, this is a placeholder for a more sophisticated selection model.
+    // Selecting a row (click or keyboard) jumps to that position — same target
+    // semantics as TreeNodeView::signal_node_clicked (UI-02).
+    selection_->signal_selection_changed().connect(
+        [this](guint, guint) {
+            if (inUpdate_) return;  // Programmatic re-sync in update(), not a user click.
+            auto row = std::dynamic_pointer_cast<RowData>(selection_->get_selected_item());
+            if (row)
+                signal_node_selected.emit(row->path);
         });
-    columnView_.add_controller(click);
 
     set_child(columnView_);
 }
@@ -79,7 +89,7 @@ void TreeExplorer::update(const MoveHistory &history, const VariationTree &tree,
 
     for (int i = 0; i < count; ++i) {
         Coord playedMove = moves[i];
-        
+
         // Advance node if possible
         const TreeNode *nextNode = nullptr;
         if (node) {
@@ -97,23 +107,36 @@ void TreeExplorer::update(const MoveHistory &history, const VariationTree &tree,
             std::ostringstream evStr;
             evStr << std::fixed << std::setprecision(2) << node->eval;
             evalStr = evStr.str();
-            
+
             if (node->nodes > 0)
                 nodesStr = formatNodes(node->nodes);
             if (node->depth > 0)
                 depthStr = std::to_string(node->depth);
         }
-        
+
         currentPath.push_back(playedMove);
-        
+
+        bool isCurrent = isCurrentHistoryRow(i, count);
+
         auto row = RowData::create(
             noStr,
             moveStr,
             evalStr,
             nodesStr,
             depthStr,
-            currentPath);
+            currentPath,
+            isCurrent);
 
         store_->append(row);
     }
+
+    // Reflect the current position in the selection model too, without
+    // re-emitting signal_node_selected (that would re-trigger gotoPath and
+    // fight whatever caused this update in the first place).
+    inUpdate_ = true;
+    if (count > 0)
+        selection_->set_selected(static_cast<guint>(count - 1));
+    else
+        selection_->unselect_all();
+    inUpdate_ = false;
 }

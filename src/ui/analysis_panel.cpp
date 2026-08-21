@@ -69,8 +69,20 @@ AnalysisPanel::AnalysisPanel(GameState &gameState)
     upperBox->append(pvView_);
 
     // ── Lower section: Tree views in a Notebook (Visual | Table) ────────────
-    treeNotebook_.append_page(treeNodeView_, "Visual");
-    treeNotebook_.append_page(treeExplorer_, "Table");
+    // The two tabs show different datasets (UI-02), so the labels say which:
+    // Visual is the whole variation tree (all branches); Table is only the
+    // current line (moves from game start to the current position).
+    auto makeTabLabel = [](const std::string &text, const std::string &tooltip) {
+        auto *label = Gtk::make_managed<Gtk::Label>(text);
+        label->set_tooltip_text(tooltip);
+        return label;
+    };
+    treeNotebook_.append_page(treeNodeView_,
+        *makeTabLabel("Visual (All Branches)",
+            "Shows the full variation tree, including all explored branches."));
+    treeNotebook_.append_page(treeExplorer_,
+        *makeTabLabel("Table (Current Line)",
+            "Shows only the current line: moves from the game start to the current position."));
     treeNotebook_.add_css_class("bottom-panel");
 
     // ── Vertical Paned: upper | lower ───────────────────────────────────────
@@ -130,6 +142,12 @@ void AnalysisPanel::connectSignals()
 
     // Visual tree node click -> jump to that branch position.
     treeNodeView_.signal_node_clicked.connect([this](std::vector<Coord> path) {
+        gameState_.gotoPath(path);
+    });
+
+    // Table row selection -> jump to that position (UI-02: parity with the
+    // Visual tab's click-to-jump).
+    treeExplorer_.signal_node_selected.connect([this](std::vector<Coord> path) {
         gameState_.gotoPath(path);
     });
 }
