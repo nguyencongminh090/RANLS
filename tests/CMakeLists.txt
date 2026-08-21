@@ -16,12 +16,14 @@ add_executable(rapfi-gui-tests
     test_game_state.cpp
     test_rt01_throttle.cpp
     test_engine_log_model.cpp
+    test_settings_storage.cpp
 
     # Sources under test (model/engine only — no UI, no gtkmm).
     ${CMAKE_SOURCE_DIR}/src/model/move_history.cpp
     ${CMAKE_SOURCE_DIR}/src/model/board_state.cpp
     ${CMAKE_SOURCE_DIR}/src/model/game_state.cpp
     ${CMAKE_SOURCE_DIR}/src/model/variation_tree.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/settings_storage.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/gomocup_protocol.cpp
 )
 

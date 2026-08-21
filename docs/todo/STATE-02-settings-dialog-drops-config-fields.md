@@ -1,6 +1,6 @@
 # STATE-02 — Settings dialog silently resets multiPV and wipes customParams
 
-**Status:** open
+**Status:** ✅ FIXED — see [fix-log](../fix-log/2026-08-21-state-02-settings-dialog-drops-config-fields.md)
 **Area:** settings dialog / config persistence
 **Priority:** P0
 **Source:** UI/UX + codebase review, 2026-08-21

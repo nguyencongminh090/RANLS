@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <unordered_map>
 
@@ -146,6 +147,16 @@ SettingsBundle load()
     out.engine.hashSizeMB = parseNumber<int>(get("hash_size_mb"), out.engine.hashSizeMB);
     out.engine.multiPV = parseNumber<int>(get("multipv"), out.engine.multiPV);
 
+    // customParams: any key written with the "custom_param." prefix by save()
+    // below. Not part of the original on-disk format (see STATE-02) — added
+    // so a value set via `!set` mid-session (customParams) actually survives
+    // a Settings-dialog Apply + reload, not just the fields the dialog owns.
+    static constexpr std::string_view kCustomParamPrefix = "custom_param.";
+    for (const auto &[key, value] : kv) {
+        if (key.rfind(kCustomParamPrefix, 0) == 0)
+            out.engine.customParams[key.substr(kCustomParamPrefix.size())] = value;
+    }
+
     out.view.theme = static_cast<AppTheme>(parseNumber<int>(get("theme"), static_cast<int>(out.view.theme)));
     out.view.showMoveNumbers = parseBool(get("show_move_numbers"), out.view.showMoveNumbers);
     out.view.showCoordinates = parseBool(get("show_coordinates"), out.view.showCoordinates);
@@ -180,6 +191,8 @@ bool save(const EngineConfig &engine, const ViewConfig &view)
     out << "threads=" << engine.threads << "\n";
     out << "hash_size_mb=" << engine.hashSizeMB << "\n";
     out << "multipv=" << engine.multiPV << "\n";
+    for (const auto &[key, value] : engine.customParams)
+        out << "custom_param." << key << "=" << escapeValue(value) << "\n";
     out << "theme=" << static_cast<int>(view.theme) << "\n";
     out << "show_move_numbers=" << (view.showMoveNumbers ? "true" : "false") << "\n";
     out << "show_coordinates=" << (view.showCoordinates ? "true" : "false") << "\n";

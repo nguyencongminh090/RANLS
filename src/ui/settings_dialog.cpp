@@ -2,6 +2,7 @@
 
 // ═════════════════════════════════════════════════════════════════════════════
 SettingsDialog::SettingsDialog(Gtk::Window &parent, const EngineConfig &eConfig, const ViewConfig &vConfig)
+    : baseEngineConfig_(eConfig), baseViewConfig_(vConfig)
 {
     set_title("Settings");
     set_transient_for(parent);
@@ -110,6 +111,10 @@ SettingsDialog::SettingsDialog(Gtk::Window &parent, const EngineConfig &eConfig,
     spinMaxNodes_.set_digits(0);
     addEngineRow("Max Nodes (0=∞)", spinMaxNodes_);
 
+    spinMultiPV_.set_adjustment(Gtk::Adjustment::create(eConfig.multiPV, 1, 20, 1));
+    spinMultiPV_.set_digits(0);
+    addEngineRow("Multi PV", spinMultiPV_);
+
     // ── Resources ───────────────────────────────────────────────────────────
     spinThreads_.set_adjustment(Gtk::Adjustment::create(eConfig.threads, 1, 256, 1));
     spinThreads_.set_digits(0);
@@ -146,7 +151,13 @@ SettingsDialog::SettingsDialog(Gtk::Window &parent, const EngineConfig &eConfig,
 
 void SettingsDialog::onApply()
 {
-    EngineConfig eConfig;
+    // Start from the config the dialog was opened with (not a fresh
+    // default-constructed struct) so any field the dialog doesn't expose a
+    // control for — multiPV set via console command, customParams, and
+    // ViewConfig::showDatabase — is preserved rather than silently reset to
+    // its struct default (STATE-02). Only the fields the controls below own
+    // are overwritten.
+    EngineConfig eConfig = baseEngineConfig_;
     eConfig.enginePath   = entryEnginePath_.get_text();
     eConfig.timeoutTurn  = static_cast<int64_t>(spinTimeoutTurn_.get_value());
     eConfig.timeoutMatch = static_cast<int64_t>(spinTimeoutMatch_.get_value());
@@ -155,8 +166,9 @@ void SettingsDialog::onApply()
     eConfig.maxNodes     = static_cast<int64_t>(spinMaxNodes_.get_value());
     eConfig.threads      = static_cast<int>(spinThreads_.get_value());
     eConfig.hashSizeMB   = static_cast<int>(spinHash_.get_value());
+    eConfig.multiPV      = static_cast<int>(spinMultiPV_.get_value());
 
-    ViewConfig vConfig;
+    ViewConfig vConfig = baseViewConfig_;
     vConfig.theme           = static_cast<AppTheme>(dropTheme_.get_selected());
     vConfig.winGraphMode    = static_cast<WinGraphMode>(dropWinGraphMode_.get_selected());
     vConfig.showMoveNumbers = checkMoveNumbers_.get_active();
