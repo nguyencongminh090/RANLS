@@ -1,6 +1,6 @@
 # RT-02 — Engine log grows unbounded and writes per-line
 
-**Status:** open
+**Status:** ✅ FIXED — see [fix-log](../fix-log/2026-08-21-rt-02-engine-log-unbounded.md)
 **Area:** bottom panel / engine log
 **Priority:** P0
 **Source:** UI/UX + codebase review, 2026-08-21

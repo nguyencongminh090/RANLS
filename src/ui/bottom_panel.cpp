@@ -1,5 +1,11 @@
 #include "bottom_panel.h"
 
+namespace {
+/// Batch-flush interval for the engine log. Balances "feels live" against
+/// collapsing many rapid engine lines into one buffer transaction (RT-02).
+constexpr unsigned kFlushIntervalMs = 50;
+}  // namespace
+
 BottomPanel::BottomPanel()
 {
     add_css_class("bottom-panel");
@@ -12,67 +18,56 @@ BottomPanel::BottomPanel()
     append_page(scrolledMoveLog_, "Move Log");
 
     // ── Engine Log tab ──────────────────────────────────────────────────────
-    // Gutter (direction labels) — non-selectable, non-focusable.
-    engineGutterView_.set_editable(false);
-    engineGutterView_.set_cursor_visible(false);
-    engineGutterView_.set_can_focus(false);         // Cannot receive focus.
-    engineGutterView_.set_focusable(false);
-    engineGutterView_.set_wrap_mode(Gtk::WrapMode::NONE);
-    engineGutterView_.add_css_class("monospace");
-    engineGutterView_.add_css_class("engine-gutter");
+    // Single TextView: direction label ([SEND]/[RECV]) is inserted inline as
+    // a tagged (colored) prefix in the same buffer as the content, so the
+    // whole line — label plus content — wraps and scrolls as one unit. This
+    // replaces the previous dual-TextView gutter+content split, whose
+    // mismatched wrap modes (NONE vs WORD_CHAR) let the label desync from its
+    // line once a long RECV line wrapped (RT-02).
+    engineLogView_.set_editable(false);
+    engineLogView_.set_cursor_visible(false);
+    engineLogView_.set_wrap_mode(Gtk::WrapMode::WORD_CHAR);
+    engineLogView_.add_css_class("monospace");
 
-    // Create text tags for SEND/RECV colors in the gutter.
-    auto gutterBuf = engineGutterView_.get_buffer();
-    auto gutterTags = gutterBuf->get_tag_table();
+    // Create text tags for SEND/RECV colors (scheme unchanged from before).
+    auto buf = engineLogView_.get_buffer();
+    auto tags = buf->get_tag_table();
 
     tagSend_ = Gtk::TextTag::create("send");
     tagSend_->property_foreground() = "#6ab0f3";  // Blue
     tagSend_->property_weight() = 700;
-    gutterTags->add(tagSend_);
+    tags->add(tagSend_);
 
     tagRecvOutput_ = Gtk::TextTag::create("recv_output");
     tagRecvOutput_->property_foreground() = "#8cc265";  // Green
     tagRecvOutput_->property_weight() = 700;
-    gutterTags->add(tagRecvOutput_);
+    tags->add(tagRecvOutput_);
 
     tagRecvMessage_ = Gtk::TextTag::create("recv_message");
     tagRecvMessage_->property_foreground() = "#c678dd";  // Purple
     tagRecvMessage_->property_weight() = 700;
-    gutterTags->add(tagRecvMessage_);
+    tags->add(tagRecvMessage_);
 
     tagRecvCoord_ = Gtk::TextTag::create("recv_coord");
     tagRecvCoord_->property_foreground() = "#e5c07b";  // Yellow/Orange
     tagRecvCoord_->property_weight() = 700;
-    gutterTags->add(tagRecvCoord_);
+    tags->add(tagRecvCoord_);
 
     tagRecvError_ = Gtk::TextTag::create("recv_error");
     tagRecvError_->property_foreground() = "#e06c75";  // Red
     tagRecvError_->property_weight() = 700;
-    gutterTags->add(tagRecvError_);
+    tags->add(tagRecvError_);
 
-    scrolledEngineGutter_.set_policy(Gtk::PolicyType::NEVER, Gtk::PolicyType::EXTERNAL);
-    scrolledEngineGutter_.set_child(engineGutterView_);
-    scrolledEngineGutter_.set_size_request(56, -1);  // Fixed width for "[SEND]"/"[RECV]".
+    scrolledEngineLog_.set_policy(Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
+    scrolledEngineLog_.set_child(engineLogView_);
+    scrolledEngineLog_.set_hexpand(true);
+    scrolledEngineLog_.set_vexpand(true);
 
-    // Content — selectable.
-    engineContentView_.set_editable(false);
-    engineContentView_.set_cursor_visible(false);
-    engineContentView_.set_wrap_mode(Gtk::WrapMode::WORD_CHAR);
-    engineContentView_.add_css_class("monospace");
-
-    scrolledEngineContent_.set_policy(Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
-    scrolledEngineContent_.set_child(engineContentView_);
-    scrolledEngineContent_.set_hexpand(true);
-    scrolledEngineContent_.set_vexpand(true);
-
-    // Sync gutter scroll with content scroll.
-    auto vAdj = scrolledEngineContent_.get_vadjustment();
-    vAdj->signal_value_changed().connect(sigc::mem_fun(*this, &BottomPanel::syncScroll));
-
-    // Lay out gutter + content side by side.
-    engineLogViews_.append(scrolledEngineGutter_);
-    engineLogViews_.append(scrolledEngineContent_);
-    engineLogViews_.set_vexpand(true);
+    // Batch flush: accumulate appendSend/appendRecv calls in pendingAppend_
+    // and apply them to the GTK buffer in one transaction per tick, instead
+    // of one transaction (plus a forced scroll/relayout) per line (RT-02).
+    flushTimerConn_ = Glib::signal_timeout().connect(
+        sigc::mem_fun(*this, &BottomPanel::flushPending), kFlushIntervalMs);
 
     // Command entry.
     commandEntry_.set_placeholder_text("Type command…");
@@ -121,69 +116,109 @@ BottomPanel::BottomPanel()
         false);
     commandEntry_.add_controller(keyCtrl);
 
-    engineLogBox_.append(engineLogViews_);
+    engineLogBox_.append(scrolledEngineLog_);
     engineLogBox_.append(commandEntry_);
     append_page(engineLogBox_, "Engine Log");
 
     set_size_request(-1, 120);
 }
 
-void BottomPanel::syncScroll()
+Glib::RefPtr<Gtk::TextTag> BottomPanel::tagForKind(LogTagKind tag) const
 {
-    if (syncingScroll_) return;
-    syncingScroll_ = true;
-    auto contentAdj = scrolledEngineContent_.get_vadjustment();
-    auto gutterAdj  = scrolledEngineGutter_.get_vadjustment();
-    gutterAdj->set_value(contentAdj->get_value());
-    syncingScroll_ = false;
+    switch (tag) {
+        case LogTagKind::Send:        return tagSend_;
+        case LogTagKind::RecvMessage: return tagRecvMessage_;
+        case LogTagKind::RecvCoord:   return tagRecvCoord_;
+        case LogTagKind::RecvError:   return tagRecvError_;
+        case LogTagKind::RecvOutput:
+        default:                     return tagRecvOutput_;
+    }
 }
 
-void BottomPanel::appendLogLine(const Glib::ustring &prefix, const Glib::ustring &text, Glib::RefPtr<Gtk::TextTag> tag)
+bool BottomPanel::isScrolledToBottom()
 {
-    // Append direction label to gutter.
-    auto gutterBuf = engineGutterView_.get_buffer();
-    auto gutterEnd = gutterBuf->end();
+    auto adj = scrolledEngineLog_.get_vadjustment();
+    if (!adj) return true;
+    constexpr double kEpsilon = 1.0;  // pixel tolerance
+    return adj->get_value() + adj->get_page_size() >= adj->get_upper() - kEpsilon;
+}
 
-    // Add newline before if not first line.
-    if (gutterBuf->get_char_count() > 0)
-        gutterBuf->insert(gutterEnd, "\n");
-    gutterEnd = gutterBuf->end();
-    gutterBuf->insert_with_tag(gutterEnd, prefix, tag);
+bool BottomPanel::flushPending()
+{
+    if (pendingAppend_.empty())
+        return true;  // Nothing to do this tick; keep the timer alive.
 
-    // Append content text.
-    auto contentBuf = engineContentView_.get_buffer();
-    auto contentEnd = contentBuf->end();
-    if (contentBuf->get_char_count() > 0)
-        contentBuf->insert(contentEnd, "\n");
-    contentEnd = contentBuf->end();
-    contentBuf->insert(contentEnd, text);
+    std::vector<EngineLogLine> toApply;
+    toApply.swap(pendingAppend_);
 
-    // Auto-scroll content to bottom (gutter follows via sync).
-    auto mark = contentBuf->create_mark(contentBuf->end());
-    engineContentView_.scroll_to(mark);
-    contentBuf->delete_mark(mark);
+    bool wasAtBottom = isScrolledToBottom();
+
+    // Route every queued line through the bounded model first so it is the
+    // single source of truth for how many lines are dropped.
+    std::size_t totalDropped = 0;
+    for (const auto &line : toApply)
+        totalDropped += engineLogModel_.push(line);
+
+    auto buf = engineLogView_.get_buffer();
+    buf->begin_user_action();
+
+    for (const auto &line : toApply) {
+        auto end = buf->end();
+        if (buf->get_char_count() > 0)
+            buf->insert(end, "\n");
+        end = buf->end();
+        buf->insert_with_tag(end, line.prefix, tagForKind(line.tag));
+        end = buf->end();
+        buf->insert(end, " ");
+        end = buf->end();
+        buf->insert(end, line.text);
+    }
+
+    // Trim the buffer to match the model's cap: drop exactly as many lines
+    // from the front as the model dropped, so the two never disagree.
+    if (totalDropped > 0) {
+        auto cut = buf->begin();
+        for (std::size_t i = 0; i < totalDropped && cut != buf->end(); ++i)
+            cut.forward_line();
+        buf->erase(buf->begin(), cut);
+    }
+
+    buf->end_user_action();
+
+    if (wasAtBottom) {
+        auto mark = buf->create_mark(buf->end());
+        engineLogView_.scroll_to(mark);
+        buf->delete_mark(mark);
+    }
+
+    return true;
+}
+
+void BottomPanel::appendLogLine(const Glib::ustring &prefix, const Glib::ustring &text, LogTagKind tag)
+{
+    pendingAppend_.push_back(EngineLogLine{std::string(prefix), std::string(text), tag});
 }
 
 void BottomPanel::appendSend(const Glib::ustring &text)
 {
-    appendLogLine("[SEND]", text, tagSend_);
+    appendLogLine("[SEND]", text, LogTagKind::Send);
 }
 
 void BottomPanel::appendRecv(const Glib::ustring &group, const Glib::ustring &text)
 {
-    Glib::RefPtr<Gtk::TextTag> tag = tagRecvOutput_;
+    LogTagKind tag = LogTagKind::RecvOutput;
     Glib::ustring prefix = "[" + group + "]";
 
     if (group == "Message") {
-        tag = tagRecvMessage_;
+        tag = LogTagKind::RecvMessage;
     } else if (group == "Debug" || group == "Strat") {
-        tag = tagRecvMessage_;
+        tag = LogTagKind::RecvMessage;
     } else if (group == "Coord") {
-        tag = tagRecvCoord_;
+        tag = LogTagKind::RecvCoord;
     } else if (group == "Error") {
-        tag = tagRecvError_;
+        tag = LogTagKind::RecvError;
     } else {
-        tag = tagRecvOutput_;
+        tag = LogTagKind::RecvOutput;
         prefix = "[OUTPUT]";
     }
 
@@ -203,6 +238,7 @@ void BottomPanel::clear()
 
 void BottomPanel::clearEngineLog()
 {
-    engineGutterView_.get_buffer()->set_text("");
-    engineContentView_.get_buffer()->set_text("");
+    pendingAppend_.clear();
+    engineLogModel_.clear();
+    engineLogView_.get_buffer()->set_text("");
 }

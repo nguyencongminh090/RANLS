@@ -15,6 +15,7 @@ add_executable(rapfi-gui-tests
     test_gomocup_protocol.cpp
     test_game_state.cpp
     test_rt01_throttle.cpp
+    test_engine_log_model.cpp
 
     # Sources under test (model/engine only — no UI, no gtkmm).
     ${CMAKE_SOURCE_DIR}/src/model/move_history.cpp
