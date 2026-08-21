@@ -27,6 +27,33 @@ private:
     void buildLayout();
     void connectSignals();
 
+    // UX-05: Gtk::Paned stores its divider as an absolute pixel offset, so
+    // shrinking the window clamps it down and growing the window back does
+    // not restore it (GTK does not rescale proportionally). Fix: track each
+    // paned's divider as a *fraction* of its own allocated extent and
+    // reassert the equivalent pixel position on every top-level allocation.
+    // size_allocate_vfunc is the GTK4-idiomatic hook for this -- gtkmm4
+    // widgets no longer expose a public signal_size_allocate(), but a
+    // subclass (MainWindow is-a Gtk::Widget via ApplicationWindow) can still
+    // override the virtual to run code after every allocation.
+    void size_allocate_vfunc(int width, int height, int baseline) override;
+
+    // Called from mainHPaned_/mainVPaned_'s "notify::position" handlers.
+    // Only updates the stored fraction when the paned's own extent (width
+    // for the horizontal split, height for the vertical one) is unchanged
+    // since the last time we looked -- i.e. when the position change is a
+    // genuine user drag (or our own reassertion, which is idempotent), not
+    // a GTK-internal clamp caused by the window shrinking. This is what
+    // keeps the desired ratio stable across a shrink-then-grow cycle instead
+    // of latching onto whatever tiny value the shrink clamped it to.
+    void trackPanedFraction(Gtk::Paned &paned, double &fraction, int &lastExtent, bool vertical);
+
+    // Recomputes and reasserts both panes' pixel positions from their
+    // stored fractions against their current allocated extents. Called from
+    // size_allocate_vfunc after the base-class allocation so the panes'
+    // extents already reflect the new window size.
+    void reapplyPanedFractions();
+
     // UX-03: confirm before discarding the current game (board/history/tree)
     // when it's non-empty. Shared by onNewGame() and the board-size Apply
     // handler in onBoardSize(). Runs `onConfirmed` only if the user accepts,
@@ -81,6 +108,16 @@ private:
     Gtk::Paned         mainHPaned_;
     Gtk::Paned         mainVPaned_;
     Gtk::Box           rootBox_{Gtk::Orientation::VERTICAL};
+
+    // UX-05: divider position as a fraction of the pane's own extent, plus
+    // the extent we last observed it at (see trackPanedFraction()). Initial
+    // fractions match the absolute values buildLayout() used to set at the
+    // 1280x800 default window size (640/1280, 580/800); they get corrected
+    // to the real allocated extent as soon as the window is realized.
+    double             hPanedFraction_   = 640.0 / 1280.0;
+    double             vPanedFraction_   = 580.0 / 800.0;
+    int                hPanedLastExtent_ = 0;
+    int                vPanedLastExtent_ = 0;
 
     // ── UI components ───────────────────────────────────────────────────────
     BoardView          boardView_;

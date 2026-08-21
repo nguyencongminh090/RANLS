@@ -1,9 +1,18 @@
 # UX-05 — `Gtk::Paned` divider position doesn't rescale after shrink-then-grow
 
-**Status:** open
+**Status:** ✅ FIXED
 **Area:** main window layout
 **Priority:** P3
 **Source:** discovered during UX-04's window-resize testing, 2026-08-21
+
+**Fix summary:** `mainHPaned_`/`mainVPaned_` divider positions are now tracked as a fraction of the
+pane's own extent (`hPanedFraction_`/`vPanedFraction_`, updated only on genuine user drags or our
+own reassertion — see `MainWindow::trackPanedFraction()`) and reapplied via a
+`size_allocate_vfunc()` override (`MainWindow::reapplyPanedFractions()`) after every window
+allocation, so shrinking the window and growing it back restores the board pane instead of leaving
+it clamped to whatever the shrink squeezed it down to. Both panes fixed (item 2's "things to check"
+question). Full detail, code changes, and manual Xvfb verification:
+[docs/fix-log/2026-08-21-paned-resize-does-not-restore.md](../fix-log/2026-08-21-paned-resize-does-not-restore.md).
 
 ## Context
 

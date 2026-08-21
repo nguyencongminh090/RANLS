@@ -306,6 +306,53 @@ void MainWindow::buildLayout()
     rootBox_.append(mainVPaned_);
     rootBox_.set_vexpand(true);
     set_child(rootBox_);
+
+    // UX-05: keep hPanedFraction_/vPanedFraction_ in sync with whatever the
+    // divider is actually at (initial value here, profile-preset switches in
+    // connectSignals(), or a live user drag) -- see trackPanedFraction()'s
+    // doc comment in main_window.h for how it tells a genuine change apart
+    // from a GTK-internal clamp during a resize.
+    mainHPaned_.property_position().signal_changed().connect(
+        [this]() { trackPanedFraction(mainHPaned_, hPanedFraction_, hPanedLastExtent_, false); });
+    mainVPaned_.property_position().signal_changed().connect(
+        [this]() { trackPanedFraction(mainVPaned_, vPanedFraction_, vPanedLastExtent_, true); });
+}
+
+void MainWindow::trackPanedFraction(Gtk::Paned &paned, double &fraction, int &lastExtent, bool vertical)
+{
+    const int extent = vertical ? paned.get_height() : paned.get_width();
+    if (extent > 0 && extent == lastExtent) {
+        // Extent hasn't moved since we last looked -- this position change
+        // is a genuine user drag (or our own reapplyPanedFractions() call,
+        // which recomputes the same fraction back out, so it's idempotent),
+        // not a GTK-internal clamp caused by the window itself resizing.
+        fraction = static_cast<double>(paned.get_position()) / extent;
+    }
+    lastExtent = extent;
+}
+
+void MainWindow::reapplyPanedFractions()
+{
+    const int hExtent = mainHPaned_.get_width();
+    if (hExtent > 0) {
+        mainHPaned_.set_position(static_cast<int>(hPanedFraction_ * hExtent));
+    }
+    const int vExtent = mainVPaned_.get_height();
+    if (vExtent > 0) {
+        mainVPaned_.set_position(static_cast<int>(vPanedFraction_ * vExtent));
+    }
+}
+
+void MainWindow::size_allocate_vfunc(int width, int height, int baseline)
+{
+    Gtk::ApplicationWindow::size_allocate_vfunc(width, height, baseline);
+
+    // Reassert both dividers' proportional positions now that children have
+    // been allocated at the new window size. On a plain resize this is a
+    // no-op (the fraction round-trips to the same pixel value); on a
+    // grow-back-after-shrink this is what restores the board pane instead
+    // of leaving it clamped to whatever the shrink squeezed it down to.
+    reapplyPanedFractions();
 }
 
 // ─── Signal wiring ───────────────────────────────────────────────────────────
