@@ -1,4 +1,5 @@
 #include "board_renderer.h"
+#include "board_geometry.h"
 
 #include <algorithm>
 #include <cmath>
@@ -36,8 +37,6 @@ static void set_source_from_winrate(const Cairo::RefPtr<Cairo::Context>& cr, dou
 
     cr->set_source_rgba(rr, gg, bb, alpha);
 }
-
-static constexpr double kCoordMargin  = 24.0; // px reserved for coordinate labels
 
 // ═════════════════════════════════════════════════════════════════════════════
 BoardRenderer::BoardRenderer(const BoardViewModel &viewModel)

@@ -2,7 +2,6 @@
 #include "model/settings_storage.h"
 #include "ui/settings_dialog.h"
 
-#include <iostream>
 #include <algorithm>
 #include <cctype>
 
@@ -163,7 +162,6 @@ void MainWindow::buildMenuBar()
     ruleSection->append("Standard Gomoku",      "win.set-rule::standard");
     ruleSection->append("Free Renju",           "win.set-rule::renju");
 
-    auto ruleSubmenu = Gio::MenuItem::create("Rule", ruleSection);
     gameMenu->append_submenu("Rule", ruleSection);
     gameMenu->append("Board Size",  "win.board-size");
 
@@ -469,7 +467,6 @@ void MainWindow::connectSignals()
 // ── Actions ──────────────────────────────────────────────────────────────────
 void MainWindow::onNewGame()
 {
-    std::cerr << "[DBG] onNewGame called" << std::endl;
     // newGame() resets to DEFAULT_BOARD_SIZE, which can differ from whatever
     // size the engine protocol last saw (PROTO-02) -- resync unconditionally,
     // same as every other newGame()/board-size call site.
@@ -505,12 +502,18 @@ void MainWindow::onSetRule(GameRule rule)
 
 void MainWindow::onBoardSize()
 {
-    // Simple dialog to input board size.
+    // CLEAN-01: dialog is heap-allocated (not Gtk::make_managed — it has no
+    // parent container to own it) and previously never freed. hide_on_close
+    // guarantees close()/user-close always route through hide(), so
+    // signal_hide() is the one place to reclaim it — mirrors the common
+    // gtkmm "delete self on response/hide" idiom for standalone dialogs.
     auto *dialog = new Gtk::Window();
     dialog->set_title("Board Size");
     dialog->set_transient_for(*this);
     dialog->set_modal(true);
     dialog->set_default_size(250, -1);
+    dialog->set_hide_on_close(true);
+    dialog->signal_hide().connect([dialog]() { delete dialog; });
 
     auto *box  = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 8);
     box->set_margin(16);
@@ -535,7 +538,13 @@ void MainWindow::onBoardSize()
 
 void MainWindow::onSettings()
 {
+    // CLEAN-01: see onBoardSize() above — same delete-on-hide pattern. A
+    // fresh dialog is still constructed on every open (so it always reflects
+    // the current EngineConfig/ViewConfig, unlike a reused-instance approach
+    // that would show stale values from the first open), just no longer leaked.
     auto *dialog = new SettingsDialog(*this, gameState_.engineConfig(), gameState_.viewConfig());
+    dialog->set_hide_on_close(true);
+    dialog->signal_hide().connect([dialog]() { delete dialog; });
     dialog->signal_applied.connect([this](EngineConfig eConfig, ViewConfig vConfig) {
         bool pathChanged = (eConfig.enginePath != gameState_.engineConfig().enginePath);
         gameState_.setEngineConfig(eConfig);
@@ -558,9 +567,12 @@ void MainWindow::onSettings()
 
 void MainWindow::onAbout()
 {
+    // CLEAN-01: see onBoardSize() above — same delete-on-hide pattern.
     auto *dialog = new Gtk::AboutDialog();
     dialog->set_transient_for(*this);
     dialog->set_modal(true);
+    dialog->set_hide_on_close(true);
+    dialog->signal_hide().connect([dialog]() { delete dialog; });
     dialog->set_program_name("Rapfi Analysis");
     dialog->set_version("2.0");
     dialog->set_comments("Professional Gomoku Analysis Tool");
