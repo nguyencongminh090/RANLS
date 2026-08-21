@@ -1,6 +1,7 @@
 #pragma once
 
 #include "model/game_state.h"
+#include "empty_state.h"
 
 #include <gtkmm.h>
 
@@ -33,4 +34,9 @@ private:
 
     Gtk::ListBox listBox_;
     std::vector<RowWidgets> rows_;
+
+    /// UX-01: shows "No analysis yet…" over listBox_ while it has no rows,
+    /// and hides it as soon as update() gets a non-empty pvLines (or after
+    /// New Game clears back to empty via STATE-01).
+    EmptyStateOverlay overlay_{"No analysis yet — press Analyze (F5) to see principal variations"};
 };

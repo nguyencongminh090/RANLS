@@ -14,7 +14,9 @@ BottomPanel::BottomPanel()
     moveLogView_.set_editable(false);
     moveLogView_.set_wrap_mode(Gtk::WrapMode::WORD_CHAR);
     scrolledMoveLog_.set_policy(Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
-    scrolledMoveLog_.set_child(moveLogView_);
+    moveLogOverlay_.setContent(moveLogView_);
+    moveLogOverlay_.setEmpty(true);  // Empty buffer at construction.
+    scrolledMoveLog_.set_child(moveLogOverlay_);
     append_page(scrolledMoveLog_, "Move Log");
 
     // ── Engine Log tab ──────────────────────────────────────────────────────
@@ -59,7 +61,9 @@ BottomPanel::BottomPanel()
     tags->add(tagRecvError_);
 
     scrolledEngineLog_.set_policy(Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
-    scrolledEngineLog_.set_child(engineLogView_);
+    engineLogOverlay_.setContent(engineLogView_);
+    engineLogOverlay_.setEmpty(true);  // Empty buffer at construction.
+    scrolledEngineLog_.set_child(engineLogOverlay_);
     scrolledEngineLog_.set_hexpand(true);
     scrolledEngineLog_.set_vexpand(true);
 
@@ -135,6 +139,16 @@ Glib::RefPtr<Gtk::TextTag> BottomPanel::tagForKind(LogTagKind tag) const
     }
 }
 
+void BottomPanel::updateMoveLogEmptyState()
+{
+    moveLogOverlay_.setEmpty(moveLogView_.get_buffer()->get_char_count() == 0);
+}
+
+void BottomPanel::updateEngineLogEmptyState()
+{
+    engineLogOverlay_.setEmpty(engineLogView_.get_buffer()->get_char_count() == 0);
+}
+
 bool BottomPanel::isScrolledToBottom()
 {
     auto adj = scrolledEngineLog_.get_vadjustment();
@@ -191,6 +205,8 @@ bool BottomPanel::flushPending()
         buf->delete_mark(mark);
     }
 
+    updateEngineLogEmptyState();
+
     return true;
 }
 
@@ -229,11 +245,13 @@ void BottomPanel::appendMoveLog(const Glib::ustring &text)
 {
     auto buf = moveLogView_.get_buffer();
     buf->insert(buf->end(), text);
+    updateMoveLogEmptyState();
 }
 
 void BottomPanel::clear()
 {
     moveLogView_.get_buffer()->set_text("");
+    updateMoveLogEmptyState();
 }
 
 void BottomPanel::clearEngineLog()
@@ -241,4 +259,5 @@ void BottomPanel::clearEngineLog()
     pendingAppend_.clear();
     engineLogModel_.clear();
     engineLogView_.get_buffer()->set_text("");
+    updateEngineLogEmptyState();
 }

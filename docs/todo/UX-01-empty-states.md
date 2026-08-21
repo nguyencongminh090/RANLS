@@ -1,6 +1,7 @@
 # UX-01 — Three panels render as blank rectangles instead of empty states
 
-**Status:** open
+**Status:** ✅ DONE — see [fix-log detail](../fix-log/2026-08-21-ux-01-empty-states.md) for the
+full change list, contrast calculation, and verification (build + tests + live-app screenshots).
 **Area:** analysis panel / win graph / PV view / tree views / bottom panel
 **Priority:** P2
 **Source:** UI/UX review of the idle-state screenshot + codebase review, 2026-08-21

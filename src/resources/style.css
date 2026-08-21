@@ -141,6 +141,14 @@ textview {
     font-size:        11px;
 }
 
+/* ── Empty-state placeholders (UX-01) ───────────────────────────────────── *
+ * opacity: 0.65 keeps ≥4.5:1 contrast against both Adwaita panel
+ * backgrounds (see docs/fix-log/2026-08-21-ux-01-empty-states.md). */
+.empty-state-message {
+    opacity:          0.65;
+    font-style:       italic;
+}
+
 /* ── Engine log gutter (direction labels) ──────────────────────────────────── */
 .engine-gutter {
     border-right:     1px solid rgba(128, 128, 128, 0.3);

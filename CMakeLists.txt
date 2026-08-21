@@ -43,6 +43,7 @@ set(GUI_SOURCES
     src/ui/board_renderer.cpp
     src/ui/analysis_panel.cpp
     src/ui/engine_status.cpp
+    src/ui/empty_state.cpp
     src/ui/win_graph_view.cpp
     src/ui/pv_view.cpp
     src/ui/tree_explorer.cpp

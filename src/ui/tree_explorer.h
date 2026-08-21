@@ -1,6 +1,7 @@
 #pragma once
 
 #include "model/variation_tree.h"
+#include "empty_state.h"
 
 #include <gtkmm.h>
 
@@ -48,6 +49,11 @@ private:
     Gtk::ColumnView                           columnView_;
     Glib::RefPtr<Gio::ListStore<RowData>>     store_;
     Glib::RefPtr<Gtk::SingleSelection>        selection_;
+
+    /// UX-01: shows "No moves yet…" over columnView_ while store_ is empty,
+    /// and hides it as soon as update() sees a non-empty move history (or
+    /// after New Game clears back to empty via STATE-01).
+    EmptyStateOverlay overlay_{"No moves yet — play or load a game to see move history"};
 
     /// Guards selection_->set_selected() calls made by update() itself (to
     /// reflect the current position) from being mistaken for a user click and
