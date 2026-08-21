@@ -1,9 +1,8 @@
 #include "board_view.h"
+#include "board_geometry.h"
 
 #include <algorithm>
 #include <cmath>
-
-static constexpr double kCoordMargin = 24.0;
 
 BoardView::BoardView(BoardViewModel &viewModel)
     : vm_(viewModel)

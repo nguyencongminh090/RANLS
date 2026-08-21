@@ -1,9 +1,34 @@
 # CLEAN-01 — Leaked dialogs, dead signals, and leftover debug output
 
-**Status:** open
+**Status:** ✅ DONE
 **Area:** main window / general hygiene
 **Priority:** P3
 **Source:** codebase review, 2026-08-21
+
+## Resolution (2026-08-21)
+
+Housekeeping only, no behaviour change. Fix-log detail:
+[2026-08-21-clean-01-dialog-leaks-and-dead-code.md](../fix-log/2026-08-21-clean-01-dialog-leaks-and-dead-code.md).
+
+- **Item 1 (leaked dialogs)** — fixed. All three (`onBoardSize`'s `Gtk::Window`, `SettingsDialog`,
+  `Gtk::AboutDialog`) now call `set_hide_on_close(true)` + `signal_hide().connect([dialog]{ delete
+  dialog; })`. A fresh dialog is still built per open (so `SettingsDialog` always reflects current
+  config), just no longer leaked.
+- **Item 2 (dead signals)** — **already fixed, skipped.** Verified by grep before touching anything:
+  `GameState::signal_move_selected` is emitted in `game_state.cpp:238` (NAV-01) and
+  `TreeExplorer::signal_node_selected` is emitted in `tree_explorer.cpp:75` and connected in
+  `analysis_panel.cpp:167` (UI-02). Both source items are already ✅ DONE in `TODO.md`.
+- **Item 3 (debug `std::cerr`)** — removed, along with the now-unused `<iostream>` include.
+- **Item 4 (unused local)** — removed `ruleSubmenu`. UI-03 had not touched this line yet, so no
+  conflict.
+- **Item 5 (duplicated `kCoordMargin`)** — UX-04 had not landed yet, so fixed minimally: added
+  `src/ui/board_geometry.h` with the single definition, included from both `board_renderer.cpp` and
+  `board_view.cpp`.
+
+**Verification:** `cmake -DCMAKE_CXX_FLAGS="-Wall -Wextra"` + full build — no warnings in
+`main_window.cpp`, `board_renderer.cpp`, or `board_view.cpp` (pre-existing unrelated warnings only
+in `gomocup_protocol.cpp`); `ctest` — all tests pass; manual read-through confirms dialog
+open/close/Apply and New Game/Rule menu behaviour is unchanged.
 
 ## Items
 
