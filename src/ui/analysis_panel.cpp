@@ -1,49 +1,20 @@
 #include "analysis_panel.h"
 
+#include "ui/win_graph_series.h"
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
 
-struct WinGraphData {
-    std::vector<double> black;
-    std::vector<double> white;
-};
+// UX-06: the perspective/mode conversion lives in ui/win_graph_series.h
+// (header-only, no gtkmm) so it can be unit-tested. `WinGraphData` is kept as
+// a thin alias for the existing call sites below.
+using WinGraphData = WinGraphSeries;
 
-static WinGraphData toDisplayWinrate(const std::vector<double> &raw, WinGraphMode mode)
+static WinGraphData toDisplayWinrate(const std::vector<double> &raw, WinGraphMode mode,
+                                     EnginePlaysSide enginePlays)
 {
-    WinGraphData out;
-    out.black.reserve(raw.size());
-    out.white.reserve(raw.size());
-
-    for (size_t i = 0; i < raw.size(); ++i) {
-        // UI-01: raw[i] is the eval of the position AFTER move i, scored
-        // from the side to move IN THAT position. Move 0 is Black's move,
-        // so after move 0 it is White to move — i.e. side-to-move is Black
-        // only when i is odd (after White's move), not when i is even.
-        bool blackToMove = (i % 2 == 1);
-
-        // UI-01: raw[i] may be NaN — an explicit "unevaluated" sentinel
-        // (see GameState::evalHistory). Propagate it as a gap rather than
-        // clamping it into a false 50% reading.
-        if (std::isnan(raw[i])) {
-            double nan = std::numeric_limits<double>::quiet_NaN();
-            out.black.push_back(nan);
-            out.white.push_back(nan);
-            continue;
-        }
-
-        double sideToMove = std::clamp(raw[i], 0.0, 1.0);
-        if (mode == WinGraphMode::SingleSide) {
-            double black = blackToMove ? sideToMove : (1.0 - sideToMove);
-            out.black.push_back(black);
-            out.white.push_back(1.0 - black);
-        } else {
-            // BothSide: one black-scale line only.
-            out.black.push_back(blackToMove ? sideToMove : (1.0 - sideToMove));
-            out.white.push_back(0.0);
-        }
-    }
-    return out;
+    return buildWinGraphSeries(raw, mode, enginePlays);
 }
 
 AnalysisPanel::AnalysisPanel(GameState &gameState)
@@ -123,7 +94,8 @@ void AnalysisPanel::connectSignals()
     gameState_.signal_engine_analysis.connect([this]() {
         engineStatus_.update(gameState_.engineStatus(), gameState_.pvLines(), gameState_.boardSize());
         pvView_.update(gameState_.pvLines(), gameState_.boardSize());
-        auto data = toDisplayWinrate(gameState_.evalHistory(), gameState_.viewConfig().winGraphMode);
+        auto data = toDisplayWinrate(gameState_.evalHistory(), gameState_.viewConfig().winGraphMode,
+                                     gameState_.matchConfig().enginePlays);
         winGraph_.setData(data.black, data.white, gameState_.history().currentIndex(),
                           gameState_.viewConfig().winGraphMode);
     });
@@ -138,7 +110,24 @@ void AnalysisPanel::connectSignals()
 
     // Board changes → update the WinGraph highlight and tree path.
     gameState_.signal_board_changed.connect([this]() {
-        auto data = toDisplayWinrate(gameState_.evalHistory(), gameState_.viewConfig().winGraphMode);
+        // UI-07: the PV list and engine-status readout belong to one specific
+        // board position. Refresh them straight from gameState_ here rather
+        // than relying on GameState::resetAnalysisState() choosing to emit
+        // signal_engine_analysis — it early-returns (no emit) when the model
+        // side is already empty (RT-01's `alreadyEmpty` guard), which left a
+        // stale row on screen whenever the view outran the model (e.g. a
+        // trailing engine line painted a PV for the old position after the
+        // model had already been cleared). Every position-changing GameState
+        // op runs resetAnalysisState() while !analyzing_, so pvLines() is
+        // guaranteed empty by the time this fires; this call then guarantees
+        // the panel drops to zero rows. In-place row reuse in PVView::update
+        // keeps RT-03's hover preservation intact.
+        pvView_.update(gameState_.pvLines(), gameState_.boardSize());
+        engineStatus_.update(gameState_.engineStatus(), gameState_.pvLines(),
+                             gameState_.boardSize());
+
+        auto data = toDisplayWinrate(gameState_.evalHistory(), gameState_.viewConfig().winGraphMode,
+                                     gameState_.matchConfig().enginePlays);
         winGraph_.setData(data.black, data.white, gameState_.history().currentIndex(),
                           gameState_.viewConfig().winGraphMode);
         // Update Table with the new position's history
@@ -147,7 +136,8 @@ void AnalysisPanel::connectSignals()
     });
 
     gameState_.signal_config_changed.connect([this]() {
-        auto data = toDisplayWinrate(gameState_.evalHistory(), gameState_.viewConfig().winGraphMode);
+        auto data = toDisplayWinrate(gameState_.evalHistory(), gameState_.viewConfig().winGraphMode,
+                                     gameState_.matchConfig().enginePlays);
         winGraph_.setData(data.black, data.white, gameState_.history().currentIndex(),
                           gameState_.viewConfig().winGraphMode);
     });
