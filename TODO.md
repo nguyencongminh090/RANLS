@@ -52,8 +52,14 @@ pipeline · `STATE` state lifetime · `PROTO` engine protocol · `ENG` engine li
 `NAV` navigation · `UI` display logic · `UX` usability · `TEST` harness · `CLEAN` hygiene ·
 `IO` game persistence · `DOC` documentation · `TOOL` repo tooling.
 
-Nothing currently in Backlog. IO-01/DOC-01/TOOL-01/CLEAN-02 (filed 2026-08-30, leftover-task sweep)
-shipped in Sprint 5. UI-04/UI-05/UX-06/UI-06 (filed 2026-08-30, UI review session) were committed
-straight into Sprint 6's Active section above (see `docs/sprint/current.md`). STATE-04 (filed
-2026-08-30 from UI-06's smoke pass) was likewise pulled straight into Sprint 6 Active.
+Filed 2026-08-30 from a follow-up UI review request (not yet committed to a sprint):
+
+- **UI-08.** Remove the empty-state placeholder text ("No moves yet", "No analysis yet", …); keep panels clean/empty — partial reversal of UX-01 — [detail](docs/todo/UI-08-remove-empty-state-placeholder-text.md)
+- **ENG-02.** Interrupting engine auto-play (Stop / manual analyze on the engine's turn) reverts "Engine plays" to Off (manual analyze) — builds on UI-06 — [detail](docs/todo/ENG-02-engine-play-interrupted-reverts-to-manual.md)
+- **UI-09.** Win-rate graph: SingleSide is always Black (drop the follow-engine-side coupling from UX-06, write notes); keep BothSide; make the win-rate line thicker + higher-contrast (colour-theory / WCAG pass) — [detail](docs/todo/UI-09-wingraph-single-side-black-and-thicker-line.md)
+
+Earlier: IO-01/DOC-01/TOOL-01/CLEAN-02 (filed 2026-08-30, leftover-task sweep) shipped in Sprint 5.
+UI-04/UI-05/UX-06/UI-06 (filed 2026-08-30, UI review session) were committed straight into Sprint
+6's Active section above (see `docs/sprint/current.md`). STATE-04 (filed 2026-08-30 from UI-06's
+smoke pass) was likewise pulled straight into Sprint 6 Active.
 
