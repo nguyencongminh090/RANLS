@@ -34,12 +34,19 @@ feature-area prefix + running number (e.g. `WALL-01`, `UI-07`). `✅` marks a fi
 - ✅ **UX-04.** Board rendering never verified at the extremes of the supported 5–22 range (investigation) — [detail](docs/todo/UX-04-board-size-ergonomics.md)
 - ✅ **CLEAN-01.** Leaked dialogs, dead signals, leftover debug output, duplicated constant — [detail](docs/todo/CLEAN-01-dialog-leaks-and-dead-code.md)
 - ✅ **UX-05.** `Gtk::Paned` divider position doesn't rescale when the window is resized back up after being shrunk, leaving the board squeezed — [detail](docs/todo/UX-05-paned-resize-does-not-restore.md)
+- ✅ **IO-01.** `onLoadGame()`/`onSaveGame()` are empty stubs — Load/Save Game silently do nothing [Model: Sonnet 5] — [detail](docs/todo/IO-01-load-save-game.md)
+- ✅ **DOC-01.** README.md claims GTK3; project actually targets GTK4 [Model: Haiku 4.5] — [detail](docs/todo/DOC-01-readme-gtk-mismatch.md)
+- ✅ **TOOL-01.** `check-tracking-sync.js` still isn't wired as a `Stop` hook [Model: Haiku 4.5] — [detail](docs/todo/TOOL-01-wire-tracking-sync-hook.md)
+- ✅ **CLEAN-02.** Uncommitted `build.sh` mode change; `build/`/`build_dist/` untracked and ungitignored [Model: Haiku 4.5] — [detail](docs/todo/CLEAN-02-build-artifacts-and-gitignore.md)
 
 ## Backlog
 
 Filed 2026-08-21 from a full read of `src/` (UI/UX + codebase review). Prefixes: `RT` realtime
 pipeline · `STATE` state lifetime · `PROTO` engine protocol · `ENG` engine lifecycle ·
-`NAV` navigation · `UI` display logic · `UX` usability · `TEST` harness · `CLEAN` hygiene.
+`NAV` navigation · `UI` display logic · `UX` usability · `TEST` harness · `CLEAN` hygiene ·
+`IO` game persistence · `DOC` documentation · `TOOL` repo tooling.
 
-Nothing currently in Backlog — all items are committed to Sprint 4's Active section (see
+Nothing currently in Backlog — IO-01/DOC-01/TOOL-01/CLEAN-02, filed 2026-08-30 from a leftover-task
+sweep, were committed straight to Sprint 5's Active section above via `assign-task.js` (see
 `docs/sprint/current.md`).
+
