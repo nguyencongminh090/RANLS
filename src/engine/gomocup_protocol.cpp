@@ -266,16 +266,24 @@ std::vector<std::string> GomocupProtocol::generateConfig(const EngineConfig& cfg
     return cmds;
 }
 
-std::vector<std::string> GomocupProtocol::generateAnalyzeRequest(const std::vector<Coord>& path, int multiPV) {
-    std::vector<std::string> cmds;
-    
-    // Clear state
+void GomocupProtocol::clearAnalysisState() {
+    // UI-04: drop everything accumulated for the previous think so a stale,
+    // late-arriving engine message for an old position cannot repopulate
+    // currentPVs_ and leave phantom PV rows on the new position. Called both
+    // at the start of a fresh analysis (below) and on every position change
+    // (EngineController wires this to GameState::signal_board_changed).
     currentPVs_.clear();
     currentStatus_   = {};
     currentPVIndex_  = 0;
     currentNumPV_    = 0;
     currentBestLine_.clear();
     resetCurrentPVState();
+}
+
+std::vector<std::string> GomocupProtocol::generateAnalyzeRequest(const std::vector<Coord>& path, int multiPV) {
+    std::vector<std::string> cmds;
+
+    clearAnalysisState();
 
     cmds.push_back("YXBOARD");
     for (size_t i = 0; i < path.size(); ++i) {
@@ -284,6 +292,28 @@ std::vector<std::string> GomocupProtocol::generateAnalyzeRequest(const std::vect
     }
     cmds.push_back("DONE");
     cmds.push_back("YXNBEST " + std::to_string(multiPV));
+    return cmds;
+}
+
+std::vector<std::string> GomocupProtocol::generateMoveRequest(const std::vector<Coord>& path) {
+    std::vector<std::string> cmds;
+
+    clearAnalysisState();
+
+    // Empty board: BEGIN is the dedicated "engine plays first as Black" command.
+    if (path.empty())
+        return {"BEGIN"};
+
+    // Unlike YXBOARD (analysis only), a bare BOARD ... DONE block replaces the
+    // position AND starts a search for the side-to-move's reply, which the
+    // engine returns as a single coordinate line (parsed into signal_move).
+    // UI-06 relies on that reply to auto-play the engine's move.
+    cmds.push_back("BOARD");
+    for (size_t i = 0; i < path.size(); ++i) {
+        int color = (i % 2 == 0) ? 1 : 2;
+        cmds.push_back(coordToEngine(path[i]) + "," + std::to_string(color));
+    }
+    cmds.push_back("DONE");
     return cmds;
 }
 

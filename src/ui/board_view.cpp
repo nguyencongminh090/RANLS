@@ -53,6 +53,12 @@ void BoardView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int h
 {
     // Background handled by GTK native theme transparently.
 
+    // UX-06: hand the renderer the widget's themed foreground colour so the
+    // coordinate labels (drawn on the widget background, outside the wood
+    // board) stay legible in both light and dark themes.
+    Gdk::RGBA fg = get_color();
+    renderer_.setCoordinateColor(fg.get_red(), fg.get_green(), fg.get_blue());
+
     renderer_.draw(cr, width, height);
 }
 

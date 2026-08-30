@@ -32,7 +32,10 @@ add_executable(rapfi-gui-tests
     test_ui03_renju_forbidden.cpp
     test_ui03_standard_overline.cpp
     test_io01_game_io.cpp
+    test_ui04_pv_reset.cpp
     test_ui07_pv_cross_position.cpp
+    test_ui05_gutter_clipboard.cpp
+    test_ux06_wingraph_series.cpp
 
     # Sources under test (model/engine only — no UI, no gtkmm).
     ${CMAKE_SOURCE_DIR}/src/model/move_history.cpp

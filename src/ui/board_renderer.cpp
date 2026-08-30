@@ -7,14 +7,11 @@
 // ── Board colors ─────────────────────────────────────────────────────────────
 static constexpr double kBoardR = 0.87, kBoardG = 0.72, kBoardB = 0.53; // Wood
 static constexpr double kGridR  = 0.20, kGridG  = 0.20, kGridB  = 0.18;
-// UX-03: this used to be a light gray (0.60, 0.60, 0.55) against the wood
-// board background (0.87, 0.72, 0.53) -- a WCAG contrast ratio of only
-// ~1.55:1 (need >=4.5:1 for text; measured with the standard relative-
-// luminance formula). The board doesn't follow the GTK theme (see kBoardR
-// above), so this can't rely on theme contrast guarantees the way most of
-// the app can -- it needs its own dark, warm-brown value. This one measures
-// ~8.0:1 against the board background.
-static constexpr double kCoordR = 0.20, kCoordG = 0.14, kCoordB = 0.08;
+// UX-06: the coordinate labels are drawn in the margin *outside* the wood
+// board (on the widget background), so their colour is not a fixed constant
+// any more -- BoardView feeds BoardRenderer the themed foreground colour via
+// setCoordinateColor() each frame (see BoardRenderer::coordR_/G_/B_). The
+// earlier UX-03 fix assumed the labels sat on the wood; they never did.
 static constexpr double kLastR  = 0.85, kLastG  = 0.20, kLastB  = 0.20;
 static constexpr double kHoverAlpha   = 0.4;
 static constexpr double kGhostAlpha   = 0.35;
@@ -160,7 +157,7 @@ void BoardRenderer::drawGrid(const Cairo::RefPtr<Cairo::Context> &cr)
 
     // Coordinate labels.
     if (vm_.viewConfig.showCoordinates) {
-        cr->set_source_rgb(kCoordR, kCoordG, kCoordB);
+        cr->set_source_rgb(coordR_, coordG_, coordB_);
         cr->select_font_face("sans-serif", Cairo::ToyFontFace::Slant::NORMAL,
                              Cairo::ToyFontFace::Weight::NORMAL);
         // UX-04 (confirmed defect): with only a floor and no ceiling, this

@@ -33,6 +33,24 @@ Replace the state bools with an enum first; remove the re-entrant `g_main_contex
 Header-only framework, model/protocol only, no display server; prove the harness and stop.
 [detail](docs/instruction/TEST-01-test-infrastructure.md)
 
+## UI-06 — analysis-menu-duplicate-repurpose-to-player-assignment
+
+Rename "Analysis" menu → "Engine plays" (Black/White/Off radio); auto-move semantics; new
+`MatchConfig`. Design questions resolved with user 2026-08-30 — do not re-open.
+[detail](docs/instruction/UI-06-analysis-menu-duplicate-repurpose-to-player-assignment.md)
+
+## UX-06 — settings-dialog-ui-section-broken-and-unclear
+
+Fix Show Coordinates + theme wiring, relabel/reimplement WinGraph modes, remove `uiProfile`,
+section the dialog. Depends on UI-06's `MatchConfig` for the WinGraph "Auto" perspective.
+[detail](docs/instruction/UX-06-settings-dialog-ui-section-broken-and-unclear.md)
+
+## STATE-04 — rule-and-board-size-not-persisted
+
+New `GameSetupConfig` persistence struct; save/restore rule (global preference) + board size
+(new-game default). No new UI. Watch the STATE-02 "save() rewrites the whole file" hazard.
+[detail](docs/instruction/STATE-04-rule-and-board-size-not-persisted.md)
+
 ---
 
 _Items without an entry here (RT-02/03/04, STATE-02/03, PROTO-02, NAV-01, UI-01/02/03, UX-01…04,

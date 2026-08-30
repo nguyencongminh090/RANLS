@@ -7,8 +7,10 @@
 namespace SettingsStorage {
 
 struct SettingsBundle {
-    EngineConfig engine;
-    ViewConfig   view;
+    EngineConfig    engine;
+    ViewConfig      view;
+    MatchConfig     match;
+    GameSetupConfig setup;
 };
 
 /// Settings path near executable. Falls back to source dir if needed.
@@ -18,6 +20,7 @@ std::filesystem::path settingsFilePath();
 SettingsBundle load();
 
 /// Save settings to disk. Returns false if write fails.
-bool save(const EngineConfig &engine, const ViewConfig &view);
+bool save(const EngineConfig &engine, const ViewConfig &view, const MatchConfig &match = {},
+          const GameSetupConfig &setup = {});
 
 } // namespace SettingsStorage

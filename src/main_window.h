@@ -71,10 +71,31 @@ private:
     void onQuit();
     void onSetRule(GameRule rule);
     void onBoardSize();
+
+    // STATE-04: persist the current rule (global preference) + board size
+    // (new-game default) to the settings file. Called from onSetRule() and the
+    // Board Size dialog's Apply handler. Passes all four config blocks so a
+    // save never wipes engine/view/match state (STATE-02 hazard).
+    void persistGameSetup();
     void onSettings();
     void onAbout();
     void onStartAnalysis();
     void onStopAnalysis();
+
+    // UI-06: "Engine plays <side>" auto-move.
+    /// Menu-activate handler: pushes the choice into MatchConfig (via
+    /// GameState::setMatchConfig) and persists all settings, then re-checks
+    /// whether it is now the engine's turn to move.
+    void onSetEnginePlays(EnginePlaysSide side);
+    /// Push gameState_.matchConfig() back into the "engine-plays" radio action
+    /// so the menu reflects persisted / externally-changed state. Both
+    /// directions must stay in sync (see docs/instruction/UI-06...).
+    void syncEnginePlaysMenu();
+    /// If MatchConfig says the engine plays the side to move, and the engine
+    /// process is running and Idle, ask it for a move. Scheduled on an idle
+    /// callback so it runs once after a batch of position changes (e.g. a game
+    /// load) settles, never re-entrantly. Inert while enginePlays == Off.
+    void maybeStartAutoMove();
 
     void onUndoAll();
     void onUndo();
@@ -100,6 +121,14 @@ private:
     // itself stays free of glibmm so it remains buildable in tests/CMakeLists.txt
     // (no GTK main loop there); the live Glib::signal_timeout lives here instead.
     sigc::connection analysisTickConn_;
+
+    // UI-06: the menu-bar "Engine plays" radio action, kept in sync with
+    // gameState_.matchConfig() in both directions. `autoMoveScheduled_`
+    // coalesces the idle-callback that fires the engine's auto-move so a
+    // burst of signal_board_changed emissions (a game load replays moves one
+    // by one) triggers at most one move request, for the final position.
+    Glib::RefPtr<Gio::SimpleAction> enginePlaysAction_;
+    bool autoMoveScheduled_ = false;
 
     // ── Layout ──────────────────────────────────────────────────────────────
     Gtk::HeaderBar     headerBar_;

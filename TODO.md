@@ -38,6 +38,12 @@ feature-area prefix + running number (e.g. `WALL-01`, `UI-07`). `✅` marks a fi
 - ✅ **DOC-01.** README.md claims GTK3; project actually targets GTK4 [Model: Haiku 4.5] — [detail](docs/todo/DOC-01-readme-gtk-mismatch.md)
 - ✅ **TOOL-01.** `check-tracking-sync.js` still isn't wired as a `Stop` hook [Model: Haiku 4.5] — [detail](docs/todo/TOOL-01-wire-tracking-sync-hook.md)
 - ✅ **CLEAN-02.** Uncommitted `build.sh` mode change; `build/`/`build_dist/` untracked and ungitignored [Model: Haiku 4.5] — [detail](docs/todo/CLEAN-02-build-artifacts-and-gitignore.md)
+- ✅ **UI-04.** PV view appends lines across positions instead of replacing; shows multiple `PV #1` rows with MultiPV=1 — [detail](docs/todo/UI-04-pv-view-appends-across-positions.md)
+- ✅ **UI-05.** Engine Log: move the direction tag (`[SEND]`/`[MESSAGE]`/…) into a fixed-width non-copyable gutter column so row copies contain only engine text — [detail](docs/todo/UI-05-engine-log-direction-gutter-column.md)
+- **UX-06.** Settings "UI Setting" section: Show Coordinates and Light/Dark do nothing, WinGraph Mode unclear/misrendering, UI Profile undefined; plus organise the dialog — [detail](docs/todo/UX-06-settings-dialog-ui-section-broken-and-unclear.md)
+- ✅ **UI-06.** Rename the redundant "Analysis" menu to "Engine plays" (Black/White/Off auto-move selector); new `MatchConfig`. Design resolved with user 2026-08-30 — [detail](docs/todo/UI-06-analysis-menu-duplicate-repurpose-to-player-assignment.md)
+- ✅ **UI-07.** PV panel still accumulates a stale row per analysed position (real `MESSAGE depth …` format; UI-04's fix missed this) — [detail](docs/todo/UI-07-pv-panel-still-accumulates-across-positions.md)
+- ✅ **STATE-04.** Rule and board size are never persisted — reset to Freestyle / default on every launch (found during UI-06 smoke); design resolved with user 2026-08-30 [Model: Sonnet 5] — [detail](docs/todo/STATE-04-rule-and-board-size-not-persisted.md)
 
 ## Backlog
 
@@ -46,7 +52,8 @@ pipeline · `STATE` state lifetime · `PROTO` engine protocol · `ENG` engine li
 `NAV` navigation · `UI` display logic · `UX` usability · `TEST` harness · `CLEAN` hygiene ·
 `IO` game persistence · `DOC` documentation · `TOOL` repo tooling.
 
-Nothing currently in Backlog — IO-01/DOC-01/TOOL-01/CLEAN-02, filed 2026-08-30 from a leftover-task
-sweep, were committed straight to Sprint 5's Active section above via `assign-task.js` (see
-`docs/sprint/current.md`).
+Nothing currently in Backlog. IO-01/DOC-01/TOOL-01/CLEAN-02 (filed 2026-08-30, leftover-task sweep)
+shipped in Sprint 5. UI-04/UI-05/UX-06/UI-06 (filed 2026-08-30, UI review session) were committed
+straight into Sprint 6's Active section above (see `docs/sprint/current.md`). STATE-04 (filed
+2026-08-30 from UI-06's smoke pass) was likewise pulled straight into Sprint 6 Active.
 

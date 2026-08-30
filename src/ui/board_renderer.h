@@ -33,6 +33,19 @@ public:
     /// board_renderer.cpp's kCoordMargin constant and formula).
     Geometry computeGeometry(int width, int height) const;
 
+    /// UX-06: the coordinate labels (A–O / 1–N) are drawn in the margin
+    /// *outside* the wood board, i.e. on the widget/app background — not on
+    /// the wood. A fixed dark-brown (tuned for wood by UX-03) is invisible
+    /// there under a dark theme. BoardView passes its themed foreground
+    /// colour (get_color()) here each frame so the labels track the theme
+    /// and stay legible in both light and dark.
+    void setCoordinateColor(double r, double g, double b)
+    {
+        coordR_ = r;
+        coordG_ = g;
+        coordB_ = b;
+    }
+
 private:
     // ── Layer methods (called in order) ─────────────────────────────────────
     void drawGrid(const Cairo::RefPtr<Cairo::Context> &cr);
@@ -57,6 +70,10 @@ private:
     double stoneRadius() const;
 
     const BoardViewModel &vm_;
+
+    // UX-06: coordinate-label colour, updated per-frame by BoardView from the
+    // widget's themed foreground. Defaults to the old wood-tuned dark brown.
+    double coordR_ = 0.20, coordG_ = 0.14, coordB_ = 0.08;
 
     // Computed during draw():
     double cellSize_   = 0.0;
