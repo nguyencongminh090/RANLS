@@ -1,2 +1,4 @@
 build_cmd/
+build/
+build_dist/
 .claude/worktrees/
