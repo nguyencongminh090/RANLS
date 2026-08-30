@@ -4,7 +4,7 @@
 
 **It is modified to have better support for [Rapfi](https://github.com/dhbloo/Rapfi)'s features.**
 
-**The code has been migrated to GTK3, with support for building Windows/MacOS/Linux App.**
+**The code has been migrated to GTK4, with support for building Windows/MacOS/Linux App.**
 
 Specially designed GUI for [**Yixin**](http://www.aiexp.info/pages/yixin.html)
 
@@ -49,7 +49,7 @@ entirely (e.g. for a packaging build that shouldn't need `sigc++` dev headers st
 
 **它被修改为更好地支持[Rapfi](https://github.com/dhbloo/Rapfi)的功能。**
 
-**代码已迁移到 GTK3，支持构建 Windows/MacOS/Linux 应用程序。**
+**代码已迁移到 GTK4，支持构建 Windows/MacOS/Linux 应用程序。**
 
 为[**弈心**](http://www.aiexp.info/pages/yixin-cn.html)引擎设计的图形用户界面
 
