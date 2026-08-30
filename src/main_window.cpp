@@ -1,4 +1,5 @@
 #include "main_window.h"
+#include "model/game_io.h"
 #include "model/settings_storage.h"
 #include "ui/settings_dialog.h"
 
@@ -597,14 +598,79 @@ void MainWindow::onNewGame()
     });
 }
 
-void MainWindow::onLoadGame()
+// IO-01: reuse the app's existing destructive-action / error-surfacing
+// conventions -- a heap MessageDialog that deletes itself on response, same
+// shape as confirmDiscardGame() above and the UX-02 validation feedback.
+void MainWindow::showErrorDialog(const Glib::ustring &primary, const Glib::ustring &detail)
 {
-    // TODO: file chooser dialog
+    auto *dialog = new Gtk::MessageDialog(*this, primary, /*use_markup=*/false,
+                                          Gtk::MessageType::ERROR,
+                                          Gtk::ButtonsType::OK, /*modal=*/true);
+    if (!detail.empty()) dialog->set_secondary_text(detail);
+    dialog->signal_response().connect([dialog](int) { delete dialog; });
+    dialog->set_visible(true);
 }
 
+// IO-01: Load Game. If the current game is non-empty, route through the same
+// discard confirmation New Game uses. Inside the confirmed callback: pick a
+// file, parse it (gtkmm-free GameIO::loadGame), and on success rebuild the
+// model the same way onNewGame does (newGame -> setRule -> replay moves ->
+// sendConfig to resync the engine). Parse failure shows a visible error and
+// leaves the current game untouched.
+void MainWindow::onLoadGame()
+{
+    confirmDiscardGame("Loading a game", [this]() {
+        auto dialog = Gtk::FileDialog::create();
+        dialog->set_title("Load Game");
+        dialog->open(*this, [this, dialog](Glib::RefPtr<Gio::AsyncResult> &result) {
+            std::string path;
+            try {
+                auto file = dialog->open_finish(result);
+                if (!file) return;
+                path = file->get_path();
+            } catch (const Glib::Error &) {
+                return; // user cancelled
+            }
+
+            std::string err;
+            auto loaded = GameIO::loadGame(path, &err);
+            if (!loaded) {
+                showErrorDialog("Could not load game", err);
+                return;
+            }
+
+            gameState_.newGame(loaded->boardSize);
+            gameState_.setRule(loaded->rule);
+            for (const auto &mv : loaded->moves)
+                gameState_.makeMove(mv);
+            controller_.sendConfig();
+        });
+    });
+}
+
+// IO-01: Save Game. Writes the current game line (moves + rule + board size)
+// to a user-chosen path; a write failure shows a visible error dialog.
 void MainWindow::onSaveGame()
 {
-    // TODO: file save dialog
+    auto dialog = Gtk::FileDialog::create();
+    dialog->set_title("Save Game");
+    dialog->set_initial_name("game.yxg");
+    dialog->save(*this, [this, dialog](Glib::RefPtr<Gio::AsyncResult> &result) {
+        std::string path;
+        try {
+            auto file = dialog->save_finish(result);
+            if (!file) return;
+            path = file->get_path();
+        } catch (const Glib::Error &) {
+            return; // user cancelled
+        }
+
+        std::string err;
+        if (!GameIO::saveGame(path, gameState_.boardSize(), gameState_.rule(),
+                              gameState_.history().moves(), &err)) {
+            showErrorDialog("Could not save game", err);
+        }
+    });
 }
 
 void MainWindow::onQuit()

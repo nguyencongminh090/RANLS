@@ -31,6 +31,7 @@ add_executable(rapfi-gui-tests
     test_ui02_tree_row_highlight.cpp
     test_ui03_renju_forbidden.cpp
     test_ui03_standard_overline.cpp
+    test_io01_game_io.cpp
 
     # Sources under test (model/engine only — no UI, no gtkmm).
     ${CMAKE_SOURCE_DIR}/src/model/move_history.cpp
@@ -38,6 +39,7 @@ add_executable(rapfi-gui-tests
     ${CMAKE_SOURCE_DIR}/src/model/game_state.cpp
     ${CMAKE_SOURCE_DIR}/src/model/variation_tree.cpp
     ${CMAKE_SOURCE_DIR}/src/model/settings_storage.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/game_io.cpp
     ${CMAKE_SOURCE_DIR}/src/model/renju_rule.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/gomocup_protocol.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_process.cpp

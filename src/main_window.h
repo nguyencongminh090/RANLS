@@ -60,6 +60,10 @@ private:
     // or immediately if the board is already empty (no prompt needed).
     void confirmDiscardGame(const Glib::ustring &action, std::function<void()> onConfirmed);
 
+    // IO-01: modal error dialog (OK button), self-deleting on response. Used
+    // to surface Load/Save failures visibly instead of a silent no-op.
+    void showErrorDialog(const Glib::ustring &primary, const Glib::ustring &detail);
+
     // ── Menu actions ────────────────────────────────────────────────────────
     void onNewGame();
     void onLoadGame();

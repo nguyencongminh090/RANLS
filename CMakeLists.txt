@@ -29,6 +29,7 @@ set(GUI_SOURCES
     src/model/board_view_model.cpp
     src/model/renju_rule.cpp
     src/model/settings_storage.cpp
+    src/model/game_io.cpp
 
     # Engine
     src/engine/engine_process.cpp
