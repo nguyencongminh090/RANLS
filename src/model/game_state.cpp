@@ -409,3 +409,9 @@ void GameState::setViewConfig(const ViewConfig &config)
     viewConfig_ = config;
     signal_config_changed.emit();
 }
+
+void GameState::setMatchConfig(const MatchConfig &config)
+{
+    matchConfig_ = config;
+    signal_config_changed.emit();
+}

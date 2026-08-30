@@ -29,8 +29,23 @@ public:
     /// Generate commands to send the current board state and start analysis.
     virtual std::vector<std::string> generateAnalyzeRequest(const std::vector<Coord>& path, int multiPV) = 0;
 
+    /// Generate commands that set the given position and ask the engine to
+    /// produce (and commit to) a single move for the side to move — as opposed
+    /// to generateAnalyzeRequest(), which only asks for analysis. UI-06 uses
+    /// this for the "Engine plays <side>" auto-move feature. The engine replies
+    /// with one coordinate line, surfaced via signal_move.
+    virtual std::vector<std::string> generateMoveRequest(const std::vector<Coord>& path) = 0;
+
     /// Generate the command to stop the current analysis.
     virtual std::string generateStop() = 0;
+
+    /// Discard any analysis the protocol is still accumulating for the current
+    /// think (PV lines, per-PV state machine, cached status). UI-04: a position
+    /// change invalidates in-flight analysis, and a late async engine message
+    /// for the previous position must not be able to repopulate stale PV rows.
+    /// generateAnalyzeRequest() also performs this clear at the start of a fresh
+    /// analysis.
+    virtual void clearAnalysisState() = 0;
 
     /// Generate the command to quit the engine.
     virtual std::string generateQuit() = 0;

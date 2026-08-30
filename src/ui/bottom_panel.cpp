@@ -20,45 +20,22 @@ BottomPanel::BottomPanel()
     append_page(scrolledMoveLog_, "Move Log");
 
     // ── Engine Log tab ──────────────────────────────────────────────────────
-    // Single TextView: direction label ([SEND]/[RECV]) is inserted inline as
-    // a tagged (colored) prefix in the same buffer as the content, so the
-    // whole line — label plus content — wraps and scrolls as one unit. This
-    // replaces the previous dual-TextView gutter+content split, whose
-    // mismatched wrap modes (NONE vs WORD_CHAR) let the label desync from its
-    // line once a long RECV line wrapped (RT-02).
+    // UI-05: the TextView holds ONLY the raw engine payload (one line per
+    // logical engine line). The direction/category tag ([SEND]/[MESSAGE]/…)
+    // is painted by a sibling fixed-width DrawingArea gutter, like a text
+    // editor's line-number column — visible and aligned, but not part of the
+    // selectable text, so selecting rows and copying yields payload only.
+    // The gutter paints each tag at its buffer line's live y-position, so it
+    // cannot desync from its line on wrap/resize (replaces both the old
+    // dual-TextView gutter split and the inline tagged-prefix approach — RT-02).
     engineLogView_.set_editable(false);
     engineLogView_.set_cursor_visible(false);
     engineLogView_.set_wrap_mode(Gtk::WrapMode::WORD_CHAR);
     engineLogView_.add_css_class("monospace");
 
-    // Create text tags for SEND/RECV colors (scheme unchanged from before).
-    auto buf = engineLogView_.get_buffer();
-    auto tags = buf->get_tag_table();
-
-    tagSend_ = Gtk::TextTag::create("send");
-    tagSend_->property_foreground() = "#6ab0f3";  // Blue
-    tagSend_->property_weight() = 700;
-    tags->add(tagSend_);
-
-    tagRecvOutput_ = Gtk::TextTag::create("recv_output");
-    tagRecvOutput_->property_foreground() = "#8cc265";  // Green
-    tagRecvOutput_->property_weight() = 700;
-    tags->add(tagRecvOutput_);
-
-    tagRecvMessage_ = Gtk::TextTag::create("recv_message");
-    tagRecvMessage_->property_foreground() = "#c678dd";  // Purple
-    tagRecvMessage_->property_weight() = 700;
-    tags->add(tagRecvMessage_);
-
-    tagRecvCoord_ = Gtk::TextTag::create("recv_coord");
-    tagRecvCoord_->property_foreground() = "#e5c07b";  // Yellow/Orange
-    tagRecvCoord_->property_weight() = 700;
-    tags->add(tagRecvCoord_);
-
-    tagRecvError_ = Gtk::TextTag::create("recv_error");
-    tagRecvError_->property_foreground() = "#e06c75";  // Red
-    tagRecvError_->property_weight() = 700;
-    tags->add(tagRecvError_);
+    gutterArea_.add_css_class("engine-gutter");
+    gutterArea_.set_valign(Gtk::Align::FILL);
+    gutterArea_.set_draw_func(sigc::mem_fun(*this, &BottomPanel::drawGutter));
 
     scrolledEngineLog_.set_policy(Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
     engineLogOverlay_.setContent(engineLogView_);
@@ -66,6 +43,18 @@ BottomPanel::BottomPanel()
     scrolledEngineLog_.set_child(engineLogOverlay_);
     scrolledEngineLog_.set_hexpand(true);
     scrolledEngineLog_.set_vexpand(true);
+
+    // Repaint the gutter whenever the log scrolls or relayouts (resize/wrap
+    // change the adjustment's range even when its value is unchanged).
+    if (auto vadj = scrolledEngineLog_.get_vadjustment()) {
+        vadj->signal_value_changed().connect([this] { gutterArea_.queue_draw(); });
+        vadj->signal_changed().connect([this] { gutterArea_.queue_draw(); });
+    }
+
+    engineLogRow_.append(gutterArea_);
+    engineLogRow_.append(scrolledEngineLog_);
+    engineLogRow_.set_hexpand(true);
+    engineLogRow_.set_vexpand(true);
 
     // Batch flush: accumulate appendSend/appendRecv calls in pendingAppend_
     // and apply them to the GTK buffer in one transaction per tick, instead
@@ -120,23 +109,79 @@ BottomPanel::BottomPanel()
         false);
     commandEntry_.add_controller(keyCtrl);
 
-    engineLogBox_.append(scrolledEngineLog_);
+    engineLogBox_.append(engineLogRow_);
     engineLogBox_.append(commandEntry_);
     append_page(engineLogBox_, "Engine Log");
 
     set_size_request(-1, 120);
 }
 
-Glib::RefPtr<Gtk::TextTag> BottomPanel::tagForKind(LogTagKind tag) const
+const char *BottomPanel::gutterColorForKind(LogTagKind tag)
 {
     switch (tag) {
-        case LogTagKind::Send:        return tagSend_;
-        case LogTagKind::RecvMessage: return tagRecvMessage_;
-        case LogTagKind::RecvCoord:   return tagRecvCoord_;
-        case LogTagKind::RecvError:   return tagRecvError_;
+        case LogTagKind::Send:        return "#6ab0f3";  // Blue
+        case LogTagKind::RecvMessage: return "#c678dd";  // Purple
+        case LogTagKind::RecvCoord:   return "#e5c07b";  // Yellow/Orange
+        case LogTagKind::RecvError:   return "#e06c75";  // Red
         case LogTagKind::RecvOutput:
-        default:                     return tagRecvOutput_;
+        default:                      return "#8cc265";  // Green
     }
+}
+
+void BottomPanel::drawGutter(const Cairo::RefPtr<Cairo::Context> &cr, int width, int height)
+{
+    const Pango::FontDescription fontDesc("Monospace 11");
+
+    // Fixed column width: wide enough for the longest tag, computed once.
+    if (gutterWidth_ == 0) {
+        auto probe = gutterArea_.create_pango_layout("[MESSAGE]");
+        probe->set_font_description(fontDesc);
+        int w = 0, h = 0;
+        probe->get_pixel_size(w, h);
+        gutterWidth_ = w + 12;
+        gutterArea_.set_size_request(gutterWidth_, -1);
+        return;  // a repaint follows the resize
+    }
+
+    const auto &lines = engineLogModel_.lines();
+    if (lines.empty())
+        return;
+
+    auto  vadj      = scrolledEngineLog_.get_vadjustment();
+    double scrollY  = vadj ? vadj->get_value() : 0.0;
+
+    // First buffer line at/above the top of the viewport, then walk down
+    // until we're past the bottom. O(visible lines), not O(buffer).
+    Gtk::TextBuffer::iterator iter;
+    int lineTop = 0;
+    engineLogView_.get_line_at_y(iter, static_cast<int>(scrollY), lineTop);
+
+    for (; !iter.is_end(); iter.forward_line()) {
+        int yb = 0, lh = 0;
+        engineLogView_.get_line_yrange(iter, yb, lh);
+
+        const double y = yb - scrollY;
+        if (y > height)
+            break;
+        if (y + lh < 0)
+            continue;
+
+        const std::size_t idx = static_cast<std::size_t>(iter.get_line());
+        if (idx >= lines.size())
+            break;  // payload contained a newline — stop rather than misalign
+
+        const auto &line   = lines[idx];
+        auto        layout = gutterArea_.create_pango_layout(line.prefix);
+        layout->set_font_description(fontDesc);
+
+        Gdk::RGBA rgba;
+        rgba.set(gutterColorForKind(line.tag));
+        cr->set_source_rgb(rgba.get_red(), rgba.get_green(), rgba.get_blue());
+        cr->move_to(6.0, y);
+        layout->show_in_cairo_context(cr);
+    }
+
+    (void)width;
 }
 
 void BottomPanel::updateMoveLogEmptyState()
@@ -177,15 +222,12 @@ bool BottomPanel::flushPending()
     buf->begin_user_action();
 
     for (const auto &line : toApply) {
-        auto end = buf->end();
         if (buf->get_char_count() > 0)
-            buf->insert(end, "\n");
-        end = buf->end();
-        buf->insert_with_tag(end, line.prefix, tagForKind(line.tag));
-        end = buf->end();
-        buf->insert(end, " ");
-        end = buf->end();
-        buf->insert(end, line.text);
+            buf->insert(buf->end(), "\n");
+        // Payload only — the [SEND]/[MESSAGE]/… tag is painted in the gutter
+        // (drawGutter), never inserted here, so copying selected rows yields
+        // the raw engine text with no prefixes (UI-05).
+        buf->insert(buf->end(), logLineClipboardText(line));
     }
 
     // Trim the buffer to match the model's cap: drop exactly as many lines
@@ -206,6 +248,7 @@ bool BottomPanel::flushPending()
     }
 
     updateEngineLogEmptyState();
+    gutterArea_.queue_draw();
 
     return true;
 }
@@ -260,4 +303,5 @@ void BottomPanel::clearEngineLog()
     engineLogModel_.clear();
     engineLogView_.get_buffer()->set_text("");
     updateEngineLogEmptyState();
+    gutterArea_.queue_draw();
 }

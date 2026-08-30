@@ -44,6 +44,9 @@ public:
     const ViewConfig &viewConfig() const { return viewConfig_; }
     void setViewConfig(const ViewConfig &config);
 
+    const MatchConfig &matchConfig() const { return matchConfig_; }
+    void setMatchConfig(const MatchConfig &config);
+
     // ── Accessors ───────────────────────────────────────────────────────────
     const BoardState     &board()   const { return board_; }
     const MoveHistory    &history() const { return history_; }
@@ -123,6 +126,7 @@ private:
     GameRule       rule_             = GameRule::Freestyle;
     EngineConfig   engineConfig_;
     ViewConfig     viewConfig_;
+    MatchConfig    matchConfig_;
 
     std::vector<PVLine> pvLines_;
     EngineStatus        engineStatus_;

@@ -50,6 +50,12 @@ public:
     /// Send the current board position and request analysis.
     void analyze();
 
+    /// UI-06: send the current board position and ask the engine to produce a
+    /// single move for the side to move. No-op unless the engine is Idle. The
+    /// engine's reply is delivered through signal_engine_move, exactly like a
+    /// move made via analyze() completing — MainWindow plays it on the board.
+    void requestEngineMove();
+
     /// Stop the current analysis.
     void stopAnalysis();
 

@@ -279,6 +279,30 @@ TEST_CASE("GomocupProtocol: well-formed INFO PV n / PV DONE sequence is unchange
     CHECK(rec.lastPVs[0].moves[1] == Coord{8, 8});
 }
 
+// ── UI-06: generateMoveRequest asks the engine to actually move ───────────
+//
+// The "Engine plays <side>" auto-move feature needs a request that STARTS A
+// SEARCH and yields a committed move, unlike generateAnalyzeRequest() (YXBOARD,
+// analysis only). generateMoveRequest() emits a bare `BOARD ... DONE` block for
+// a non-empty position and `BEGIN` for the empty board.
+
+TEST_CASE("GomocupProtocol: generateMoveRequest emits a searching BOARD/DONE block") {
+    GomocupProtocol proto(15);
+    auto cmds = proto.generateMoveRequest({Coord{7, 7}, Coord{7, 8}});
+    REQUIRE(cmds.size() == 4);
+    CHECK(cmds.front() == "BOARD");
+    CHECK(cmds[1].substr(cmds[1].size() - 2) == ",1"); // first stone is Black
+    CHECK(cmds[2].substr(cmds[2].size() - 2) == ",2"); // second stone is White
+    CHECK(cmds.back() == "DONE");
+}
+
+TEST_CASE("GomocupProtocol: generateMoveRequest on the empty board uses BEGIN") {
+    GomocupProtocol proto(15);
+    auto cmds = proto.generateMoveRequest({});
+    REQUIRE(cmds.size() == 1);
+    CHECK(cmds.front() == "BEGIN");
+}
+
 // ── PROTO-02: A1-notation coordinates must use the real board size ─────────
 //
 // parseEngineCoord() used to hardcode `15 - rowNumber` when decoding A1-style

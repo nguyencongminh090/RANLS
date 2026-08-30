@@ -58,7 +58,22 @@ void EngineController::connectProtocolSignals() {
     });
 
     protocol_->signal_analysis.connect([this](const std::vector<PVLine>& pvs, const EngineStatus& status) {
+        // UI-04: only accept analysis while a search is actually in flight.
+        // After STOP (or natural completion) the engine can still emit a few
+        // trailing MESSAGE/INFO lines for the just-finished position; if the
+        // user has meanwhile changed position, forwarding those would push the
+        // previous position's PV rows onto the new one.
+        if (!gameState_.isAnalyzing()) return;
         gameState_.setAnalysisData(pvs, status);
+    });
+
+    // UI-04: a position change (move / undo / redo / New Game / load) discards
+    // any analysis the protocol is still holding for the old position. The
+    // model side (GameState::resetAnalysisState, STATE-01) already clears
+    // pvLines_; this clears the upstream protocol buffer that feeds it so a
+    // late async engine line can't refill it.
+    gameState_.signal_board_changed.connect([this]() {
+        protocol_->clearAnalysisState();
     });
 
     protocol_->signal_database_entry.connect([this](const DatabaseEntry& entry) {
@@ -206,6 +221,24 @@ void EngineController::analyze()
         engine_.sendLine(cmd);
     }
 
+    gameState_.setAnalyzing(true);
+    setState(EngineState::Analyzing);
+}
+
+void EngineController::requestEngineMove()
+{
+    if (state_ != EngineState::Idle) return;
+
+    auto path = gameState_.currentPath();
+
+    for (const auto& cmd : protocol_->generateMoveRequest(path)) {
+        engine_.sendLine(cmd);
+    }
+
+    // Same state bookkeeping as analyze(): the engine is now searching, and
+    // position mutations must be blocked until its move arrives. protocol_->
+    // signal_move (wired in connectProtocolSignals) flips us back to Idle and
+    // emits signal_engine_move when the reply comes in.
     gameState_.setAnalyzing(true);
     setState(EngineState::Analyzing);
 }

@@ -164,17 +164,44 @@ SettingsBundle load()
     out.view.winGraphMode = (mode == static_cast<int>(WinGraphMode::SingleSide))
                                 ? WinGraphMode::SingleSide
                                 : WinGraphMode::BothSide;
-    if (!get("ui_profile").empty()) out.view.uiProfile = get("ui_profile");
+    // UX-06: `ui_profile` was removed (never had a spec). An old settings
+    // file may still carry the key — it is silently ignored here, not an error.
     if (!get("hotkey_analyze").empty()) out.view.hotkeyAnalyze = get("hotkey_analyze");
     if (!get("hotkey_stop").empty()) out.view.hotkeyStop = get("hotkey_stop");
     if (!get("hotkey_undo").empty()) out.view.hotkeyUndo = get("hotkey_undo");
     if (!get("hotkey_redo").empty()) out.view.hotkeyRedo = get("hotkey_redo");
     if (!get("hotkey_new_game").empty()) out.view.hotkeyNewGame = get("hotkey_new_game");
 
+    // UI-06: MatchConfig — which side (if any) the engine auto-plays. Any
+    // value outside {0,1,2} falls back to the struct default (Off).
+    int enginePlays = parseNumber<int>(get("engine_plays"), static_cast<int>(out.match.enginePlays));
+    switch (enginePlays) {
+        case static_cast<int>(EnginePlaysSide::Black): out.match.enginePlays = EnginePlaysSide::Black; break;
+        case static_cast<int>(EnginePlaysSide::White): out.match.enginePlays = EnginePlaysSide::White; break;
+        default:                                       out.match.enginePlays = EnginePlaysSide::Off;   break;
+    }
+
+    // STATE-04: GameSetupConfig — last-selected rule (global preference) and
+    // board size (new-game default). Same validate-or-fallback idiom as the
+    // engine_plays block: any out-of-range value falls back to the struct
+    // default (Freestyle / DEFAULT_BOARD_SIZE).
+    int rule = parseNumber<int>(get("rule"), static_cast<int>(out.setup.rule));
+    switch (rule) {
+        case static_cast<int>(GameRule::Freestyle): out.setup.rule = GameRule::Freestyle; break;
+        case static_cast<int>(GameRule::Standard):  out.setup.rule = GameRule::Standard;  break;
+        case static_cast<int>(GameRule::Renju):     out.setup.rule = GameRule::Renju;     break;
+        default:                                    out.setup.rule = GameSetupConfig{}.rule; break;
+    }
+    int boardSize = parseNumber<int>(get("board_size"), out.setup.boardSize);
+    out.setup.boardSize = (boardSize >= 5 && boardSize <= MAX_BOARD_SIZE)
+                              ? boardSize
+                              : GameSetupConfig{}.boardSize;
+
     return out;
 }
 
-bool save(const EngineConfig &engine, const ViewConfig &view)
+bool save(const EngineConfig &engine, const ViewConfig &view, const MatchConfig &match,
+          const GameSetupConfig &setup)
 {
     auto path = settingsFilePath();
     std::filesystem::create_directories(path.parent_path());
@@ -197,12 +224,15 @@ bool save(const EngineConfig &engine, const ViewConfig &view)
     out << "show_move_numbers=" << (view.showMoveNumbers ? "true" : "false") << "\n";
     out << "show_coordinates=" << (view.showCoordinates ? "true" : "false") << "\n";
     out << "win_graph_mode=" << static_cast<int>(view.winGraphMode) << "\n";
-    out << "ui_profile=" << escapeValue(view.uiProfile) << "\n";
     out << "hotkey_analyze=" << escapeValue(view.hotkeyAnalyze) << "\n";
     out << "hotkey_stop=" << escapeValue(view.hotkeyStop) << "\n";
     out << "hotkey_undo=" << escapeValue(view.hotkeyUndo) << "\n";
     out << "hotkey_redo=" << escapeValue(view.hotkeyRedo) << "\n";
     out << "hotkey_new_game=" << escapeValue(view.hotkeyNewGame) << "\n";
+    out << "engine_plays=" << static_cast<int>(match.enginePlays) << "\n";
+    // STATE-04: last-selected rule (global preference) + board size (new-game default).
+    out << "rule=" << static_cast<int>(setup.rule) << "\n";
+    out << "board_size=" << setup.boardSize << "\n";
 
     return out.good();
 }

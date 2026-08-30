@@ -1,5 +1,7 @@
 #pragma once
 
+#include "board_state.h"   // GameRule, DEFAULT_BOARD_SIZE, MAX_BOARD_SIZE
+
 #include <string>
 #include <cstdint>
 #include <unordered_map>
@@ -12,8 +14,10 @@ enum class AppTheme {
 };
 
 enum class WinGraphMode {
-    SingleSide = 0,   ///< Show side-to-move specific values as black/white lines.
-    BothSide   = 1    ///< Show one normalized black-scale line.
+    SingleSide = 0,   ///< One perspective-correct win-rate line (Black by default,
+                      ///< or the engine's side when MatchConfig::enginePlays is set).
+    BothSide   = 1    ///< Two perspective-correct lines: Black and White, each shown
+                      ///< in that colour's own perspective.
 };
 
 /// Configuration for View/UI options.
@@ -24,13 +28,38 @@ struct ViewConfig {
     bool     showDatabase    = true;
     WinGraphMode winGraphMode = WinGraphMode::BothSide;
 
-    // UI customization profile + hotkeys.
-    std::string uiProfile      = "Default";
+    // Hotkeys.
     std::string hotkeyAnalyze  = "F5";
     std::string hotkeyStop     = "Escape";
     std::string hotkeyUndo     = "Ctrl+Z";
     std::string hotkeyRedo     = "Ctrl+Y";
     std::string hotkeyNewGame  = "Ctrl+N";
+};
+
+/// Which side, if any, the engine plays automatically (UI-06). `Off` (the
+/// default) means the engine never self-moves — the toolbar Analyze/Stop
+/// one-shot path is the only way to invoke it.
+enum class EnginePlaysSide {
+    Off   = 0,
+    Black = 1,
+    White = 2
+};
+
+/// Match / play configuration (UI-06). Kept separate from EngineConfig and
+/// ViewConfig on purpose — this governs auto-play behaviour, not engine
+/// search parameters or UI presentation.
+struct MatchConfig {
+    EnginePlaysSide enginePlays = EnginePlaysSide::Off;
+};
+
+/// Persistence shape for the last-selected game rule and board size (STATE-04).
+/// This is the *settings-file* representation only — GameState keeps its own
+/// `rule_` / board members and its `setRule()` / `newGame()` API. `rule` is a
+/// global preference restored on every launch; `boardSize` is the default size
+/// for future launches and New Game.
+struct GameSetupConfig {
+    GameRule rule      = GameRule::Freestyle;
+    int      boardSize = DEFAULT_BOARD_SIZE;
 };
 
 /// Engine configuration.

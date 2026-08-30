@@ -33,7 +33,6 @@ private:
     bool                enginePathValid_ = false;
     Gtk::DropDown       dropTheme_;
     Gtk::DropDown       dropWinGraphMode_;
-    Gtk::DropDown       dropProfile_;
     Gtk::CheckButton    checkMoveNumbers_;
     Gtk::CheckButton    checkCoordinates_;
     Gtk::Entry          entryHotkeyAnalyze_;

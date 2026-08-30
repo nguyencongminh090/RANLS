@@ -70,8 +70,18 @@ void PVView::update(const std::vector<PVLine> &pvLinesIn, int boardSize)
     // stationary pointer never receives a fresh `enter`.
 
     // Shrink: drop rows from the tail.
+    //
+    // UI-07: remove the GtkListBoxRow, not the Box inside it. Gtk::ListBox
+    // wraps a non-row child in an implicitly-created GtkListBoxRow on
+    // append(), so the Box is the list box's *grandchild*; passing it to
+    // remove() makes GTK 4 log "Tried to remove non-child" and do nothing.
+    // That left one orphaned row widget on screen per clear — the reported
+    // "PV panel accumulates a stale row per analysed position" — while
+    // rows_.size() happily went to zero and every model-layer assertion
+    // stayed green. `listRow` is now created explicitly (below) so this
+    // removal targets a real child of listBox_.
     while (rows_.size() > newCount) {
-        listBox_.remove(*rows_.back().row);
+        listBox_.remove(*rows_.back().listRow);
         rows_.pop_back();
     }
 
@@ -100,7 +110,11 @@ void PVView::update(const std::vector<PVLine> &pvLinesIn, int boardSize)
         movesLabel->set_halign(Gtk::Align::START);
         row->append(*movesLabel);
 
-        listBox_.append(*row);
+        // UI-07: wrap explicitly instead of relying on Gtk::ListBox's implicit
+        // wrapping, so the shrink path above has a real child to remove.
+        auto *listRow = Gtk::make_managed<Gtk::ListBoxRow>();
+        listRow->set_child(*row);
+        listBox_.append(*listRow);
 
         // Hover → emit PV preview signal. Looks up the row's *current* moves
         // by index at hover time (rather than capturing them by value here)
@@ -114,7 +128,7 @@ void PVView::update(const std::vector<PVLine> &pvLinesIn, int boardSize)
             });
         row->add_controller(motion);
 
-        rows_.push_back({row, idxLabel, scoreLabel, depthLabel, movesLabel, {}});
+        rows_.push_back({listRow, row, idxLabel, scoreLabel, depthLabel, movesLabel, {}});
     }
 
     // Update content in place for every row (existing rows are reused as-is;

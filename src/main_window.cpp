@@ -22,6 +22,32 @@ static void setButtonTooltipAndLabel(Gtk::Button &button, const Glib::ustring &t
     button.update_property(Gtk::Accessible::Property::LABEL, value);
 }
 
+// UX-06: apply a theme preset through GTK Settings (this build links no
+// libadwaita). `System` leaves the GTK/desktop default untouched; Light/Dark
+// force a concrete theme.
+//
+// gtk-application-prefer-dark-theme alone is a no-op on many GTK4 setups
+// (it only nudges themes that ship a matching `-dark` variant and honour the
+// hint) -- on this machine (KDE/Breeze GTK theme) it does nothing visible.
+// Forcing gtk-theme-name to Adwaita / Adwaita-dark is the portable lever:
+// Adwaita ships inside GTK itself, so both names always resolve. Safe to
+// call at startup and again on every Settings Apply.
+static void applyAppTheme(AppTheme theme)
+{
+    auto settings = Gtk::Settings::get_default();
+    if (!settings) return;
+
+    if (theme == AppTheme::System) {
+        settings->reset_property("gtk-application-prefer-dark-theme");
+        settings->reset_property("gtk-theme-name");
+        return;
+    }
+
+    const bool dark = (theme == AppTheme::Dark);
+    settings->property_gtk_application_prefer_dark_theme() = dark;
+    settings->property_gtk_theme_name() = dark ? "Adwaita-dark" : "Adwaita";
+}
+
 static std::string trim(const std::string &s)
 {
     size_t b = 0, e = s.size();
@@ -109,6 +135,22 @@ MainWindow::MainWindow()
     auto saved = SettingsStorage::load();
     gameState_.setEngineConfig(saved.engine);
     gameState_.setViewConfig(saved.view);
+    gameState_.setMatchConfig(saved.match);
+    syncEnginePlaysMenu();
+
+    // STATE-04: restore the last-selected rule (global preference) and the
+    // persisted new-game board size. The board is empty at startup so the
+    // newGame() call here discards nothing. The engine is not started until
+    // the user first analyzes; onStartAnalysis() issues sendConfig() right
+    // after startEngine(), so the engine sees the restored size/rule then.
+    gameState_.setRule(saved.setup.rule);
+    if (saved.setup.boardSize != gameState_.boardSize())
+        gameState_.newGame(saved.setup.boardSize);
+
+    // UX-06: apply the persisted theme explicitly at startup (independent of
+    // the signal_config_changed path above, so it holds even if the wiring
+    // order changes).
+    applyAppTheme(gameState_.viewConfig().theme);
 
     // Global hotkeys from ViewConfig.
     auto keyCtrl = Gtk::EventControllerKey::create();
@@ -169,6 +211,23 @@ void MainWindow::buildMenuBar()
     });
     add_action(ruleAction);
 
+    // UI-06: "Engine plays" side selector — a radio-string action mirroring
+    // set-rule above. Replaces the old "Analysis" menu, which only duplicated
+    // the toolbar's Analyze/Stop buttons. Unlike set-rule, this one DOES seed
+    // its state from persisted config: syncEnginePlaysMenu() is called after
+    // SettingsStorage::load() in the constructor.
+    enginePlaysAction_ = Gio::SimpleAction::create_radio_string("engine-plays", "off");
+    enginePlaysAction_->signal_activate().connect(
+        [this](const Glib::VariantBase &param) {
+            auto val = Glib::VariantBase::cast_dynamic<Glib::Variant<Glib::ustring>>(param).get();
+            enginePlaysAction_->change_state(Glib::Variant<Glib::ustring>::create(val));
+
+            if (val == "black")      onSetEnginePlays(EnginePlaysSide::Black);
+            else if (val == "white") onSetEnginePlays(EnginePlaysSide::White);
+            else                     onSetEnginePlays(EnginePlaysSide::Off);
+        });
+    add_action(enginePlaysAction_);
+
     // ── Build menu model ────────────────────────────────────────────────────
     auto menuModel = Gio::Menu::create();
 
@@ -194,19 +253,20 @@ void MainWindow::buildMenuBar()
     auto playersMenu = Gio::Menu::create();
     playersMenu->append("Settings…", "win.settings");
 
-    // Analysis menu.
-    auto analysisMenu = Gio::Menu::create();
-    analysisMenu->append("▶ Analyze",  "win.analyze");
-    analysisMenu->append("■ Stop",     "win.stop");
+    // Engine plays menu (UI-06) — pick which side the engine auto-plays.
+    auto enginePlaysMenu = Gio::Menu::create();
+    enginePlaysMenu->append("Black", "win.engine-plays::black");
+    enginePlaysMenu->append("White", "win.engine-plays::white");
+    enginePlaysMenu->append("Off",   "win.engine-plays::off");
 
     // Help menu.
     auto helpMenu = Gio::Menu::create();
     helpMenu->append("About", "win.about");
 
-    menuModel->append_submenu("Game",     gameMenu);
-    menuModel->append_submenu("Players",  playersMenu);
-    menuModel->append_submenu("Analysis", analysisMenu);
-    menuModel->append_submenu("Help",     helpMenu);
+    menuModel->append_submenu("Game",         gameMenu);
+    menuModel->append_submenu("Players",      playersMenu);
+    menuModel->append_submenu("Engine plays", enginePlaysMenu);
+    menuModel->append_submenu("Help",         helpMenu);
 
     menuBar_.set_menu_model(menuModel);
 }
@@ -398,6 +458,10 @@ void MainWindow::connectSignals()
         }
         bottomPanel_.clear();
         bottomPanel_.appendMoveLog(log);
+
+        // UI-06: a position change may hand the turn to the side the engine
+        // plays — check if an auto-move is now due.
+        maybeStartAutoMove();
     });
 
     // UI-03: rule changed → refresh the persistent rule indicator and
@@ -476,35 +540,15 @@ void MainWindow::connectSignals()
 
     // Config changes → update view and theme.
     gameState_.signal_config_changed.connect([this]() {
-        // Apply theme preferences.
-        auto theme = gameState_.viewConfig().theme;
-        auto settings = Gtk::Settings::get_default();
-        if (settings) {
-            if (theme == AppTheme::Dark) {
-                settings->property_gtk_application_prefer_dark_theme() = true;
-            } else if (theme == AppTheme::Light) {
-                settings->property_gtk_application_prefer_dark_theme() = false;
-            } else { // System
-                settings->reset_property("gtk-application-prefer-dark-theme");
-            }
-        }
+        // UX-06: theme (System/Light/Dark) — driven through GTK Settings
+        // (no libadwaita in this build). System leaves the GTK default alone.
+        applyAppTheme(gameState_.viewConfig().theme);
 
-        // Apply board view changes (Move numbers, Coordinates).
+        // Apply board view changes (Move numbers, Coordinates). The renderer
+        // reads vm_.viewConfig.showCoordinates; refreshing the model here and
+        // queuing a redraw is what makes the Settings toggle take effect.
         boardViewModel_.update();
         boardView_.queueRedraw();
-
-        // Apply a simple profile preset for layout split.
-        auto profile = gameState_.viewConfig().uiProfile;
-        if (profile == "Compact") {
-            mainVPaned_.set_position(640);
-            mainHPaned_.set_position(700);
-        } else if (profile == "Review") {
-            mainVPaned_.set_position(520);
-            mainHPaned_.set_position(560);
-        } else {
-            mainVPaned_.set_position(580);
-            mainHPaned_.set_position(640);
-        }
     });
     
     // Analysis state changes → toggle UI interaction.
@@ -534,6 +578,13 @@ void MainWindow::connectSignals()
     // Engine made a move → auto-play on the board.
     controller_.signal_engine_move.connect([this](Coord pos) {
         gameState_.makeMove(pos);
+    });
+
+    // UI-06: when the engine transitions to Idle (just started, or a search
+    // finished) it may already be its turn under "Engine plays <side>".
+    controller_.signal_state_changed.connect([this](EngineController::EngineState state) {
+        if (state == EngineController::EngineState::Idle)
+            maybeStartAutoMove();
     });
 
     // Start/Stop/Reload buttons in EngineStatusView.
@@ -590,10 +641,11 @@ void MainWindow::confirmDiscardGame(const Glib::ustring &action, std::function<v
 void MainWindow::onNewGame()
 {
     confirmDiscardGame("Starting a new game", [this]() {
-        // newGame() resets to DEFAULT_BOARD_SIZE, which can differ from whatever
-        // size the engine protocol last saw (PROTO-02) -- resync unconditionally,
-        // same as every other newGame()/board-size call site.
-        gameState_.newGame();
+        // STATE-04: keep the current (persisted) board size as the new-game
+        // size rather than snapping back to DEFAULT_BOARD_SIZE. Still resync
+        // the engine unconditionally -- the protocol may have last seen a
+        // different size (PROTO-02), same as every other newGame() call site.
+        gameState_.newGame(gameState_.boardSize());
         controller_.sendConfig();
     });
 }
@@ -687,6 +739,18 @@ void MainWindow::onSetRule(GameRule rule)
 {
     gameState_.setRule(rule);
     controller_.sendConfig();
+    persistGameSetup();
+}
+
+// STATE-04: write the current rule + board size to the settings file. Every
+// SettingsStorage::save() call must pass the *current* value of all four
+// config blocks (STATE-02 hazard: save() truncates and rewrites the whole
+// file, so a default-constructed block wipes the others).
+void MainWindow::persistGameSetup()
+{
+    SettingsStorage::save(gameState_.engineConfig(), gameState_.viewConfig(),
+                          gameState_.matchConfig(),
+                          {gameState_.rule(), gameState_.boardSize()});
 }
 
 // UI-03: keeps the persistent header-bar rule indicator in sync with
@@ -733,6 +797,10 @@ void MainWindow::onBoardSize()
         confirmDiscardGame("Changing the board size", [this, size]() {
             gameState_.newGame(size);
             controller_.sendConfig();
+            // STATE-04: persist the new size as the new-game default. Inside
+            // the confirm-success callback so a cancelled confirm saves
+            // nothing, and after newGame() so boardSize() reflects the change.
+            persistGameSetup();
         });
         dialog->close();
     });
@@ -757,7 +825,12 @@ void MainWindow::onSettings()
         bool pathChanged = (eConfig.enginePath != gameState_.engineConfig().enginePath);
         gameState_.setEngineConfig(eConfig);
         gameState_.setViewConfig(vConfig);
-        SettingsStorage::save(eConfig, vConfig);
+        // Preserve the UI-06 MatchConfig block and the STATE-04 GameSetupConfig
+        // block — the Settings dialog owns neither, so pass their current values
+        // through rather than letting save()'s default arguments reset
+        // engine_plays / rule / board_size (STATE-02 hazard).
+        SettingsStorage::save(eConfig, vConfig, gameState_.matchConfig(),
+                              {gameState_.rule(), gameState_.boardSize()});
 
         if (pathChanged && !eConfig.enginePath.empty()) {
             // ENG-01: stopEngine() completes asynchronously now, so a
@@ -810,6 +883,64 @@ void MainWindow::onStartAnalysis()
 void MainWindow::onStopAnalysis()
 {
     controller_.stopAnalysis();
+}
+
+// ── UI-06: "Engine plays <side>" auto-move ───────────────────────────────────
+void MainWindow::onSetEnginePlays(EnginePlaysSide side)
+{
+    MatchConfig mc = gameState_.matchConfig();
+    if (mc.enginePlays == side) { maybeStartAutoMove(); return; }
+    mc.enginePlays = side;
+    gameState_.setMatchConfig(mc);
+    // Persist alongside the other config blocks (same pattern as onSettings()).
+    // STATE-04: pass GameSetupConfig too so rule / board_size aren't wiped.
+    SettingsStorage::save(gameState_.engineConfig(), gameState_.viewConfig(),
+                          gameState_.matchConfig(),
+                          {gameState_.rule(), gameState_.boardSize()});
+    maybeStartAutoMove();
+}
+
+void MainWindow::syncEnginePlaysMenu()
+{
+    if (!enginePlaysAction_) return;
+    const char *state = "off";
+    switch (gameState_.matchConfig().enginePlays) {
+        case EnginePlaysSide::Black: state = "black"; break;
+        case EnginePlaysSide::White: state = "white"; break;
+        case EnginePlaysSide::Off:   state = "off";   break;
+    }
+    enginePlaysAction_->change_state(Glib::Variant<Glib::ustring>::create(state));
+}
+
+void MainWindow::maybeStartAutoMove()
+{
+    if (autoMoveScheduled_) return;
+    if (gameState_.matchConfig().enginePlays == EnginePlaysSide::Off) return;
+
+    // Defer to an idle callback: signal_board_changed can fire many times in
+    // one synchronous batch (a game load replays every move), and GameState
+    // rejects a makeMove() while analyzing_ is set — so requesting a move
+    // mid-batch would both fire on the wrong position and break the replay.
+    // The flag coalesces the burst into a single deferred check.
+    autoMoveScheduled_ = true;
+    Glib::signal_idle().connect_once([this]() {
+        autoMoveScheduled_ = false;
+
+        const auto plays = gameState_.matchConfig().enginePlays;
+        if (plays == EnginePlaysSide::Off) return;
+        if (!engine_.isRunning()) return;
+        if (controller_.engineState() != EngineController::EngineState::Idle) return;
+
+        const Stone toMove = gameState_.board().sideToMove();
+        const bool enginesTurn =
+            (plays == EnginePlaysSide::Black && toMove == Stone::Black) ||
+            (plays == EnginePlaysSide::White && toMove == Stone::White);
+        if (!enginesTurn) return;
+
+        // After the engine's move lands, side-to-move flips to the other
+        // colour, so this check fails next time — no infinite loop.
+        controller_.requestEngineMove();
+    });
 }
 
 void MainWindow::onUndoAll()

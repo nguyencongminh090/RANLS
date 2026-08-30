@@ -128,7 +128,12 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
         cr->stroke();
     }
 
-    if (mode_ == WinGraphMode::SingleSide && whiteData_.size() == blackData_.size()) {
+    // UX-06: BothSide draws a second (White) perspective-correct line on top
+    // of the Black line above. SingleSide passes an empty whiteData_ and only
+    // the single Black-slot line is drawn. The size guard is kept so a
+    // transient mismatch never indexes out of range.
+    if (mode_ == WinGraphMode::BothSide && !whiteData_.empty()
+        && whiteData_.size() == blackData_.size()) {
         // UX-03: the black/white series were told apart by hue alone
         // (blue vs. yellow). Dash the white series so the two lines also
         // differ by shape, not just color.
