@@ -1,7 +1,20 @@
 # UI-07 — PV panel still accumulates a stale row per position (UI-04 regression / incomplete fix)
 
-**Status:** 🚧 ACTIVE (Sprint 6) — filed 2026-08-30 from a user smoke test with real Rapfi output. Dispatched via `/implement-task`.
-**Progress (2026-08-30):** Code fix landed + 2 real-format regression tests. Root cause was NOT the
+**Status:** ✅ FIXED — 2026-08-30 (second pass). Root cause was `PVView::update()`'s shrink path
+calling `Gtk::ListBox::remove()` with the row's inner `Gtk::Box` (a *grandchild* of the list box,
+because `append()` implicitly wraps it in a `GtkListBoxRow`). GTK 4 answers that with
+`Gtk-WARNING: Tried to remove non-child` and removes nothing, so every PV clear leaked one orphan
+row widget that stayed on screen forever while `rows_.size()` correctly went to zero — and the next
+analysis appended its row *below* the orphan. `PVView` now creates the `Gtk::ListBoxRow` explicitly
+and removes that. Reproduced and then verified against the **real** `pbrain-rapfi` driving the real
+`EngineController` + real `AnalysisPanel` widget tree: pre-fix showed the reported two "PV #1" rows
+(3-stone `K5 →…` on top, 4-stone `J4 →…` below); post-fix it is 1 row during analysis, 0 after a
+position change, at MultiPV=1 and MultiPV=4. New gtkmm-linking test binary `rapfi-gui-ui-tests`
+(`tests/test_ui07_pv_view_rows.cpp`, 4 cases) asserts the rendered widget tree, not just the model.
+125/125 + 4/4 tests pass, build clean. See
+`docs/fix-log/2026-08-30-ui07-pvview-listbox-orphan-rows.md`.
+
+**Progress (2026-08-30, first pass — necessary but insufficient):** Code fix landed + 2 real-format regression tests. Root cause was NOT the
 protocol layer (verified clean by the new tests replaying the exact `MESSAGE depth` log) — it was
 `AnalysisPanel::signal_board_changed` never refreshing `pvView_`/`engineStatus_`, leaving PV
 clearing dependent on `resetAnalysisState()` emitting `signal_engine_analysis` (which RT-01's

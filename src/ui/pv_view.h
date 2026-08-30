@@ -24,6 +24,14 @@ private:
     /// Gtk::EventControllerMotion (and any in-progress hover) survives a
     /// content refresh instead of being destroyed and recreated. See RT-03.
     struct RowWidgets {
+        /// The GtkListBoxRow actually parented to `listBox_`. UI-07: PVView
+        /// used to append the bare `row` Box and let GTK auto-wrap it in an
+        /// implicit GtkListBoxRow — but then `listBox_.remove(*row)` was
+        /// passed a *grandchild* of the list box, which GTK 4 rejects with
+        /// "Tried to remove non-child" and silently ignores, so shrinking
+        /// left the row on screen forever. Keep the wrapper explicitly so
+        /// removal targets a real child.
+        Gtk::ListBoxRow *listRow = nullptr;
         Gtk::Box   *row         = nullptr;
         Gtk::Label *idxLabel    = nullptr;
         Gtk::Label *scoreLabel  = nullptr;
