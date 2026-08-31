@@ -14,10 +14,22 @@ BottomPanel::BottomPanel()
     moveLogView_.set_editable(false);
     moveLogView_.set_wrap_mode(Gtk::WrapMode::WORD_CHAR);
     scrolledMoveLog_.set_policy(Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
-    moveLogOverlay_.setContent(moveLogView_);
-    moveLogOverlay_.setEmpty(true);  // Empty buffer at construction.
-    scrolledMoveLog_.set_child(moveLogOverlay_);
+    // UI-12: the TextView is the ScrolledWindow's DIRECT child (it implements
+    // `Gtk::Scrollable`). Wrapping it in `EmptyStateOverlay` (a plain
+    // `Gtk::Overlay`, a no-op passthrough since UI-08) made the ScrolledWindow
+    // interpose an implicit `Gtk::Viewport`, so `scrollMoveLogToEnd`'s
+    // `scroll_to` was a silent no-op and each new move fell off the bottom —
+    // the identical bug fixed for the Engine Log in UI-10 (PR #4).
+    scrolledMoveLog_.set_child(moveLogView_);
     append_page(scrolledMoveLog_, "Move Log");
+
+    // UI-12: one permanent right-gravity mark at the end of the Move Log buffer
+    // — `scrollMoveLogToEnd` scrolls to THIS instead of creating and immediately
+    // deleting a throwaway mark each append. GTK's scroll-to-mark is deferred
+    // until after the post-insert relayout; deleting the mark before that pass
+    // ran dropped the queued scroll and left new moves off the bottom.
+    moveLogEndMark_ = moveLogView_.get_buffer()->create_mark(
+        moveLogView_.get_buffer()->end(), /*left_gravity=*/false);
 
     // ── Engine Log tab ──────────────────────────────────────────────────────
     // UI-05: the TextView holds ONLY the raw engine payload (one line per
@@ -219,24 +231,25 @@ void BottomPanel::drawGutter(const Cairo::RefPtr<Cairo::Context> &cr, int width,
     (void)width;
 }
 
-void BottomPanel::updateMoveLogEmptyState()
+void BottomPanel::scrollMoveLogToEnd()
 {
-    moveLogOverlay_.setEmpty(moveLogView_.get_buffer()->get_char_count() == 0);
-}
-
-void BottomPanel::updateEngineLogEmptyState()
-{
-    engineLogOverlay_.setEmpty(engineLogView_.get_buffer()->get_char_count() == 0);
-}
-
-void BottomPanel::scrollToEnd(Gtk::TextView &view)
-{
-    auto buf  = view.get_buffer();
-    auto mark = buf->create_mark(buf->end(), /*left_gravity=*/false);
     // yalign 1.0 pins the target to the bottom edge so the freshly-appended
-    // last line is fully visible, not just scrolled minimally into view.
-    view.scroll_to(mark, 0.0, 0.0, 1.0);
-    buf->delete_mark(mark);
+    // last line is fully visible, not just scrolled minimally into view. The
+    // scroll is to `moveLogEndMark_` (a persistent right-gravity mark), and it
+    // is re-issued once on the next idle so it survives GTK's deferred
+    // scroll-to-mark pass after the insert relayout — an immediate-only scroll
+    // runs against a stale TextView height during a fast burst and lands short.
+    if (!moveLogEndMark_)
+        return;
+    moveLogView_.scroll_to(moveLogEndMark_, 0.0, 0.0, 1.0);
+    if (!moveLogScrollIdlePending_) {
+        moveLogScrollIdlePending_ = true;
+        Glib::signal_idle().connect_once([this] {
+            moveLogScrollIdlePending_ = false;
+            if (moveLogEndMark_)
+                moveLogView_.scroll_to(moveLogEndMark_, 0.0, 0.0, 1.0);
+        });
+    }
 }
 
 sticky_scroll::ScrollGeometry BottomPanel::engineLogGeometry() const
@@ -333,7 +346,6 @@ bool BottomPanel::flushPending()
         Glib::signal_idle().connect_once([this] { programmaticScroll_ = false; });
     }
 
-    updateEngineLogEmptyState();
     gutterArea_.queue_draw();
 
     return true;
@@ -374,14 +386,18 @@ void BottomPanel::appendMoveLog(const Glib::ustring &text)
 {
     auto buf = moveLogView_.get_buffer();
     buf->insert(buf->end(), text);
-    updateMoveLogEmptyState();
-    scrollToEnd(moveLogView_);
+    // UI-12: always follow the newest move to the bottom. The "don't yank a
+    // user who scrolled up" behaviour (UI-10's remembered-intent + value_changed
+    // machinery) is deliberately out of scope here — the Move Log is appended in
+    // bursts (a saved game replays every move at once), and a single short-landed
+    // scroll mid-burst would latch a naive pre-append at-bottom check permanently
+    // off. See docs/todo/UI-12-*.md.
+    scrollMoveLogToEnd();
 }
 
 void BottomPanel::clear()
 {
     moveLogView_.get_buffer()->set_text("");
-    updateMoveLogEmptyState();
 }
 
 void BottomPanel::clearEngineLog()
@@ -393,6 +409,5 @@ void BottomPanel::clearEngineLog()
     // the next analysis run follows its output from the first line.
     stickToBottom_      = true;
     programmaticScroll_ = false;
-    updateEngineLogEmptyState();
     gutterArea_.queue_draw();
 }
