@@ -2,6 +2,7 @@
 
 #include "engine_log_model.h"
 #include "empty_state.h"
+#include "sticky_scroll.h"
 #include <gtkmm.h>
 #include <sigc++/sigc++.h>
 #include <string>
@@ -59,12 +60,36 @@ private:
     /// so it can be used directly as a Glib::signal_timeout callback.
     bool flushPending();
 
-    /// Whether the engine log view's vertical scroll is currently at (or
-    /// within a small tolerance of) the bottom.
-    bool isScrolledToBottom();
+    /// Current vertical scroll geometry of the Engine Log's ScrolledWindow.
+    sticky_scroll::ScrollGeometry engineLogGeometry() const;
+
+    /// Scroll the Engine Log to its end via a persistent end-of-buffer mark,
+    /// re-issued once on the next idle so it survives GTK's deferred-scroll
+    /// pass after the batch relayout (UI-10). Carries the caller's already-made
+    /// "stick to bottom" decision — never re-evaluates at-bottom itself.
+    void scrollEngineLogToBottom();
 
     /// Scroll a log TextView so its last line is visible at the bottom edge.
+    /// Used by the Move Log only (the Engine Log has its own UI-10 path above).
     static void scrollToEnd(Gtk::TextView &view);
+
+    /// UI-10: pixel tolerance for "at the bottom".
+    static constexpr double kBottomEpsilon = 1.0;
+
+    /// UI-10: persisted "the user wants the Engine Log pinned to the newest
+    /// line" intent. Starts true; cleared only when the user scrolls up
+    /// (see the vadjustment value_changed handler); restored when they scroll
+    /// back to the bottom. A stale mid-stream geometry read never clears it.
+    bool stickToBottom_ = true;
+
+    /// UI-10: guards against queueing more than one idle re-scroll at a time.
+    bool scrollIdlePending_ = false;
+
+    /// UI-10: right-gravity mark permanently anchored at the end of the engine
+    /// log buffer, created once. Scrolling to a stable mark (instead of
+    /// create-scroll-delete each tick) lets GTK's deferred scroll still find
+    /// its target after the post-insert relayout.
+    Glib::RefPtr<Gtk::TextBuffer::Mark> engineLogEndMark_;
 
     Gtk::ScrolledWindow scrolledMoveLog_;
     Gtk::TextView       moveLogView_;
