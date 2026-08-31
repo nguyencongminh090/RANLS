@@ -149,7 +149,11 @@ const char *BottomPanel::gutterColorForKind(LogTagKind tag)
 
 void BottomPanel::drawGutter(const Cairo::RefPtr<Cairo::Context> &cr, int width, int height)
 {
-    const Pango::FontDescription fontDesc("Monospace 11");
+    // Paint the tags in the exact font (family + size) the Engine Log's
+    // TextView resolved from its `monospace` CSS class, so a gutter tag lines
+    // up visually with the log row it labels instead of guessing "Monospace 11".
+    const Pango::FontDescription fontDesc =
+        engineLogView_.get_pango_context()->get_font_description();
 
     // Fixed column width: wide enough for the longest tag, computed once.
     if (gutterWidth_ == 0) {
