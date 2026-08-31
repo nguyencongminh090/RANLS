@@ -46,9 +46,16 @@ BottomPanel::BottomPanel()
     gutterArea_.set_draw_func(sigc::mem_fun(*this, &BottomPanel::drawGutter));
 
     scrolledEngineLog_.set_policy(Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
-    engineLogOverlay_.setContent(engineLogView_);
-    engineLogOverlay_.setEmpty(true);  // Empty buffer at construction.
-    scrolledEngineLog_.set_child(engineLogOverlay_);
+    // UI-10: the TextView is the ScrolledWindow's DIRECT child. It must be —
+    // `Gtk::TextView` implements `Gtk::Scrollable`, so the ScrolledWindow drives
+    // the TextView's own vertical scroll and `engineLogView_.scroll_to(mark,…)`
+    // actually moves the view. Wrapping it in `EmptyStateOverlay` (a plain
+    // `Gtk::Overlay`, not `Gtk::Scrollable` — and a no-op passthrough since
+    // UI-08) made the ScrolledWindow insert an implicit `Gtk::Viewport`: the
+    // Viewport then scrolled while the TextView sat at full height inside it,
+    // so every `scroll_to` on the TextView was a silent no-op and the log
+    // stayed pinned to the FIRST line during analysis.
+    scrolledEngineLog_.set_child(engineLogView_);
     scrolledEngineLog_.set_hexpand(true);
     scrolledEngineLog_.set_vexpand(true);
 
@@ -57,13 +64,18 @@ BottomPanel::BottomPanel()
     if (auto vadj = scrolledEngineLog_.get_vadjustment()) {
         vadj->signal_value_changed().connect([this] {
             gutterArea_.queue_draw();
-            // UI-10: the scroll position has actually settled here (value
-            // moved, layout is current), so the geometry is trustworthy —
-            // this is the ONE place we let it (re)decide stickiness. A user
-            // dragging up clears the intent; scrolling back to the bottom
-            // (or our own auto-scroll landing there) restores it. We do NOT
-            // recompute this on signal_changed (range grew but value didn't):
-            // that fires mid-stream with a not-yet-settled `upper`.
+            // UI-10: a value change we did NOT cause means the user moved the
+            // view (wheel, scrollbar drag, keyboard) — re-derive the "follow
+            // the tail" intent from where they landed: at the bottom => keep
+            // sticking, scrolled up => stop until they come back down.
+            //
+            // While `programmaticScroll_` is set, the change is our own
+            // auto-scroll or the front-trim (RT-02) shifting content — those
+            // transiently read "not at bottom" against a mid-flush layout and
+            // must NOT be mistaken for the user scrolling away (doing so was
+            // latching stickiness permanently off).
+            if (programmaticScroll_)
+                return;
             stickToBottom_ =
                 sticky_scroll::updateStickOnSettle(engineLogGeometry(), kBottomEpsilon);
         });
@@ -255,6 +267,9 @@ void BottomPanel::scrollEngineLogToBottom()
             scrollIdlePending_ = false;
             if (engineLogEndMark_)
                 engineLogView_.scroll_to(engineLogEndMark_, 0.0, 0.0, 1.0);
+            // This tick's programmatic scrolling is done — value_changed may
+            // now be trusted as a real user action again.
+            programmaticScroll_ = false;
         });
     }
 }
@@ -272,6 +287,14 @@ bool BottomPanel::flushPending()
     // tick must not silently disable auto-scroll (that was the bug).
     const bool wantStick = sticky_scroll::shouldStickToBottom(
         stickToBottom_, engineLogGeometry(), kBottomEpsilon);
+
+    // Everything from here to the trailing scroll is our own doing: the buffer
+    // insert, the RT-02 front-trim, and the auto-scroll all move the
+    // vadjustment. Suppress the value_changed "did the user scroll away?"
+    // check for the duration so a mid-flush transient can't latch stickiness
+    // off. Cleared on the scroll's trailing idle (or the plain idle below when
+    // we are not sticking this tick).
+    programmaticScroll_ = true;
 
     // Route every queued line through the bounded model first so it is the
     // single source of truth for how many lines are dropped.
@@ -302,8 +325,13 @@ bool BottomPanel::flushPending()
 
     buf->end_user_action();
 
-    if (wantStick)
-        scrollEngineLogToBottom();
+    if (wantStick) {
+        scrollEngineLogToBottom();  // clears programmaticScroll_ on its idle
+    } else {
+        // Not scrolling this tick — just drop the suppression once the trim's
+        // value_changed (if any) has drained.
+        Glib::signal_idle().connect_once([this] { programmaticScroll_ = false; });
+    }
 
     updateEngineLogEmptyState();
     gutterArea_.queue_draw();
@@ -363,7 +391,8 @@ void BottomPanel::clearEngineLog()
     engineLogView_.get_buffer()->set_text("");
     // UI-10: an empty log is trivially "at the bottom" — resume stickiness so
     // the next analysis run follows its output from the first line.
-    stickToBottom_ = true;
+    stickToBottom_      = true;
+    programmaticScroll_ = false;
     updateEngineLogEmptyState();
     gutterArea_.queue_draw();
 }

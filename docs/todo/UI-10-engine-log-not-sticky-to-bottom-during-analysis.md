@@ -1,6 +1,48 @@
 # UI-10 — Engine Log doesn't stay scrolled to the end while the engine is analysing
 
-**Status:** ✅ FIXED (2026-08-31, branch `ui-10/engine-log-not-sticky-to-bottom-during-analysis`)
+**Status:** ✅ FIXED (2026-08-31 — see the correction note directly below; the
+first pass, PR #2, did not actually fix it)
+
+## Correction — 2026-08-31 (PR: `ui-10/engine-log-scrolls-wrong-widget`)
+
+User retested PR #2 and reported the Engine Log **still shows the first line,
+not the last**, during analysis. The first pass never had live-engine
+verification and its regression test only covered the pure `sticky_scroll`
+helpers, so a wrong assumption slipped through.
+
+**Actual root cause:** the Engine Log `TextView` was not the `Gtk::ScrolledWindow`'s
+direct child — `BottomPanel` wrapped it in `EmptyStateOverlay` (a `Gtk::Overlay`,
+a no-op passthrough since UI-08). `Gtk::Overlay` is not `Gtk::Scrollable`, so
+`Gtk::ScrolledWindow` silently interposes a `GtkViewport`; the Viewport scrolls
+while the `TextView` sits at full height inside it, making **every
+`engineLogView_.scroll_to(...)` a no-op** — including the persistent-mark call
+PR #2 added. `isScrolledToBottom()` always read "at bottom" (the viewport-side
+adjustment barely moved) so nothing ever forced a scroll either.
+
+**Fix (this pass):**
+- `scrolledEngineLog_.set_child(engineLogView_)` directly — the `TextView`
+  implements `Gtk::Scrollable`, so `scroll_to(mark, 0,0,1.0)` now actually moves
+  the view. `engineLogOverlay_` stays a member only so the (no-op)
+  `updateEngineLogEmptyState()` call site compiles.
+- `value_changed` no longer re-derives the "follow the tail" intent while a new
+  `programmaticScroll_` guard is set (across `flushPending`'s buffer mutation +
+  RT-02 front-trim + auto-scroll), so a mid-flush transient can't latch
+  stickiness permanently off now that the adjustment genuinely moves.
+- Regression tests upgraded from pure-helper only to **real-widget behavioural**
+  cases in `rapfi-gui-ui-tests` (`tests/test_ui10_engine_log_scroll_target.cpp`):
+  TextView is the scroller's direct child; 400 streamed lines leave the view
+  pinned to the bottom; a user scrolled to the top is not yanked down by new
+  lines. All three fail on the pre-fix tree, pass after.
+
+**Known follow-up (not in scope here):** the Move Log has the identical
+structure (`scrolledMoveLog_` wraps `moveLogView_` in `moveLogOverlay_`), so
+`scrollToEnd(moveLogView_)` is also a silent no-op — the Move Log does not
+auto-scroll to the newest move. Not reported, left for a separate `CODE`.
+
+---
+
+_First-pass notes (PR #2) retained below for history — its stated root cause was
+incomplete._
 
 Fixed on branch — the orchestrator moves this line to Done post-merge.
 

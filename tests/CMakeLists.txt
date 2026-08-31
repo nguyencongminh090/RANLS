@@ -103,8 +103,10 @@ pkg_check_modules(GTKMM REQUIRED IMPORTED_TARGET gtkmm-4.0)
 add_executable(rapfi-gui-ui-tests
     test_ui07_pv_view_rows.cpp
     test_ui08_no_empty_state_text.cpp
+    test_ui10_engine_log_scroll_target.cpp
 
     # UI sources under test.
+    ${CMAKE_SOURCE_DIR}/src/ui/bottom_panel.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/pv_view.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/analysis_panel.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/empty_state.cpp

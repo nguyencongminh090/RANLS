@@ -60,6 +60,8 @@ Sprint 8 (opened 2026-08-31, goal "Engine-log sticky-bottom + About-window rewri
 
 ## Backlog
 
+- 🔲 **UI-12.** Move Log doesn't auto-scroll to the newest move — same `Gtk::Overlay`-breaks-`Gtk::Scrollable` no-op that UI-10's second pass fixed for the Engine Log — [detail](docs/todo/UI-12-move-log-not-sticky-to-bottom.md)
+
 Filed 2026-08-21 from a full read of `src/` (UI/UX + codebase review). Prefixes: `RT` realtime
 pipeline · `STATE` state lifetime · `PROTO` engine protocol · `ENG` engine lifecycle ·
 `NAV` navigation · `UI` display logic · `UX` usability · `TEST` harness · `CLEAN` hygiene ·
@@ -70,7 +72,10 @@ Filed 2026-08-30 from a follow-up UI review request and from `features/versionin
 `docs/sprint/archive/sprint-7.md`).
 
 Filed 2026-08-31 from user bug report / request (UI-10, UI-11) — **both pulled into Sprint 8's
-Active section 2026-08-31** (see above and `docs/sprint/current.md`). Backlog now empty.
+Active section 2026-08-31** (see above and `docs/sprint/current.md`).
+
+Filed 2026-08-31 from UI-10's second pass (the Engine Log fix surfaced the same latent no-op in
+the Move Log): UI-12.
 
 Earlier: IO-01/DOC-01/TOOL-01/CLEAN-02 (filed 2026-08-30, leftover-task sweep) shipped in Sprint 5.
 UI-04/UI-05/UX-06/UI-06 (filed 2026-08-30, UI review session) were committed straight into Sprint

@@ -85,6 +85,12 @@ private:
     /// UI-10: guards against queueing more than one idle re-scroll at a time.
     bool scrollIdlePending_ = false;
 
+    /// UI-10: set while `flushPending` is mutating the buffer and auto-scrolling
+    /// so the vadjustment `value_changed` handler does not mistake our own
+    /// scroll / RT-02 front-trim for the user scrolling away from the bottom.
+    /// Cleared on the trailing idle of that flush.
+    bool programmaticScroll_ = false;
+
     /// UI-10: right-gravity mark permanently anchored at the end of the engine
     /// log buffer, created once. Scrolling to a stable mark (instead of
     /// create-scroll-delete each tick) lets GTK's deferred scroll still find
@@ -104,6 +110,10 @@ private:
     /// UI-08: thin passthrough wrappers around the log TextViews (UX-01 used
     /// them to show idle-state placeholder messages; that text was removed —
     /// empty logs now render clean).
+    /// UI-10: `engineLogOverlay_` is no longer in the widget tree — a
+    /// `Gtk::Overlay` between the ScrolledWindow and the TextView is not
+    /// `Gtk::Scrollable` and broke `TextView::scroll_to`. Kept only so
+    /// `updateEngineLogEmptyState()`'s (no-op) call site still compiles.
     EmptyStateOverlay moveLogOverlay_{""};
     EmptyStateOverlay engineLogOverlay_{""};
 
