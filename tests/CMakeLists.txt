@@ -105,8 +105,10 @@ add_executable(rapfi-gui-ui-tests
     test_ui08_no_empty_state_text.cpp
     test_ui10_engine_log_scroll_target.cpp
     test_ui12_move_log_scroll_target.cpp
+    test_ui11_about_dialog.cpp
 
     # UI sources under test.
+    ${CMAKE_SOURCE_DIR}/src/ui/about_dialog.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/bottom_panel.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/pv_view.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/analysis_panel.cpp
@@ -130,6 +132,7 @@ add_executable(rapfi-gui-ui-tests
 target_include_directories(rapfi-gui-ui-tests PRIVATE
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_BINARY_DIR}/generated   # UI-11: generated version.h / build_info.h
 )
 
 target_link_libraries(rapfi-gui-ui-tests PRIVATE
