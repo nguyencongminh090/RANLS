@@ -55,7 +55,7 @@ Sprint 7 (opened 2026-08-31, goal "UI polish + release prep") — pulled from Ba
 
 Sprint 8 (opened 2026-08-31, goal "Engine-log sticky-bottom + About-window rewrite") — pulled from Backlog:
 
-- 🔲 **UI-10.** Engine Log doesn't stay scrolled to the end while the engine is analysing — new streamed lines land off-screen; expected sticky-bottom during analysis — [detail](docs/todo/UI-10-engine-log-not-sticky-to-bottom-during-analysis.md)
+- ✅ **UI-10.** Engine Log doesn't stay scrolled to the end while the engine is analysing — new streamed lines land off-screen; expected sticky-bottom during analysis — [detail](docs/todo/UI-10-engine-log-not-sticky-to-bottom-during-analysis.md)
 - 🔲 **UI-11.** Rewrite the About window: custom deliberate layout (logo + info column), add developer credit (Nguyen Minh), tech/build info, links & protocol; correct the app name to `RANLS`; keep `APP_VERSION` single-sourced (REL-02) — [detail](docs/todo/UI-11-about-window-rewrite.md)
 
 ## Backlog

@@ -1,6 +1,59 @@
 # UI-10 — Engine Log doesn't stay scrolled to the end while the engine is analysing
 
-**Status:** 🔲 ACTIVE (Sprint 8, pulled 2026-08-31)
+**Status:** ✅ FIXED (2026-08-31, branch `ui-10/engine-log-not-sticky-to-bottom-during-analysis`)
+
+Fixed on branch — the orchestrator moves this line to Done post-merge.
+
+**Real cause (of the three listed suspects): a combination of #2 (primary) and #1
+(compounding).**
+
+- **#2 — `scrollToEnd()`'s create-scroll-`delete_mark` triplet (primary).** Each
+  flush tick created a fresh end-of-buffer `Mark`, called `view.scroll_to(mark,…)`,
+  then **deleted the mark on the same line**. GTK4's `scroll_to_mark` defers the
+  actual scroll to after the next size-allocate/relayout when the TextView height
+  isn't yet validated (always true right after a batched insert during a fast
+  stream); the pending scroll is keyed on that mark, and deleting it before the
+  deferred pass runs drops the queued scroll. The view only caught up on the odd
+  tick where layout happened to be current, so it lagged behind the newest line.
+- **#1 — stale `upper` in `isScrolledToBottom()` (compounding).** Once lagging, the
+  next tick's `value + page_size >= upper − 1px` check read against an `upper` that
+  had already grown past the last `value` the (short) scroll left behind, so
+  `wasAtBottom` latched `false` and auto-scroll switched itself off entirely —
+  turning an intermittent lag into a permanent one.
+- #3 (insert racing the layout pass) is real but is a symptom of #2, not a separate
+  cause — a stable scroll target survives the race.
+
+## Fix
+
+- New persistent right-gravity `engineLogEndMark_`, created once in the ctor, never
+  deleted. `flushPending` scrolls to it and re-issues the same `scroll_to` once on
+  the next `Glib::signal_idle` (after GTK's relayout), so the deferred scroll
+  always has a live target. Move Log keeps the old `scrollToEnd()` helper unchanged.
+- New persisted `stickToBottom_` intent (starts `true`). `flushPending` decides via
+  the pure `sticky_scroll::shouldStickToBottom(remembered, preAppendGeometry, eps)`
+  — a lone stale "not at bottom" read on the flush tick can no longer disable
+  stickiness. The intent is flipped in exactly one place: the vadjustment
+  `value_changed` handler (`updateStickOnSettle`), where the geometry is settled
+  and trustworthy — user scrolls up ⇒ stop sticking; user returns to bottom (or our
+  auto-scroll lands there) ⇒ resume. `clearEngineLog()` resets it to `true`.
+- Sticky-bottom-only gate preserved: the deferred idle re-scroll carries the
+  pre-insert decision and never re-evaluates at-bottom.
+
+## Verification
+
+- `rm -rf build && cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug && cmake --build build -j4`
+  — clean, no new warnings.
+- `ctest --output-on-failure` — 3/3: `rapfi-gui-tests` (incl. 5 new UI-10 cases),
+  `rapfi-gui-ui-tests`, `rel02-version-single-source`.
+- New `tests/test_ui10_sticky_scroll.cpp` (pure `sticky_scroll` helper): at-bottom ⇒
+  stick; scrolled-up ⇒ no stick; **stale-`upper` mid-stream ⇒ intent keeps it
+  stuck**; settle handler is the sole flip point.
+- Manual live-engine streaming test **NOT run** — no Gomocup engine binary
+  available on this machine (`pbrain-rapfi`/`rapfi` not on PATH). GUI launches
+  cleanly with the new wiring (no crash, no GTK warnings). Diagnosis is
+  code + GTK4-semantics reasoning; confidence high on suspect #2 as primary.
+
+**Original task description follows.**
 **Area:** bottom panel / Engine Log (`src/ui/bottom_panel.cpp`)
 **Priority:** P2
 **Source:** filed 2026-08-31 from a user bug report
