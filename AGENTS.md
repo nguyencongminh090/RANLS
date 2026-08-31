@@ -37,10 +37,13 @@ links to detail files that `check-tracking-sync.js` doesn't check.
 ## Dispatch flow: `/implement-task <CODE> [project-dir]`
 
 Reads `TODO.md`'s Active section + `docs/todo/<CODE>-*.md` + `docs/instruction/<CODE>-*.md` (and
-any linked `docs/design/*.md`), then dispatches one bounded subagent with the scope, boundaries,
-and verification criteria spelled out — see `.claude/commands/implement-task.md` for the exact
-contract. `project-dir` defaults to `.` (this repo root) since YixinBoard keeps its own
-`TODO.md`/`docs/` here rather than under a subdirectory.
+any linked `docs/design/*.md`), then dispatches one bounded subagent — in an isolated worktree
+branch — with the scope, boundaries, and verification criteria spelled out. The agent implements +
+commits + updates tracking files **on the branch** and stops; the orchestrator then verifies and
+drives the `github` skill PR lifecycle (push → PR with label + milestone → squash-merge → sprint/
+board sync). Work never lands as a hand commit on `main` (the Sprint 7 anti-pattern). See
+`.claude/commands/implement-task.md` for the exact contract. `project-dir` defaults to `.` (this
+repo root) since YixinBoard keeps its own `TODO.md`/`docs/` here rather than under a subdirectory.
 
 Do not implement a Backlog item directly in the main session unless the user explicitly says to do
 it now — dispatch it instead, so it runs isolated from this session's context (per `CLAUDE.md`

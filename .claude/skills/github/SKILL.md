@@ -15,6 +15,27 @@ docs disagree, the local docs win and you fix GitHub.
 Keep ceremony low: no required reviewers (would block a solo dev), no per-commit board sync. The
 board and milestones are reconciled only at sprint planning and sprint close.
 
+**Low ceremony is not "no ceremony".** These are mandatory, not aspirational:
+
+- **One squash-merged PR per `CODE`** — never one bundled PR per sprint, never a hand commit on
+  `main` for code. `main` is PR-protected; a manual code commit there is a dead end (can't be
+  pushed) even when it looks like it worked locally.
+- The `area:<prefix>` + `sprint:<N>` label, the `Sprint <N>` milestone, and the board card get
+  created/assigned **as part of shipping the `CODE`** (see the PR lifecycle) — not left for a
+  cleanup pass that never happens.
+- `/implement-task <CODE>` automates this whole lifecycle. Doing a `CODE` by hand means doing the
+  identical seven "PR lifecycle" steps below by hand — same steps, nothing dropped.
+
+### Lessons (retro)
+
+- **Sprint 6** shipped as one PR covering six `CODE`s (`fix/ui-07-pv-cross-position`, #1). Too
+  coarse — a revert or review comment can't isolate one task. One PR per `CODE` from here.
+- **Sprint 7** (ENG-02, UI-08, UI-09, REL-02) was implemented by hand in the main session and
+  committed as a single local commit (`314d434`) straight onto `main`: no branches, no PRs, no
+  labels/milestone/board, and — because `main` requires a PR — unpushable. This is the exact
+  failure mode `/implement-task` and this skill exist to prevent. Recovering it means resetting
+  `main` to `origin/main` and replaying each `CODE` as its own branch+PR.
+
 ## Branching
 
 - Work happens on a short-lived branch off `main`, one branch per `CODE`.
@@ -64,8 +85,17 @@ Keep the `Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>` trailer.
 
 ## PR lifecycle for one CODE
 
-1. Branch: `git switch -c <code>/<slug>` off an up-to-date `main`.
-2. Implement per `docs/instruction/<CODE>-*.md`; write the regression test (`CLAUDE.md` bug-fix rule).
+This is what `/implement-task` runs. By hand, run the same steps — do not shortcut.
+
+0. Preflight: `git fetch origin && git switch main && git pull --ff-only`, working tree clean.
+   Ensure the `area:<prefix>` + `sprint:<N>` labels and the `Sprint <N>` milestone exist (create
+   the missing ones now — see "Labels" and "Milestones = sprints" below).
+1. Branch: `git switch -c <code>/<slug>` off an up-to-date `main` (`<slug>` from the
+   `docs/todo/<CODE>-<slug>.md` filename).
+2. Implement per `docs/instruction/<CODE>-*.md`; write the regression test (`CLAUDE.md` bug-fix
+   rule). Commit in chunks, every message `<CODE>: <imperative summary>` with the `Co-Authored-By`
+   trailer. Update the tracking files **on this branch** (`docs/todo/` ✅ + `TODO.md` ✅ +
+   `docs/fix-log.md` row + detail file).
 3. Push and open the PR:
    ```
    gh pr create --title "<CODE>: <summary>" \
@@ -80,10 +110,12 @@ Keep the `Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>` trailer.
    local `docs/todo/` file is not an Issue).
 4. Let CI run when it exists (none yet — see Future). Self-review the diff.
 5. Squash-merge: `gh pr merge --squash --delete-branch`. Linear history, one commit per task.
-6. Same turn, per `.claude/rules/tracking-files.md`: mark `TODO.md` + `docs/todo/<CODE>-*.md` ✅,
-   add the `docs/fix-log/` row + detail file, update `docs/sprint/current.md` and
-   `docs/sprint/burndown.md`. The `Stop` hook (`check-tracking-sync.js`) enforces index/detail sync.
-7. Move the board card to Done (or do it in the sprint-close batch).
+6. Same turn, back on `main` (`git switch main && git pull --ff-only`): move the `TODO.md` line
+   out of **Active** (already ✅ from step 2), update `docs/sprint/current.md` (→ Done) and add a
+   `docs/sprint/burndown.md` row. These are doc-only, straight to `main`. The `Stop` hook
+   (`check-tracking-sync.js`) enforces index/detail sync — fix any drift before ending the turn.
+7. Move the board card to Done (or defer to the sprint-close batch). If this was the sprint's last
+   Active item, the "Cutting a release" checklist is next (on request).
 
 ## Issues — thin and optional
 
@@ -105,18 +137,21 @@ Mirror the `TODO.md` prefixes exactly as `area:` labels:
 Plus: `sprint:<N>` (current-sprint items), `needs-triage` (Issue not yet a CODE),
 `blocked` (mirrors a "Depends on" in `docs/sprint/current.md`).
 
-Create them once:
+These are **not yet created on the repo** (only GitHub's default label set exists). Bootstrap:
 ```
 for p in RT STATE PROTO ENG NAV UI UX TEST CLEAN IO DOC TOOL REL; do
   gh label create "area:$p" --force; done
 gh label create needs-triage --force; gh label create blocked --force
 ```
+Thereafter each PR lifecycle (step 0) creates the specific `area:<prefix>` / `sprint:<N>` label it
+needs if still missing — `gh label create "<name>" --force` is idempotent.
 
 ## Milestones = sprints
 
 - One milestone per sprint, titled `Sprint <N>`, description = the sprint goal from
   `docs/sprint/current.md`. Due date only if the sprint has a fixed end (several have been
-  open-ended — leave it unset then).
+  open-ended — leave it unset then). **None exist yet** — the first PR of a sprint creates it:
+  `gh api repos/:owner/:repo/milestones -f title="Sprint <N>" -f state=open -f description="<goal>"`.
 - Assign a PR/Issue to `Sprint <N>` when its `CODE` is pulled into `docs/sprint/current.md` Active.
 - Close the milestone when the sprint is archived to `docs/sprint/archive/sprint-<N>.md`.
 
@@ -134,6 +169,11 @@ The board is a **view of the local files, hand-synced at two moments only**: spr
 Backlog→Active) and sprint close (Active→Done, archive). Do not chase per-commit accuracy. If the
 board drifts from the local docs between those moments, that is expected and harmless — the docs
 are canonical.
+
+`gh project` needs the `read:project` / `project` token scope, which the current `gh` token lacks
+— run `gh auth refresh -s project` once before any board command. If the board doesn't exist yet,
+create it with `gh project create --owner nguyencongminh090 --title YixinBoard`. Until the scope is
+added, the board steps are skipped and reconciled by hand at sprint close.
 
 ## Reconciling GitHub with local docs
 
