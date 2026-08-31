@@ -1,44 +1,38 @@
 # Current sprint
 
-## Sprint 6
+## Sprint 7
 
-**Goal:** Fix the analysis-panel and settings UI defects surfaced by a 2026-08-30 UI review: the PV
-list accumulating stale lines across positions, the Engine Log mixing direction tags into copyable
-text, a Settings "UI Setting" section whose controls (coordinates, theme, win-graph mode, UI
-profile) don't work or aren't clearly defined, and a redundant "Analysis" menu.
-**Dates:** 2026-08-30 to — (open — no fixed end date set yet)
+**Goal:** UI polish + release prep. Close out the post-UI-review follow-ups (drop the empty-state
+placeholder text, stop engine auto-play from silently reverting to Off, make the win-rate graph
+readable and its SingleSide mode always-Black) and stand up user-facing versioning (a
+"Keep a Changelog" `CHANGELOG.md` backfilled through Sprint 6, a release checklist, and a
+single-sourced version string) so `v0.1.0` can be tagged.
+**Dates:** 2026-08-31 to — (open — no fixed end date set yet)
 
-**Dependency graph:** UI-04/UI-05 are independent. UI-06's design questions were resolved with the
-user 2026-08-30 (rename "Analysis" menu → "Engine plays" Black/White/Off, auto-move semantics, new
-`MatchConfig`); it is no longer blocked. **UX-06 now depends on UI-06** — the WinGraph "SingleSide
-Auto" perspective reads `MatchConfig::enginePlays`, so UI-06 is dispatched first and UX-06 after it.
+**Dependency graph:** UI-08 is independent. ENG-02 builds on UI-06 (shipped Sprint 6) and touches
+the engine-lifecycle / `MatchConfig` path. UI-09 revisits UX-06's WinGraph work (drops the
+follow-engine-side coupling, WCAG line pass) — independent of the others but should land after any
+UI-08 panel churn to avoid conflicts in the analysis panel. **REL-02 depends on REL-01** (REL-01
+establishes the SemVer 0.x scheme + changelog that REL-02's version string points at), so REL-01 is
+done first and REL-02 after it.
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| UI-04 | PV view appends lines across positions instead of replacing; multiple `PV #1` rows at MultiPV=1 | — | — | ✅ Fixed 2026-08-30 |
-| UI-05 | Engine Log: move the direction tag into a fixed-width non-copyable gutter column | — | — | ✅ Fixed 2026-08-30 — payload-only `Gtk::TextView` + sibling fixed-width `engine-gutter` `DrawingArea` painting each tag at its line's live y; row copies now yield raw engine text |
-| UI-06 | "Analysis" menu → "Engine plays" (Black/White/Off) auto-move selector; new `MatchConfig` | — | — | ✅ Fixed 2026-08-30 — implemented via `/implement-task` (new `MatchConfig` + "Engine plays" radio menu + `generateMoveRequest`/`requestEngineMove` auto-move path); closed by the user after a live-engine smoke pass, which also surfaced the separate STATE-04 persistence gap |
-| UX-06 | Settings "UI Setting": coordinates + Light/Dark dead, WinGraph Mode unclear/misrendering, UI Profile undefined; organise the dialog | UI-06 | — | Active — implementation complete, 123/123 tests pass; theme + coordinates + tabbed dialog visually verified (screenshots); WinGraph mode-with-data check still needs a human (2026-08-30) |
-| UI-07 | PV panel still accumulates a stale row per analysed position (real `MESSAGE depth …` format; UI-04's fix missed this) | — | — | ✅ Fixed 2026-08-30 (second pass) — real cause was `PVView::update()` passing the row's inner `Gtk::Box` to `Gtk::ListBox::remove()`, which GTK 4 ignores ("Tried to remove non-child"), leaking one orphan row widget per clear. Now wraps/removes an explicit `Gtk::ListBoxRow`. Reproduced *and* verified against the real `pbrain-rapfi` driving the real `AnalysisPanel` widget tree; new `rapfi-gui-ui-tests` binary (4 cases) asserts rendered rows |
-| STATE-04 | Rule + board size never persisted — reset to Freestyle / size 15 on every launch | — | — | ✅ Fixed 2026-08-30 — new `GameSetupConfig` (rule + boardSize) threaded through `SettingsBundle` + a 4th `save()` param; `load()`/`save()` round-trip `rule` + `board_size` with validate-or-fallback; `MainWindow` restores both at startup, persists via `persistGameSetup()` from `onSetRule()` + Board Size Apply, `onNewGame()` keeps current size; all 3 `save()` call sites thread the full four-block state. +4 round-trip tests; build clean, 129/129 + UI tests pass. Live app launch consumes a hand-written settings file; menu click-through not scriptable in this env |
+| UI-08 | Remove empty-state placeholder text; keep panels clean/empty (partial reversal of UX-01) | — | — | Active |
+| ENG-02 | Interrupting engine auto-play reverts "Engine plays" to Off instead of staying on the assigned side | UI-06 (done) | — | Done |
+| UI-09 | WinGraph SingleSide always Black (drop UX-06's follow-engine-side coupling); thicker, higher-contrast win-rate line (WCAG pass) | — | — | Done |
+| REL-01 | Root `CHANGELOG.md` ("Keep a Changelog", SemVer 0.x), backfill Sprints 1–6, "cut a release" checklist, tag `v0.1.0`; doc/process only | — | — | Done |
+| REL-02 | Single-source the version string (`configure_file` → `version.h`), wire into About dialog + a pre-GTK `--version` flag | REL-01 | — | Active |
 
-STATE-04 pulled into Active 2026-08-30 — a pre-existing persistence gap (not a UI-06 regression)
-surfaced by UI-06's smoke pass; `engine_plays` itself round-trips fine.
+Points not yet estimated (consistent with Sprints 3–6).
 
-Points not yet estimated. UI-06 + UX-06 code-complete (awaiting human smoke); UI-07 dispatched
-2026-08-30 after the user's UX-06/UI-06 smoke test surfaced the still-broken PV accumulation, and
-re-dispatched the same day after the first fix proved insufficient — see the lesson below.
+**Lesson carried in from Sprint 6:** whenever a reported defect is about what the user sees on
+screen, reach for the `rapfi-gui-ui-tests` target (links gtkmm, asserts the rendered widget tree) —
+`rapfi-gui-tests` links no gtkmm and structurally cannot see widget-level bugs. Relevant to UI-08
+and UI-09.
 
-**Lesson from UI-07 (carry into the next sprint):** the first UI-07 pass patched the layer the
-symptom pointed at (an `AnalysisPanel` signal handler) and shipped with 125/125 green tests, because
-every test in the suite asserted the *model* (`GameState::pvLines()`) while the defect lived in a
-*widget's* own bookkeeping. `rapfi-gui-tests` links no gtkmm by construction, so it structurally
-could not see it. The new `rapfi-gui-ui-tests` target closes that blind spot — reach for it whenever
-a reported defect is about what the user can see on screen.
-
-**Lesson carried over from Sprint 5** (which itself carried it from Sprint 4): update
-`docs/sprint/burndown.md` as soon as an Active item's status changes, and close a sprint as soon as
-its last item lands ✅.
+**Lesson carried from Sprints 4–6:** update `docs/sprint/burndown.md` as soon as an Active item's
+status changes, and close the sprint as soon as its last item lands ✅.
 
 See `docs/sprint/burndown.md` for the daily remaining-points table, and `docs/sprint/archive/` for
 closed sprints. Starting the next sprint = one edit per `/CLAUDE.md` ("Sprint cadence").

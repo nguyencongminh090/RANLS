@@ -40,10 +40,18 @@ feature-area prefix + running number (e.g. `WALL-01`, `UI-07`). `✅` marks a fi
 - ✅ **CLEAN-02.** Uncommitted `build.sh` mode change; `build/`/`build_dist/` untracked and ungitignored [Model: Haiku 4.5] — [detail](docs/todo/CLEAN-02-build-artifacts-and-gitignore.md)
 - ✅ **UI-04.** PV view appends lines across positions instead of replacing; shows multiple `PV #1` rows with MultiPV=1 — [detail](docs/todo/UI-04-pv-view-appends-across-positions.md)
 - ✅ **UI-05.** Engine Log: move the direction tag (`[SEND]`/`[MESSAGE]`/…) into a fixed-width non-copyable gutter column so row copies contain only engine text — [detail](docs/todo/UI-05-engine-log-direction-gutter-column.md)
-- **UX-06.** Settings "UI Setting" section: Show Coordinates and Light/Dark do nothing, WinGraph Mode unclear/misrendering, UI Profile undefined; plus organise the dialog — [detail](docs/todo/UX-06-settings-dialog-ui-section-broken-and-unclear.md)
+- ✅ **UX-06.** Settings "UI Setting" section: Show Coordinates and Light/Dark do nothing, WinGraph Mode unclear/misrendering, UI Profile undefined; plus organise the dialog — [detail](docs/todo/UX-06-settings-dialog-ui-section-broken-and-unclear.md)
 - ✅ **UI-06.** Rename the redundant "Analysis" menu to "Engine plays" (Black/White/Off auto-move selector); new `MatchConfig`. Design resolved with user 2026-08-30 — [detail](docs/todo/UI-06-analysis-menu-duplicate-repurpose-to-player-assignment.md)
 - ✅ **UI-07.** PV panel still accumulates a stale row per analysed position (real `MESSAGE depth …` format; UI-04's fix missed this) — [detail](docs/todo/UI-07-pv-panel-still-accumulates-across-positions.md)
 - ✅ **STATE-04.** Rule and board size are never persisted — reset to Freestyle / default on every launch (found during UI-06 smoke); design resolved with user 2026-08-30 [Model: Sonnet 5] — [detail](docs/todo/STATE-04-rule-and-board-size-not-persisted.md)
+
+Sprint 7 (opened 2026-08-31, goal "UI polish + release prep") — pulled from Backlog:
+
+- ✅ **UI-08.** Remove the empty-state placeholder text ("No moves yet", "No analysis yet", …); keep panels clean/empty — partial reversal of UX-01 — [detail](docs/todo/UI-08-remove-empty-state-placeholder-text.md)
+- ✅ **ENG-02.** Interrupting engine auto-play (Stop / manual analyze on the engine's turn) reverts "Engine plays" to Off (manual analyze) — builds on UI-06 — [detail](docs/todo/ENG-02-engine-play-interrupted-reverts-to-manual.md)
+- ✅ **UI-09.** Win-rate graph: SingleSide is always Black (drop the follow-engine-side coupling from UX-06, write notes); keep BothSide; make the win-rate line thicker + higher-contrast (colour-theory / WCAG pass) — [detail](docs/todo/UI-09-wingraph-single-side-black-and-thicker-line.md)
+- ✅ **REL-01.** No user-facing version history: create root `CHANGELOG.md` ("Keep a Changelog", SemVer 0.x), backfill Sprints 1–6, add a "cut a release" checklist + tag `v0.1.0`; doc/process only — [detail](docs/todo/REL-01-changelog-and-release-checklist.md)
+- **REL-02.** Version string disagrees across CMake (`1.0.0`), About dialog (`"2.0"`), and git (no tags): single-source it via `configure_file` → `version.h`, wire into About + a pre-GTK `--version` flag. Depends on REL-01 — [detail](docs/todo/REL-02-version-string-single-source.md)
 
 ## Backlog
 
@@ -52,16 +60,9 @@ pipeline · `STATE` state lifetime · `PROTO` engine protocol · `ENG` engine li
 `NAV` navigation · `UI` display logic · `UX` usability · `TEST` harness · `CLEAN` hygiene ·
 `IO` game persistence · `DOC` documentation · `TOOL` repo tooling · `REL` release/versioning.
 
-Filed 2026-08-30 from a follow-up UI review request (not yet committed to a sprint):
-
-- **UI-08.** Remove the empty-state placeholder text ("No moves yet", "No analysis yet", …); keep panels clean/empty — partial reversal of UX-01 — [detail](docs/todo/UI-08-remove-empty-state-placeholder-text.md)
-- **ENG-02.** Interrupting engine auto-play (Stop / manual analyze on the engine's turn) reverts "Engine plays" to Off (manual analyze) — builds on UI-06 — [detail](docs/todo/ENG-02-engine-play-interrupted-reverts-to-manual.md)
-- **UI-09.** Win-rate graph: SingleSide is always Black (drop the follow-engine-side coupling from UX-06, write notes); keep BothSide; make the win-rate line thicker + higher-contrast (colour-theory / WCAG pass) — [detail](docs/todo/UI-09-wingraph-single-side-black-and-thicker-line.md)
-
-Filed 2026-08-30 from `features/versioning-and-changelog/` (SemVer 0.x + user-facing changelog, decided with the user):
-
-- **REL-01.** No user-facing version history: create root `CHANGELOG.md` ("Keep a Changelog", SemVer 0.x), backfill Sprints 1–6, add a "cut a release" checklist + tag `v0.1.0`; doc/process only — [detail](docs/todo/REL-01-changelog-and-release-checklist.md)
-- **REL-02.** Version string disagrees across CMake (`1.0.0`), About dialog (`"2.0"`), and git (no tags): single-source it via `configure_file` → `version.h`, wire into About + a pre-GTK `--version` flag. Depends on REL-01 — [detail](docs/todo/REL-02-version-string-single-source.md)
+Filed 2026-08-30 from a follow-up UI review request and from `features/versioning-and-changelog/`
+(UI-08, ENG-02, UI-09, REL-01, REL-02) — **all pulled into Sprint 7's Active section 2026-08-31**
+(see above and `docs/sprint/current.md`). Backlog is otherwise empty.
 
 Earlier: IO-01/DOC-01/TOOL-01/CLEAN-02 (filed 2026-08-30, leftover-task sweep) shipped in Sprint 5.
 UI-04/UI-05/UX-06/UI-06 (filed 2026-08-30, UI review session) were committed straight into Sprint

@@ -145,10 +145,34 @@ are canonical.
 ## Releases and versioning
 
 Versioning is **SemVer `0.x`**; the user-facing history is a root `CHANGELOG.md` ("Keep a
-Changelog" format). A release is cut **at sprint close**: move `CHANGELOG.md`'s `[Unreleased]`
-section into `## [0.N.0] - <date>`, add a fresh empty `[Unreleased]`, commit `Release v0.N.0`,
-`git tag v0.N.0`, `git push --tags`. See `features/versioning-and-changelog/` and the `REL-01` /
-`REL-02` backlog items — until those ship, this section describes the target, not current practice.
+Changelog" format). A release is cut **at sprint close** (`v0.1.0` was cut 2026-08-31 covering Sprints 1–6; the next
+sprint close becomes `v0.2.0`).
+
+### Cutting a release
+
+Run at sprint close, after the sprint's last Active item is ✅ and its work is on `main`. Doc-only,
+so it lands straight on `main` — no branch/PR.
+
+1. **Pick the version.** `0.MINOR.PATCH`: bump MINOR for a sprint that shipped a new user-visible
+   feature, PATCH for a fix/polish-only sprint. An out-of-band hotfix is a PATCH bump on its own.
+2. **Finalize the changelog.** In `CHANGELOG.md`, rename `## [Unreleased]` to
+   `## [0.N.0] - YYYY-MM-DD` (today's ISO date), keeping only the categories that have entries.
+   Confirm every line is user-impact phrasing, not a `CODE` list or file names (a trailing
+   `(CODE)` for traceability is fine). Cross-check against the sprint archive's "What shipped" and
+   the new `docs/fix-log.md` rows since the last tag.
+3. **Add a fresh empty `[Unreleased]`** at the top: `## [Unreleased]` + `_Nothing yet._`.
+4. **Update the link-reference definitions** at the bottom: point `[Unreleased]` at
+   `compare/v0.N.0...HEAD` and add `[0.N.0]` → `releases/tag/v0.N.0`.
+5. **Commit:** `git add CHANGELOG.md && git commit -m "Release v0.N.0"` (keep the
+   `Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>` trailer).
+6. **Tag and push:** `git tag v0.N.0 && git push && git push --tags`.
+7. **Verify:** `git tag -l` shows `v0.N.0`; `git ls-remote --tags origin` shows it pushed.
+8. Close the `Sprint <N>` milestone as part of the normal sprint-close batch.
+
+GitHub Releases (a Release object on the tag with a built artifact) stay deferred until CI exists to
+produce the artifact — see Future.
+
+See `features/versioning-and-changelog/` and `REL-01` for the origin of this process.
 
 ## Future (not in scope now — file as backlog when wanted)
 

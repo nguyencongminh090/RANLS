@@ -1,6 +1,25 @@
 # REL-01 — CHANGELOG.md, release checklist, and backfilled history
 
-**Status:** Backlog
+**Status:** ✅ DONE — 2026-08-31
+
+Root `CHANGELOG.md` created ("Keep a Changelog" 1.1.0, SemVer 0.x): `[Unreleased]` at top, then a
+single `## [0.1.0] - 2026-08-31` backfilled from `docs/sprint/archive/sprint-1..6.md` +
+`docs/fix-log.md`, grouped Added/Changed/Fixed/Removed, user-impact lines with `CODE` only in
+trailing parens, link-ref definitions at the bottom. "Cutting a release" checklist added to the
+`github` skill (next to the PR lifecycle); `CLAUDE.md` "Sprint cadence" gets a one-line pointer to
+it. `docs/audit/2026-08-31-changelog-and-release-process.md` records the decision. Tag `v0.1.0`
+created on the current `main` commit and pushed.
+
+Verification: `git tag -l` shows `v0.1.0`; `git ls-remote --tags origin` shows it pushed;
+`git diff --stat` for the commit touches no source file and no `CMakeLists.txt`;
+`node scripts/check-tracking-sync.js --full` and `node scripts/check-task-structure.js` pass.
+
+Out of scope (→ REL-02): version-string single-sourcing (CMake `VERSION` → `configure_file` →
+About dialog + `--version` flag).
+
+---
+
+**Status (original):** Backlog
 **Area:** release/versioning
 **Priority:** P3
 **Source:** `docs/notes/2026-08-30-versioning-and-changelog.md` → `features/versioning-and-changelog/`

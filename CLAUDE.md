@@ -82,6 +82,8 @@ When the user raises a new requirement/feature/task mid-conversation (not an exp
   over to the next sprint's Backlog (rolled-over items keep their original `CODE`).
 - Starting a new sprint = one edit: snapshot `current.md` into `archive/sprint-N.md`, reset
   `current.md` for the next sprint, pull newly-committed items from `TODO.md` Backlog into Active.
+- Closing a sprint also cuts a release: finalize `CHANGELOG.md`'s `[Unreleased]` into a `v0.N.0`
+  section and tag it — see the `github` skill "Cutting a release" checklist.
 
 ## Bug-fix workflow: scope discipline and unit tests
 
