@@ -18,11 +18,12 @@ Every tracked `CODE` must reach `main` as **one squash-merged PR of its own** �
 command automates that lifecycle so it actually happens.
 
 **Anti-pattern this command prevents (Sprint 7):** ENG-02, UI-08, UI-09, and REL-02 were
-implemented by hand in the main session and committed as a single local commit (`314d434`) straight
-onto `main` — no per-`CODE` branch, no PR, no labels/milestone/board. `main` is PR-protected, so
-that commit could never even be pushed. Do not do this. If a `CODE` is scoped enough to implement,
-it goes through this command (or, done by hand, through the identical `github` skill "PR lifecycle
-for one CODE" — same seven steps, nothing skipped).
+implemented by hand in the main session and pushed as a single commit (`314d434`) straight onto
+`main` — no per-`CODE` branch, no PR, no labels/milestone/board. Branch protection didn't stop it
+(it doesn't enforce on the repo owner), which is exactly why the discipline has to live here. Do
+not do this. If a `CODE` is scoped enough to implement, it goes through this command (or, done by
+hand, through the identical `github` skill "PR lifecycle for one CODE" — same steps, nothing
+skipped).
 
 ## What to do
 

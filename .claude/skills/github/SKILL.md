@@ -18,8 +18,8 @@ board and milestones are reconciled only at sprint planning and sprint close.
 **Low ceremony is not "no ceremony".** These are mandatory, not aspirational:
 
 - **One squash-merged PR per `CODE`** — never one bundled PR per sprint, never a hand commit on
-  `main` for code. `main` is PR-protected; a manual code commit there is a dead end (can't be
-  pushed) even when it looks like it worked locally.
+  `main` for code. `main` has a PR rule but it does *not* enforce on the repo owner, so a bad
+  manual push will silently succeed — the discipline is yours to keep, not the server's.
 - The `area:<prefix>` + `sprint:<N>` label, the `Sprint <N>` milestone, and the board card get
   created/assigned **as part of shipping the `CODE`** (see the PR lifecycle) — not left for a
   cleanup pass that never happens.
@@ -31,10 +31,12 @@ board and milestones are reconciled only at sprint planning and sprint close.
 - **Sprint 6** shipped as one PR covering six `CODE`s (`fix/ui-07-pv-cross-position`, #1). Too
   coarse — a revert or review comment can't isolate one task. One PR per `CODE` from here.
 - **Sprint 7** (ENG-02, UI-08, UI-09, REL-02) was implemented by hand in the main session and
-  committed as a single local commit (`314d434`) straight onto `main`: no branches, no PRs, no
-  labels/milestone/board, and — because `main` requires a PR — unpushable. This is the exact
-  failure mode `/implement-task` and this skill exist to prevent. Recovering it means resetting
-  `main` to `origin/main` and replaying each `CODE` as its own branch+PR.
+  pushed as a single commit (`314d434`) straight onto `main` — no branches, no PRs, no
+  labels/milestone/board. It went through because branch protection here does **not** enforce on
+  the repo owner (no `enforce_admins`), so nothing mechanically stops a bad manual push; the guard
+  is process discipline, i.e. this skill. Since `314d434` is already on `origin/main`, don't try to
+  unwind it — instead backfill: create the `Sprint 7` milestone + labels, and log the deviation in
+  `docs/audit.md`. From Sprint 8 on, every `CODE` goes through the PR lifecycle / `/implement-task`.
 
 ## Branching
 
