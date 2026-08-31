@@ -14,8 +14,9 @@ enum class AppTheme {
 };
 
 enum class WinGraphMode {
-    SingleSide = 0,   ///< One perspective-correct win-rate line (Black by default,
-                      ///< or the engine's side when MatchConfig::enginePlays is set).
+    SingleSide = 0,   ///< One win-rate line, ALWAYS from Black's perspective, for
+                      ///< every position, regardless of MatchConfig::enginePlays
+                      ///< (UI-09 — reversed the UX-06 "follows the engine's side").
     BothSide   = 1    ///< Two perspective-correct lines: Black and White, each shown
                       ///< in that colour's own perspective.
 };
@@ -44,6 +45,15 @@ enum class EnginePlaysSide {
     Black = 1,
     White = 2
 };
+
+/// ENG-02: pure predicate — is it the engine's turn to move, given the side it
+/// is assigned to play and the current side-to-move? `Off` is never the
+/// engine's turn. Single source of truth for the "engine's turn" check, shared
+/// by MainWindow's auto-move path and the revert-on-manual-intervention path.
+inline bool isEnginesTurn(EnginePlaysSide plays, Stone sideToMove) {
+    return (plays == EnginePlaysSide::Black && sideToMove == Stone::Black)
+        || (plays == EnginePlaysSide::White && sideToMove == Stone::White);
+}
 
 /// Match / play configuration (UI-06). Kept separate from EngineConfig and
 /// ViewConfig on purpose — this governs auto-play behaviour, not engine

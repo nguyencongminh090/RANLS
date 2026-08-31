@@ -51,7 +51,7 @@ Sprint 7 (opened 2026-08-31, goal "UI polish + release prep") — pulled from Ba
 - ✅ **ENG-02.** Interrupting engine auto-play (Stop / manual analyze on the engine's turn) reverts "Engine plays" to Off (manual analyze) — builds on UI-06 — [detail](docs/todo/ENG-02-engine-play-interrupted-reverts-to-manual.md)
 - ✅ **UI-09.** Win-rate graph: SingleSide is always Black (drop the follow-engine-side coupling from UX-06, write notes); keep BothSide; make the win-rate line thicker + higher-contrast (colour-theory / WCAG pass) — [detail](docs/todo/UI-09-wingraph-single-side-black-and-thicker-line.md)
 - ✅ **REL-01.** No user-facing version history: create root `CHANGELOG.md` ("Keep a Changelog", SemVer 0.x), backfill Sprints 1–6, add a "cut a release" checklist + tag `v0.1.0`; doc/process only — [detail](docs/todo/REL-01-changelog-and-release-checklist.md)
-- **REL-02.** Version string disagrees across CMake (`1.0.0`), About dialog (`"2.0"`), and git (no tags): single-source it via `configure_file` → `version.h`, wire into About + a pre-GTK `--version` flag. Depends on REL-01 — [detail](docs/todo/REL-02-version-string-single-source.md)
+- ✅ **REL-02.** Version string disagrees across CMake (`1.0.0`), About dialog (`"2.0"`), and git (no tags): single-source it via `configure_file` → `version.h`, wire into About + a pre-GTK `--version` flag. Depends on REL-01 — [detail](docs/todo/REL-02-version-string-single-source.md)
 
 ## Backlog
 

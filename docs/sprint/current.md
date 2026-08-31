@@ -22,7 +22,7 @@ done first and REL-02 after it.
 | ENG-02 | Interrupting engine auto-play reverts "Engine plays" to Off instead of staying on the assigned side | UI-06 (done) | — | Done |
 | UI-09 | WinGraph SingleSide always Black (drop UX-06's follow-engine-side coupling); thicker, higher-contrast win-rate line (WCAG pass) | — | — | Done |
 | REL-01 | Root `CHANGELOG.md` ("Keep a Changelog", SemVer 0.x), backfill Sprints 1–6, "cut a release" checklist, tag `v0.1.0`; doc/process only | — | — | Done |
-| REL-02 | Single-source the version string (`configure_file` → `version.h`), wire into About dialog + a pre-GTK `--version` flag | REL-01 | — | Active |
+| REL-02 | Single-source the version string (`configure_file` → `version.h`), wire into About dialog + a pre-GTK `--version` flag | REL-01 | — | Done |
 
 Points not yet estimated (consistent with Sprints 3–6).
 

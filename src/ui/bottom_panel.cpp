@@ -21,7 +21,7 @@ BottomPanel::BottomPanel()
 
     // ── Engine Log tab ──────────────────────────────────────────────────────
     // UI-05: the TextView holds ONLY the raw engine payload (one line per
-    // logical engine line). The direction/category tag ([SEND]/[MESSAGE]/…)
+    // logical engine line). The direction/category tag (SEND/MESSAGE/…)
     // is painted by a sibling fixed-width DrawingArea gutter, like a text
     // editor's line-number column — visible and aligned, but not part of the
     // selectable text, so selecting rows and copying yields payload only.
@@ -134,7 +134,7 @@ void BottomPanel::drawGutter(const Cairo::RefPtr<Cairo::Context> &cr, int width,
 
     // Fixed column width: wide enough for the longest tag, computed once.
     if (gutterWidth_ == 0) {
-        auto probe = gutterArea_.create_pango_layout("[MESSAGE]");
+        auto probe = gutterArea_.create_pango_layout("MESSAGE");
         probe->set_font_description(fontDesc);
         int w = 0, h = 0;
         probe->get_pixel_size(w, h);
@@ -194,6 +194,16 @@ void BottomPanel::updateEngineLogEmptyState()
     engineLogOverlay_.setEmpty(engineLogView_.get_buffer()->get_char_count() == 0);
 }
 
+void BottomPanel::scrollToEnd(Gtk::TextView &view)
+{
+    auto buf  = view.get_buffer();
+    auto mark = buf->create_mark(buf->end(), /*left_gravity=*/false);
+    // yalign 1.0 pins the target to the bottom edge so the freshly-appended
+    // last line is fully visible, not just scrolled minimally into view.
+    view.scroll_to(mark, 0.0, 0.0, 1.0);
+    buf->delete_mark(mark);
+}
+
 bool BottomPanel::isScrolledToBottom()
 {
     auto adj = scrolledEngineLog_.get_vadjustment();
@@ -224,7 +234,7 @@ bool BottomPanel::flushPending()
     for (const auto &line : toApply) {
         if (buf->get_char_count() > 0)
             buf->insert(buf->end(), "\n");
-        // Payload only — the [SEND]/[MESSAGE]/… tag is painted in the gutter
+        // Payload only — the SEND/MESSAGE/… tag is painted in the gutter
         // (drawGutter), never inserted here, so copying selected rows yields
         // the raw engine text with no prefixes (UI-05).
         buf->insert(buf->end(), logLineClipboardText(line));
@@ -241,11 +251,8 @@ bool BottomPanel::flushPending()
 
     buf->end_user_action();
 
-    if (wasAtBottom) {
-        auto mark = buf->create_mark(buf->end());
-        engineLogView_.scroll_to(mark);
-        buf->delete_mark(mark);
-    }
+    if (wasAtBottom)
+        scrollToEnd(engineLogView_);
 
     updateEngineLogEmptyState();
     gutterArea_.queue_draw();
@@ -260,13 +267,13 @@ void BottomPanel::appendLogLine(const Glib::ustring &prefix, const Glib::ustring
 
 void BottomPanel::appendSend(const Glib::ustring &text)
 {
-    appendLogLine("[SEND]", text, LogTagKind::Send);
+    appendLogLine("SEND", text, LogTagKind::Send);
 }
 
 void BottomPanel::appendRecv(const Glib::ustring &group, const Glib::ustring &text)
 {
     LogTagKind tag = LogTagKind::RecvOutput;
-    Glib::ustring prefix = "[" + group + "]";
+    Glib::ustring prefix = group;
 
     if (group == "Message") {
         tag = LogTagKind::RecvMessage;
@@ -278,7 +285,7 @@ void BottomPanel::appendRecv(const Glib::ustring &group, const Glib::ustring &te
         tag = LogTagKind::RecvError;
     } else {
         tag = LogTagKind::RecvOutput;
-        prefix = "[OUTPUT]";
+        prefix = "OUTPUT";
     }
 
     appendLogLine(prefix.uppercase(), text, tag);
@@ -289,6 +296,7 @@ void BottomPanel::appendMoveLog(const Glib::ustring &text)
     auto buf = moveLogView_.get_buffer();
     buf->insert(buf->end(), text);
     updateMoveLogEmptyState();
+    scrollToEnd(moveLogView_);
 }
 
 void BottomPanel::clear()

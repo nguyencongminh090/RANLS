@@ -96,6 +96,13 @@ private:
     /// callback so it runs once after a batch of position changes (e.g. a game
     /// load) settles, never re-entrantly. Inert while enginePlays == Off.
     void maybeStartAutoMove();
+    /// ENG-02: manual intervention cancels auto-play. If enginePlays != Off,
+    /// set it back to Off in the in-memory MatchConfig and sync the menu radio.
+    /// Transient session action — deliberately does NOT call
+    /// SettingsStorage::save (unlike onSetEnginePlays), so the persisted
+    /// user-chosen side is restored on next launch. No status message / toast.
+    /// No-op when enginePlays is already Off.
+    void revertEnginePlaysToOff();
 
     void onUndoAll();
     void onUndo();

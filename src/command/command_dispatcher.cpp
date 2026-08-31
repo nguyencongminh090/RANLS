@@ -50,6 +50,18 @@ void CommandDispatcher::printInfo(const std::string &msg) const
     if (ctx_.print) ctx_.print(msg);
 }
 
+void CommandDispatcher::revertEnginePlaysIfEnginesTurn()
+{
+    // ENG-02: same rule as MainWindow::onStartAnalysis — analyzing on the
+    // engine's own assigned turn cancels auto-play. Shared pure predicate in
+    // model/config.h; in-memory MatchConfig only (no SettingsStorage::save).
+    MatchConfig mc = ctx_.gameState.matchConfig();
+    if (!isEnginesTurn(mc.enginePlays, ctx_.gameState.board().sideToMove()))
+        return;
+    mc.enginePlays = EnginePlaysSide::Off;
+    ctx_.gameState.setMatchConfig(mc);
+}
+
 std::optional<int> CommandDispatcher::parseIntArg(const std::string &s) const
 {
     try {
@@ -291,6 +303,7 @@ void CommandDispatcher::registerBuiltins()
                 ctx_.controller.sendConfig();
             }
 
+            revertEnginePlaysIfEnginesTurn();  // ENG-02
             ctx_.controller.analyze();
         });
 
@@ -450,6 +463,7 @@ void CommandDispatcher::registerBuiltins()
                 return;
             }
             ctx_.controller.sendConfig();
+            revertEnginePlaysIfEnginesTurn();  // ENG-02
             ctx_.controller.analyze();
         });
 

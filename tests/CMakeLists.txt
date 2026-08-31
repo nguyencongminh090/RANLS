@@ -27,6 +27,7 @@ add_executable(rapfi-gui-tests
     test_engine_log_model.cpp
     test_settings_storage.cpp
     test_eng01_engine_state.cpp
+    test_eng02_revert_predicate.cpp
     test_ui01_winrate_attribution.cpp
     test_ui02_tree_row_highlight.cpp
     test_ui03_renju_forbidden.cpp
@@ -70,6 +71,18 @@ include(CTest)
 # this harness's size.
 add_test(NAME rapfi-gui-tests COMMAND rapfi-gui-tests)
 
+# ── REL-02: CLI --version must equal the CMake PROJECT_VERSION ───────────────
+#
+# Script-based ctest case (links no gtkmm): runs the real rapfi-gui binary
+# headless with --version / -v and asserts the output equals PROJECT_VERSION,
+# the single source of truth set in the top-level project(... VERSION ...).
+add_test(NAME rel02-version-single-source
+    COMMAND ${CMAKE_COMMAND}
+        -DRAPFI_GUI_BIN=$<TARGET_FILE:rapfi-gui>
+        -DEXPECTED_VERSION=${PROJECT_VERSION}
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/check_version.cmake
+)
+
 # ── Second target: widget-level UI tests (DOES link gtkmm) ──────────────────
 #
 # UI-07 (second pass) proved that a defect can live entirely inside a widget's
@@ -88,6 +101,7 @@ pkg_check_modules(GTKMM REQUIRED IMPORTED_TARGET gtkmm-4.0)
 
 add_executable(rapfi-gui-ui-tests
     test_ui07_pv_view_rows.cpp
+    test_ui08_no_empty_state_text.cpp
 
     # UI sources under test.
     ${CMAKE_SOURCE_DIR}/src/ui/pv_view.cpp

@@ -1,10 +1,9 @@
 # UX-06 — Settings "UI Setting" section: broken toggles + unclear options + polish
 
-**Status:** 🚧 ACTIVE (Sprint 6) — implementation complete; builds clean, 123/123 unit tests pass.
-Theme, Show Coordinates and the tabbed dialog are **visually verified** (real screenshots, three
-theme states). Remaining: a human check of the WinGraph Single/Two-line difference *with live
-engine eval data on the board* — could not be driven here (no Wayland input injection). See
-"Implementation progress".
+**Status:** ✅ VERIFIED (Sprint 6, closed 2026-08-31) — implementation complete; builds clean,
+123/123 unit tests pass. Theme, Show Coordinates and the tabbed dialog were **visually verified**
+(real screenshots, three theme states); the remaining populated-WinGraph Single↔Two-line check was
+**confirmed by the user** during Sprint 6 close-out (2026-08-31).
 
 ### Implementation progress (2026-08-30, updated after a real run)
 

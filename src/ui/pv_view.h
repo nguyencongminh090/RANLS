@@ -43,8 +43,8 @@ private:
     Gtk::ListBox listBox_;
     std::vector<RowWidgets> rows_;
 
-    /// UX-01: shows "No analysis yet…" over listBox_ while it has no rows,
-    /// and hides it as soon as update() gets a non-empty pvLines (or after
-    /// New Game clears back to empty via STATE-01).
-    EmptyStateOverlay overlay_{"No analysis yet — press Analyze (F5) to see principal variations"};
+    /// UI-08: thin passthrough wrapper around listBox_ (UX-01 used it to show
+    /// an idle-state placeholder message; that text was removed — an empty PV
+    /// list now renders clean).
+    EmptyStateOverlay overlay_{""};
 };

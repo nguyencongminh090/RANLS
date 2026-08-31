@@ -1,16 +1,32 @@
 #include "win_graph_view.h"
 
-#include "empty_state.h"
-
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
 #include <sstream>
 
 static constexpr double kPadL = 40.0, kPadR = 10.0, kPadT = 10.0, kPadB = 20.0;
-static constexpr double kBlackR = 0.20, kBlackG = 0.45, kBlackB = 0.85;
-static constexpr double kWhiteR = 0.85, kWhiteG = 0.80, kWhiteB = 0.25;
+
+// UI-09 colour/accessibility pass. The panel background follows the GTK theme
+// (Adwaita light #fafafb / Adwaita-dark #242424 — no libadwaita, see UX-06).
+// A single fixed pair must clear WCAG 1.4.11 (>=3:1 for graphical objects)
+// against BOTH surfaces:
+//   Black's-perspective line  #1A73E8  -> 4.32:1 light, 3.45:1 dark
+//   White's-perspective line  #1E8E3E  -> 4.03:1 light, 3.69:1 dark
+// Adjacent-pair CVD separation ΔE 26.9 (deuteranopia); tritan ΔE is low, so the
+// White line is also dashed (shape redundancy) — never distinguished by hue
+// alone. Contrast ratios + validator run recorded in
+// docs/fix-log/2026-08-31-ui-09-wingraph-single-side-black-and-thicker-line.md.
+static constexpr double kBlackR = 0.102, kBlackG = 0.451, kBlackB = 0.909; // #1A73E8
+static constexpr double kWhiteR = 0.118, kWhiteG = 0.557, kWhiteB = 0.243; // #1E8E3E
 static constexpr double kHighR = 0.85, kHighG = 0.20, kHighB = 0.20;
+
+// UI-09: the data line is the figure; the axis/grid scaffold stays subordinate
+// (center line stays 1.0px at 0.5 alpha, labels theme-follow). Widths are in
+// user-space units — GTK4 applies the device scale itself, no cr->scale() here,
+// so these render crisp and identical (in logical px) on HiDPI.
+static constexpr double kSeriesW      = 2.8;
+static constexpr double kSeriesWWhite = 2.6;
 
 WinGraphView::WinGraphView()
 {
@@ -97,12 +113,10 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
     cr->move_to(4, kPadT + graphH / 2 + 4); cr->show_text("50%");
     cr->move_to(4, kPadT + graphH - 2);    cr->show_text("0%");
 
-    // UX-01: no series yet — the axis scaffold above already reads as an
-    // empty chart rather than a void; add a centered placeholder explaining
-    // what will populate it and stop (nothing further to plot).
+    // UX-01 / UI-08: no series yet. The axis scaffold above stays (it is
+    // structural, not instructional) but the idle state renders with no
+    // placeholder text — just a clean empty chart.
     if (blackData_.empty()) {
-        EmptyState::drawPlaceholder(cr, *this, width, height,
-                                     "No analysis yet — press Analyze (F5)");
         return;
     }
 
@@ -115,7 +129,9 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
     // segments around any NaN run instead of interpolating through it or
     // silently plotting it as a confident 50%.
     cr->set_source_rgb(kBlackR, kBlackG, kBlackB);
-    cr->set_line_width(1.5);
+    cr->set_line_width(kSeriesW);
+    cr->set_line_join(Cairo::Context::LineJoin::ROUND);
+    cr->set_line_cap(Cairo::Context::LineCap::ROUND);
     {
         bool penDown = false;
         for (int i = 0; i < n; ++i) {
@@ -134,12 +150,12 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
     // transient mismatch never indexes out of range.
     if (mode_ == WinGraphMode::BothSide && !whiteData_.empty()
         && whiteData_.size() == blackData_.size()) {
-        // UX-03: the black/white series were told apart by hue alone
-        // (blue vs. yellow). Dash the white series so the two lines also
-        // differ by shape, not just color.
+        // UX-03 / UI-09: the two series are told apart by hue (blue #1A73E8 vs
+        // green #1E8E3E) AND by shape — the White line is dashed — so they stay
+        // distinct under tritan-type CVD where the hue ΔE is small.
         cr->set_source_rgb(kWhiteR, kWhiteG, kWhiteB);
-        cr->set_line_width(1.2);
-        cr->set_dash(std::vector<double>{4.0, 3.0}, 0.0);
+        cr->set_line_width(kSeriesWWhite);
+        cr->set_dash(std::vector<double>{6.0, 4.0}, 0.0);
         bool penDown = false;
         for (int i = 0; i < n; ++i) {
             if (std::isnan(whiteData_[i])) { penDown = false; continue; }

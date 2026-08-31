@@ -12,7 +12,7 @@
 /// Engine Log uses a single TextView holding ONLY the raw engine payload
 /// (one line per logical engine line), plus a sibling fixed-width
 /// `Gtk::DrawingArea` gutter that paints the direction/category tag
-/// ([SEND]/[MESSAGE]/[OUTPUT]/…) beside each line — like a text editor's
+/// (SEND/MESSAGE/OUTPUT/…) beside each line — like a text editor's
 /// line-number gutter (UI-05). The gutter is a drawn widget with no text
 /// nodes, so selecting log rows and copying yields the payload only, no
 /// prefixes. It paints each tag at the live y-position of its buffer line
@@ -63,6 +63,9 @@ private:
     /// within a small tolerance of) the bottom.
     bool isScrolledToBottom();
 
+    /// Scroll a log TextView so its last line is visible at the bottom edge.
+    static void scrollToEnd(Gtk::TextView &view);
+
     Gtk::ScrolledWindow scrolledMoveLog_;
     Gtk::TextView       moveLogView_;
 
@@ -73,13 +76,14 @@ private:
     Gtk::TextView       engineLogView_;
     int                 gutterWidth_ = 0;  // computed lazily on first draw
 
-    /// UX-01: placeholders shown while their respective TextView buffer is
-    /// empty (fresh launch, or back to empty after New Game/clear()).
-    EmptyStateOverlay moveLogOverlay_{"No moves yet — moves will appear here as you play"};
-    EmptyStateOverlay engineLogOverlay_{"No engine activity yet — start the engine to see log output"};
+    /// UI-08: thin passthrough wrappers around the log TextViews (UX-01 used
+    /// them to show idle-state placeholder messages; that text was removed —
+    /// empty logs now render clean).
+    EmptyStateOverlay moveLogOverlay_{""};
+    EmptyStateOverlay engineLogOverlay_{""};
 
-    /// Toggles moveLogOverlay_/engineLogOverlay_ from the current buffer
-    /// character count. Called after every mutation of the respective buffer.
+    /// No-ops since UI-08; kept as the call sites still invoke them after each
+    /// buffer mutation.
     void updateMoveLogEmptyState();
     void updateEngineLogEmptyState();
 

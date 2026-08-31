@@ -16,8 +16,8 @@ enum class LogTagKind {
     RecvError,
 };
 
-/// One logical engine-log line: a direction/category prefix (e.g. "[SEND]",
-/// "[RECV]") plus the raw text.
+/// One logical engine-log line: a direction/category prefix (e.g. "SEND",
+/// "RECV") plus the raw text.
 struct EngineLogLine {
     std::string prefix;
     std::string text;
@@ -26,7 +26,7 @@ struct EngineLogLine {
 
 /// UI-05: the exact text that must reach the clipboard when this line is
 /// copied out of the Engine Log — the raw engine payload only, never the
-/// direction/category prefix ("[SEND]", "[MESSAGE]", …). UI-05 renders that
+/// direction/category prefix ("SEND", "MESSAGE", …). UI-05 renders that
 /// prefix in a separate, non-selectable gutter column, so BottomPanel inserts
 /// exactly this string (and nothing else) into the TextView buffer; selecting
 /// rows and copying therefore yields payload only.

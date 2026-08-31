@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18.2)
 project(rapfi-gui
-    VERSION     1.0.0
+    VERSION     0.1.0
     LANGUAGES   CXX
     DESCRIPTION "Rapfi Professional Analysis GUI"
 )
@@ -54,11 +54,19 @@ set(GUI_SOURCES
     src/ui/settings_dialog.cpp
 )
 
+# ── Generated version header (single source of truth: project(VERSION) above) ─
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/version.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/generated/version.h
+    @ONLY
+)
+
 # ── Executable ───────────────────────────────────────────────────────────────
 add_executable(rapfi-gui ${GUI_SOURCES})
 
 target_include_directories(rapfi-gui PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_BINARY_DIR}/generated
 )
 
 target_link_libraries(rapfi-gui PRIVATE

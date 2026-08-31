@@ -2,6 +2,7 @@
 #include "model/game_io.h"
 #include "model/settings_storage.h"
 #include "ui/settings_dialog.h"
+#include "version.h"
 
 #include <algorithm>
 #include <cctype>
@@ -549,8 +550,15 @@ void MainWindow::connectSignals()
         // queuing a redraw is what makes the Settings toggle take effect.
         boardViewModel_.update();
         boardView_.queueRedraw();
+
+        // ENG-02: keep the "Engine plays" radio in sync with MatchConfig for
+        // changes that don't route through the menu-activate handler — e.g. the
+        // dispatcher `analyze` / `!play` revert-on-engine's-turn path. This is a
+        // state-only update (Gio::SimpleAction::change_state); it does NOT fire
+        // signal_activate, so onSetEnginePlays does not re-enter / re-persist.
+        syncEnginePlaysMenu();
     });
-    
+
     // Analysis state changes → toggle UI interaction.
     controller_.signal_state_changed.connect([this](EngineController::EngineState state) {
         bool sensitive = (state != EngineController::EngineState::Analyzing);
@@ -598,6 +606,9 @@ void MainWindow::connectSignals()
         }
     });
     analysisPanel_.engineStatus().signal_stop.connect([this]() {
+        // ENG-02: the analysis-panel Stop is the same manual intervention as
+        // the toolbar Stop — cancel any armed auto-play (no-op if none).
+        revertEnginePlaysToOff();
         controller_.stopEngine();
     });
     analysisPanel_.engineStatus().signal_reload.connect([this]() {
@@ -855,13 +866,22 @@ void MainWindow::onAbout()
     dialog->set_hide_on_close(true);
     dialog->signal_hide().connect([dialog]() { delete dialog; });
     dialog->set_program_name("Rapfi Analysis");
-    dialog->set_version("2.0");
+    dialog->set_version(APP_VERSION);  // REL-02: single-sourced from CMake project(VERSION)
     dialog->set_comments("Professional Gomoku Analysis Tool");
     dialog->set_visible(true);
 }
 
 void MainWindow::onStartAnalysis()
 {
+    // ENG-02: asking the engine to analyze while it is its own assigned turn is
+    // a manual override of auto-play — quietly cancel the arrangement. Computed
+    // from the board side-to-move (available regardless of engine state) so
+    // both the "engine not running" and "already running" branches below
+    // revert consistently.
+    if (isEnginesTurn(gameState_.matchConfig().enginePlays,
+                      gameState_.board().sideToMove()))
+        revertEnginePlaysToOff();
+
     if (!engine_.isRunning()) {
         // Engine not running — start it first, but do NOT analyze yet.
         auto &cfg = gameState_.engineConfig();
@@ -882,7 +902,22 @@ void MainWindow::onStartAnalysis()
 
 void MainWindow::onStopAnalysis()
 {
+    // ENG-02: Stop (toolbar button or hotkey) is a manual intervention — cancel
+    // any armed auto-play. The helper is a no-op when no side was assigned.
+    revertEnginePlaysToOff();
     controller_.stopAnalysis();
+}
+
+void MainWindow::revertEnginePlaysToOff()
+{
+    MatchConfig mc = gameState_.matchConfig();
+    if (mc.enginePlays == EnginePlaysSide::Off) return;  // nothing armed
+    mc.enginePlays = EnginePlaysSide::Off;
+    gameState_.setMatchConfig(mc);
+    syncEnginePlaysMenu();
+    // Deliberately NO SettingsStorage::save here — unlike onSetEnginePlays(),
+    // this revert is a transient session action (ENG-02). The persisted,
+    // user-chosen side is restored on next launch. No status message / toast.
 }
 
 // ── UI-06: "Engine plays <side>" auto-move ───────────────────────────────────
@@ -932,10 +967,7 @@ void MainWindow::maybeStartAutoMove()
         if (controller_.engineState() != EngineController::EngineState::Idle) return;
 
         const Stone toMove = gameState_.board().sideToMove();
-        const bool enginesTurn =
-            (plays == EnginePlaysSide::Black && toMove == Stone::Black) ||
-            (plays == EnginePlaysSide::White && toMove == Stone::White);
-        if (!enginesTurn) return;
+        if (!isEnginesTurn(plays, toMove)) return;  // ENG-02: shared predicate
 
         // After the engine's move lands, side-to-move flips to the other
         // colour, so this check fails next time — no infinite loop.

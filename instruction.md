@@ -28,6 +28,12 @@ Trust-boundary hardening only — must not change how valid lines are interprete
 Replace the state bools with an enum first; remove the re-entrant `g_main_context_iteration`.
 [detail](docs/instruction/ENG-01-engine-state-honesty-and-blocking-stop.md)
 
+## ENG-02 — engine-play-interrupted-reverts-to-manual
+
+Additive on UI-06: a quiet `enginePlays -> Off` revert on Stop / Analyze-on-engine's-turn; no
+persistence. Extract the "engine's turn" predicate as a pure function and unit-test it.
+[detail](docs/instruction/ENG-02-engine-play-interrupted-reverts-to-manual.md)
+
 ## TEST-01 — test-infrastructure
 
 Header-only framework, model/protocol only, no display server; prove the harness and stop.

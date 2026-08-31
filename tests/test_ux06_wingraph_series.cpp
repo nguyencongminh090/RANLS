@@ -1,8 +1,12 @@
 // UX-06: the WinGraph "Single line" vs "Two lines" modes must produce
-// genuinely different series once there is eval data, and the SingleSide
-// perspective must follow MatchConfig::enginePlays. This pins the pure
+// genuinely different series once there is eval data. This pins the pure
 // conversion in src/ui/win_graph_series.h (the visible graph is Cairo code
 // out of reach of this no-gtkmm test binary).
+//
+// UI-09 reversed the UX-06 "SingleSide follows MatchConfig::enginePlays"
+// decision: SingleSide is now ALWAYS Black's perspective. The former
+// "Auto follows enginePlays == White" case below is replaced by a guard that
+// SingleSide ignores enginePlays entirely.
 
 #include "vendor/doctest.h"
 
@@ -44,18 +48,22 @@ TEST_CASE("UX-06: SingleSide default perspective is Black (converts opponent-per
     CHECK(s.black[3] == doctest::Approx(0.55));
 }
 
-TEST_CASE("UX-06: SingleSide Auto follows enginePlays == White") {
+TEST_CASE("UI-09: SingleSide is always Black's perspective, regardless of enginePlays") {
+    auto off   = buildWinGraphSeries(kRaw, WinGraphMode::SingleSide, EnginePlaysSide::Off);
     auto black = buildWinGraphSeries(kRaw, WinGraphMode::SingleSide, EnginePlaysSide::Black);
     auto white = buildWinGraphSeries(kRaw, WinGraphMode::SingleSide, EnginePlaysSide::White);
-    auto off   = buildWinGraphSeries(kRaw, WinGraphMode::SingleSide, EnginePlaysSide::Off);
 
-    // Off and Black are identical (both = Black perspective).
-    for (size_t i = 0; i < kRaw.size(); ++i)
+    // All three enginePlays settings produce the identical Black-perspective
+    // series — UI-09 removed the UX-06 "follow the engine's side" coupling.
+    for (size_t i = 0; i < kRaw.size(); ++i) {
         CHECK(off.black[i] == doctest::Approx(black.black[i]));
+        CHECK(off.black[i] == doctest::Approx(white.black[i]));
+    }
 
-    // White perspective is the complement of Black perspective, every move.
-    for (size_t i = 0; i < kRaw.size(); ++i)
-        CHECK(white.black[i] == doctest::Approx(1.0 - black.black[i]));
+    // And that series really is Black's perspective (not White's complement):
+    // i=0 White to move, eval 0.70 for White -> Black 0.30 (NOT 0.70).
+    CHECK(off.black[0] == doctest::Approx(0.30));
+    CHECK(off.black[2] == doctest::Approx(0.20));
 }
 
 TEST_CASE("UX-06: NaN gaps are preserved, never interpolated, in both modes") {

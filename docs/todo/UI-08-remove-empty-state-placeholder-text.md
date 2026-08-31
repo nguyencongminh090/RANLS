@@ -1,6 +1,15 @@
 # UI-08 — Remove empty-state placeholder text; keep panels visually clean
 
-**Status:** 📋 BACKLOG
+**Status:** ✅ DONE — see [fix-log detail](../fix-log/2026-08-31-ui-08-remove-empty-state-placeholder-text.md).
+Removed the UX-01 placeholder text from PV view, move log, engine log, both tree views, analysis
+panel (via WinGraphView), and WinGraphView; kept the WinGraphView 0/50/100% axis scaffold
+(structural — confirmed with the user). `EmptyState::drawPlaceholder()` + `.empty-state-message`
+CSS deleted; `EmptyStateOverlay` reduced to an inert passthrough (no label, `setEmpty()` a no-op) so
+no panel layout changed. STATE-01 clear/notify path untouched; UI-09 left out of scope.
+**Verification:** clean `./build.sh` (zero new warnings), `ctest` 2/2 pass, `rapfi-gui-ui-tests`
+6 cases/51 assertions pass incl. 2 new `test_ui08_no_empty_state_text.cpp` widget-tree cases;
+`check-task-structure.js` + `check-tracking-sync.js --full` both pass. Cairo-drawn text in
+WinGraphView/TreeNodeView verified by code review + clean build (not widget-tree testable).
 **Area:** analysis panel / win graph / PV view / tree views / bottom panel (`src/ui/`)
 **Priority:** P3
 **Source:** UI review request, 2026-08-30

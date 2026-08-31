@@ -1,7 +1,5 @@
 #include "tree_node_view.h"
 
-#include "empty_state.h"
-
 #include <algorithm>
 #include <cmath>
 
@@ -167,12 +165,15 @@ void TreeNodeView::layoutTree(const TreeNode *node, int depth, int &nextCol,
 // ─── Drawing ─────────────────────────────────────────────────────────────────
 void TreeNodeView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int height)
 {
+    (void)width;
+    (void)height;
+
     // Background handled naturally by GTK native theme.
 
-    // UX-01: no moves played yet — placeholder instead of a blank rectangle.
+    // UX-01 / UI-08: no moves played yet — render a clean empty region, no
+    // placeholder text. (The kMinEmptyWidth/kMinEmptyHeight size floor set in
+    // update() is structural and stays.)
     if (nodes_.empty()) {
-        EmptyState::drawPlaceholder(cr, drawArea_, width, height,
-                                     "No moves yet — play or load a game to see the move tree");
         return;
     }
 

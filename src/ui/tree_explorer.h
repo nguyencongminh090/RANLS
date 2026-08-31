@@ -50,10 +50,10 @@ private:
     Glib::RefPtr<Gio::ListStore<RowData>>     store_;
     Glib::RefPtr<Gtk::SingleSelection>        selection_;
 
-    /// UX-01: shows "No moves yet…" over columnView_ while store_ is empty,
-    /// and hides it as soon as update() sees a non-empty move history (or
-    /// after New Game clears back to empty via STATE-01).
-    EmptyStateOverlay overlay_{"No moves yet — play or load a game to see move history"};
+    /// UI-08: thin passthrough wrapper around columnView_ (UX-01 used it to
+    /// show an idle-state placeholder message; that text was removed — an
+    /// empty move list now renders clean).
+    EmptyStateOverlay overlay_{""};
 
     /// Guards selection_->set_selected() calls made by update() itself (to
     /// reflect the current position) from being mistaken for a user click and

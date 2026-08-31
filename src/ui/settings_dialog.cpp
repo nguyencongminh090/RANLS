@@ -157,13 +157,12 @@ SettingsDialog::SettingsDialog(Gtk::Window &parent, const EngineConfig &eConfig,
            "System follows your desktop setting; Light / Dark force it.");
 
     auto modeModel = Gtk::StringList::create(
-        {"Single line (engine's perspective)", "Two lines (Black & White)"});
+        {"Single line (Black's perspective)", "Two lines (Black & White)"});
     dropWinGraphMode_.set_model(modeModel);
     dropWinGraphMode_.set_selected(static_cast<guint>(vConfig.winGraphMode));
     addRow(uiTab, "WinGraph Mode", dropWinGraphMode_,
-           "Single line: one perspective-correct win-rate (Black, or the engine's "
-           "side when 'Engine plays' is set). Two lines: Black and White win-rate "
-           "each in its own perspective.");
+           "Single line: one win-rate curve, always from Black's perspective. "
+           "Two lines: Black and White win-rate each in its own perspective.");
 
     checkMoveNumbers_.set_active(vConfig.showMoveNumbers);
     addRow(uiTab, "Show Move Numbers", checkMoveNumbers_, "Draw the move ordinal on each stone.");

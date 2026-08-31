@@ -60,6 +60,12 @@ private:
 
     void setEngineConfigKey(const std::string &key, const std::string &value);
 
+    // ENG-02: invoking Analyze while it is the engine's own assigned turn is a
+    // manual override of auto-play — revert MatchConfig::enginePlays to Off
+    // (in-memory only, no persistence). MainWindow re-syncs the menu radio via
+    // GameState::signal_config_changed. No-op when Off or not the engine's turn.
+    void revertEnginePlaysIfEnginesTurn();
+
     // Position input session for loadpos/pos ... DONE.
     struct PosSession {
         std::vector<std::string> lines; // raw user lines (move text, url, etc.)

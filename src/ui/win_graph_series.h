@@ -9,11 +9,14 @@
 // may be NaN — an explicit "unevaluated" sentinel (GameState::evalHistory);
 // it is propagated as a gap, never clamped to a false 50%.
 //
-//  - SingleSide: ONE perspective-correct line in `black`; `white` is left
-//    empty. Perspective is Black by default, or White when the engine plays
-//    White (MatchConfig::enginePlays); Off / Black → Black perspective.
+//  - SingleSide: ONE line in `black`, ALWAYS Black's perspective, for every
+//    position, regardless of MatchConfig::enginePlays. `white` is left empty.
+//    (UI-09 reversed the UX-06 "SingleSide follows the engine's side" coupling
+//    — see docs/fix-log/2026-08-31-ui-09-*.md for the rationale.) The
+//    `enginePlays` parameter is retained for call-site compatibility and as a
+//    pinned regression guard, but SingleSide no longer reads it.
 //  - BothSide: `black` = Black's per-move win-rate, `white` = White's
-//    (its complement) — each colour shown in its own perspective.
+//    (its complement) — each colour shown in its own perspective. Unchanged.
 
 #include "model/config.h"
 
@@ -31,13 +34,15 @@ inline WinGraphSeries buildWinGraphSeries(const std::vector<double> &raw,
                                           WinGraphMode mode,
                                           EnginePlaysSide enginePlays)
 {
+    // UI-09: SingleSide is unconditionally Black's perspective; `enginePlays`
+    // no longer influences it (was: White perspective when the engine plays
+    // White). Parameter kept for call-site stability / regression pinning.
+    (void)enginePlays;
+
     WinGraphSeries out;
     out.black.reserve(raw.size());
     if (mode == WinGraphMode::BothSide)
         out.white.reserve(raw.size());
-
-    const bool whitePerspective =
-        (mode == WinGraphMode::SingleSide && enginePlays == EnginePlaysSide::White);
 
     for (size_t i = 0; i < raw.size(); ++i) {
         bool blackToMove = (i % 2 == 1);
@@ -57,7 +62,7 @@ inline WinGraphSeries buildWinGraphSeries(const std::vector<double> &raw,
             out.black.push_back(blackWin);
             out.white.push_back(1.0 - blackWin);
         } else {
-            out.black.push_back(whitePerspective ? (1.0 - blackWin) : blackWin);
+            out.black.push_back(blackWin);   // UI-09: always Black's perspective
         }
     }
     return out;

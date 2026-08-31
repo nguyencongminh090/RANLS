@@ -1,6 +1,18 @@
 # UI-09 — Win-rate graph: SingleSide is always Black; thicker, higher-contrast line
 
-**Status:** 📋 BACKLOG
+**Status:** ✅ DONE (Sprint 7, 2026-08-31) — `WinGraphMode::SingleSide` now unconditionally Black's
+perspective (`buildWinGraphSeries` `whitePerspective` branch removed; `enginePlays` param kept but
+`(void)`-discarded); `BothSide` untouched. Win-rate line thickened (main 1.5→2.8 px, White 1.2→2.6
+px) and recoloured to blue `#1A73E8` + green `#1E8E3E`, which clear WCAG 3:1 non-text contrast
+against both the light (`#fafafb`: 4.32 / 4.03:1) and dark (`#242424`: 3.45 / 3.69:1) Adwaita panel
+backgrounds; White line keeps its (widened) dash for CVD-safe shape redundancy; `dataviz` palette
+validator all-PASS in both modes. `config.h` / `win_graph_series.h` doc comments + Settings combo
+label ("Single line (Black's perspective)") updated. `tests/test_ux06_wingraph_series.cpp`: the
+"SingleSide Auto follows enginePlays == White" case replaced with "SingleSide is always Black
+regardless of enginePlays" (other 3 cases kept). `./build.sh` clean; `ctest` 2/2 suites — 132
+`rapfi-gui-tests` + 6 `rapfi-gui-ui-tests` cases pass. Line-width/colour change verified by code
+inspection + documented contrast math (no screenshot harness). UX-06 reversal rationale recorded in
+[docs/fix-log/2026-08-31-ui-09-wingraph-single-side-black-and-thicker-line.md](../fix-log/2026-08-31-ui-09-wingraph-single-side-black-and-thicker-line.md).
 **Area:** `src/ui/win_graph_view.cpp`, `src/ui/win_graph_series.h` (`buildWinGraphSeries`),
 `src/ui/analysis_panel.cpp` (`toDisplayWinrate`), `WinGraphMode` docs (`src/model/config.h`)
 **Priority:** P2
