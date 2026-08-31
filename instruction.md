@@ -69,6 +69,22 @@ One literal in CMake `project(VERSION)` → `configure_file` `version.h`; `--ver
 `gtk_init`; test asserts CLI version == CMake version in the gtkmm-free target. Not `kFormatVersion`.
 [detail](docs/instruction/REL-02-version-string-single-source.md)
 
+## UI-10 — engine-log-not-sticky-to-bottom-during-analysis
+
+Bug fix — run the `systematic-debugging` pipeline first; the todo file lists three suspect sites
+(`isScrolledToBottom` / `scrollToEnd` / `flushPending`) and a stale-layout timing hypothesis, all
+to be confirmed with instrumentation before fixing. Keep the "only stick if already at bottom" gate
+(RT-02); don't touch the bounded buffer, the gutter (UI-05), or the flush cadence (RT-01/02).
+[detail](docs/instruction/UI-10-engine-log-not-sticky-to-bottom-during-analysis.md)
+
+## UI-11 — about-window-rewrite
+
+New `src/ui/about_dialog.{h,cpp}` class (custom layout, not stock `Gtk::AboutDialog`); `onAbout()`
+shrinks to construct + existing delete-on-hide lifetime. Version stays `APP_VERSION` (don't regress
+REL-02). Build date / git short-hash via `configure_file`, guarded for no-`.git` builds. About-text
+only — no app-wide `Rapfi Analysis → RANLS` rename here.
+[detail](docs/instruction/UI-11-about-window-rewrite.md)
+
 ---
 
 _Items without an entry here (RT-02/03/04, STATE-02/03, PROTO-02, NAV-01, UI-01/02/03, UX-01…04,
