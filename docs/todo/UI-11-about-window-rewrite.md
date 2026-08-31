@@ -1,5 +1,57 @@
 # UI-11 — Rewrite the About window (custom layout, more info, correct app name)
 
+**Status:** ✅ DONE (Sprint 8, implemented 2026-08-31 on branch `ui-11/about-window-rewrite`)
+
+## Resolution
+
+New `AboutDialog` class (`src/ui/about_dialog.{h,cpp}`) replaces the stock
+`Gtk::AboutDialog`. `MainWindow::onAbout()` reduced to the CLEAN-01 heap +
+`set_hide_on_close(true)` + `signal_hide → delete` lifetime, `set_visible(true)`.
+
+Layout: horizontal root box — left `Gtk::Image` (themed stock icon
+`applications-games-symbolic`, pixel size 96; no binary asset committed, per the
+task boundary), right vertical info column: `RANLS` heading (`.title-1` style
+class), `Version <APP_VERSION>` (`.dim-label`), tagline, then three titled
+sub-sections — Developer (`Developer: Nguyen Minh` + `Copyright © 2026 Nguyen
+Minh`), Tech / build info (`Gtk::Grid` of GTK / gtkmm / Cairo runtime versions,
+build date, git commit, license), Links & protocol (repository + Yixin/Gomocup
+protocol as `<a href>` markup labels, supported-engine list). Single bottom-right
+`Close` button; Esc also closes.
+
+Build-time values: new `src/build_info.h.in` → `build/generated/build_info.h`
+via `configure_file`, mirroring `version.h`. `APP_BUILD_DATE` from
+`string(TIMESTAMP … UTC)`, `APP_GIT_COMMIT` from `git rev-parse --short HEAD` at
+configure time, guarded to fall back to `"unknown"` in a no-`.git` build.
+`APP_VERSION` still single-sourced from CMake `project(VERSION)` (REL-02) — no
+hard-coded version anywhere.
+
+`src/ui/about_dialog.cpp` wired into the `rapfi-gui` target and the
+`rapfi-gui-ui-tests` target (with `${CMAKE_BINARY_DIR}/generated` added to that
+target's include path).
+
+### Verification (2026-08-31)
+
+- `rm -rf build && cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug && cmake --build build -j4` — clean, no new warnings.
+- `cd build && ctest --output-on-failure` — 3/3 passed, incl. `rel02-version-single-source` and `rapfi-gui-ui-tests`.
+- New `tests/test_ui11_about_dialog.cpp` (3 real-widget cases in `rapfi-gui-ui-tests`): asserts the
+  rendered widget tree contains `RANLS`, `Developer: Nguyen Minh`, `APP_VERSION`, the build-info and
+  links blocks; asserts modal + transient-for parent; asserts the dialog builds under both the
+  `Adwaita` and `Adwaita-dark` GTK theme without crashing. A display server was available in the
+  worktree so the cases ran for real (not self-skipped).
+- Full manual light/dark *visual* confirmation of the running GTK app (open Help → About, click the
+  links) is left for the orchestrator via the `run` skill.
+
+### Out of scope (per task boundary)
+
+- App-wide `"Rapfi Analysis" → "RANLS"` rename (window title `src/main_window.cpp:114`, `style.css`,
+  GTK application id) — filed separately as NAME-01. The name `RANLS` appears only inside the About
+  dialog's own text.
+- No new binary logo asset committed — themed stock icon used as the fallback.
+
+---
+
+<details><summary>Original task</summary>
+
 **Status:** 🔲 ACTIVE (Sprint 8, pulled 2026-08-31)
 **Area:** About dialog (`MainWindow::onAbout()` — `src/main_window.cpp:860`)
 **Priority:** P3
@@ -83,3 +135,5 @@ Implementation notes:
   regress that.
 - CLEAN-01 — the delete-on-hide dialog lifetime pattern to follow.
 - (to file) NAME-01 — consistent app-wide rename to `RANLS`.
+
+</details>

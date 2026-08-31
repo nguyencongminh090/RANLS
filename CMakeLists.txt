@@ -52,12 +52,34 @@ set(GUI_SOURCES
     src/ui/tree_node_view.cpp
     src/ui/bottom_panel.cpp
     src/ui/settings_dialog.cpp
+    src/ui/about_dialog.cpp
 )
 
 # ── Generated version header (single source of truth: project(VERSION) above) ─
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/version.h.in
     ${CMAKE_CURRENT_BINARY_DIR}/generated/version.h
+    @ONLY
+)
+
+# ── UI-11: generated build-info header (build date + git commit) ────────────
+# Values resolved at configure time. `git rev-parse` is guarded so a no-.git
+# tarball build still configures — it falls back to "unknown".
+string(TIMESTAMP APP_BUILD_DATE "%Y-%m-%d" UTC)
+execute_process(
+    COMMAND           git rev-parse --short HEAD
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE   APP_GIT_COMMIT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+    RESULT_VARIABLE   _git_commit_rc
+)
+if(NOT _git_commit_rc EQUAL 0 OR "${APP_GIT_COMMIT}" STREQUAL "")
+    set(APP_GIT_COMMIT "unknown")
+endif()
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/build_info.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/generated/build_info.h
     @ONLY
 )
 

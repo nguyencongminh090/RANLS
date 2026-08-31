@@ -56,12 +56,12 @@ Sprint 7 (opened 2026-08-31, goal "UI polish + release prep") — pulled from Ba
 Sprint 8 (opened 2026-08-31, goal "Engine-log sticky-bottom + About-window rewrite") — pulled from Backlog:
 
 - ✅ **UI-10.** Engine Log doesn't stay scrolled to the end while the engine is analysing — new streamed lines land off-screen; expected sticky-bottom during analysis — [detail](docs/todo/UI-10-engine-log-not-sticky-to-bottom-during-analysis.md)
-- 🔲 **UI-11.** Rewrite the About window: custom deliberate layout (logo + info column), add developer credit (Nguyen Minh), tech/build info, links & protocol; correct the app name to `RANLS`; keep `APP_VERSION` single-sourced (REL-02) — [detail](docs/todo/UI-11-about-window-rewrite.md)
+- ✅ **UI-11.** Rewrite the About window: custom deliberate layout (logo + info column), add developer credit (Nguyen Minh), tech/build info, links & protocol; correct the app name to `RANLS`; keep `APP_VERSION` single-sourced (REL-02) — [detail](docs/todo/UI-11-about-window-rewrite.md)
 - ✅ **UI-12.** Move Log doesn't auto-scroll to the newest move — same `Gtk::Overlay`-breaks-`Gtk::Scrollable` no-op that UI-10's second pass fixed for the Engine Log — [detail](docs/todo/UI-12-move-log-not-sticky-to-bottom.md) — pulled into Sprint 8 Active 2026-08-31
 
 ## Backlog
 
-_(empty)_
+- 🔲 **NAME-01.** Consistent app-wide rename `"Rapfi Analysis"` → `RANLS`: window title (`src/main_window.cpp:114`), `style.css` header comment, GTK application id, and a future `.desktop` file. Split out of UI-11 (which renamed only the About dialog's own text) per user decision 2026-08-31 — [detail](docs/todo/NAME-01-app-wide-rename-ranls.md)
 
 Filed 2026-08-21 from a full read of `src/` (UI/UX + codebase review). Prefixes: `RT` realtime
 pipeline · `STATE` state lifetime · `PROTO` engine protocol · `ENG` engine lifecycle ·

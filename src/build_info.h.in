@@ -1,0 +1,9 @@
+#pragma once
+
+// Generated from src/build_info.h.in by CMake configure_file() (UI-11).
+// Build-time metadata for the About dialog. Do not edit by hand — the values
+// come from CMake at configure time (string(TIMESTAMP ...) and
+// `git rev-parse --short HEAD`, the latter falling back to "unknown" in a
+// no-.git tarball build). The app version lives in version.h (REL-02), not here.
+#define APP_BUILD_DATE "@APP_BUILD_DATE@"
+#define APP_GIT_COMMIT "@APP_GIT_COMMIT@"

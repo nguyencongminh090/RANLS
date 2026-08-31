@@ -1,8 +1,8 @@
 #include "main_window.h"
 #include "model/game_io.h"
 #include "model/settings_storage.h"
+#include "ui/about_dialog.h"
 #include "ui/settings_dialog.h"
-#include "version.h"
 
 #include <algorithm>
 #include <cctype>
@@ -859,15 +859,12 @@ void MainWindow::onSettings()
 
 void MainWindow::onAbout()
 {
-    // CLEAN-01: see onBoardSize() above — same delete-on-hide pattern.
-    auto *dialog = new Gtk::AboutDialog();
-    dialog->set_transient_for(*this);
-    dialog->set_modal(true);
+    // UI-11: custom AboutDialog (src/ui/about_dialog.*) replaces the stock
+    // Gtk::AboutDialog. This method just owns the CLEAN-01 lifetime: see
+    // onBoardSize() above — same heap + delete-on-hide pattern.
+    auto *dialog = new AboutDialog(*this);
     dialog->set_hide_on_close(true);
     dialog->signal_hide().connect([dialog]() { delete dialog; });
-    dialog->set_program_name("Rapfi Analysis");
-    dialog->set_version(APP_VERSION);  // REL-02: single-sourced from CMake project(VERSION)
-    dialog->set_comments("Professional Gomoku Analysis Tool");
     dialog->set_visible(true);
 }
 
