@@ -33,6 +33,14 @@ BottomPanel::BottomPanel()
     engineLogView_.set_wrap_mode(Gtk::WrapMode::WORD_CHAR);
     engineLogView_.add_css_class("monospace");
 
+    // UI-10: one permanent right-gravity mark at the end of the buffer. The
+    // flush path scrolls to THIS mark rather than creating and immediately
+    // deleting a throwaway one each tick — deleting the mark before GTK's
+    // post-relayout deferred-scroll pass ran was dropping the queued scroll,
+    // so a fast stream left the newest line off-screen.
+    engineLogEndMark_ = engineLogView_.get_buffer()->create_mark(
+        engineLogView_.get_buffer()->end(), /*left_gravity=*/false);
+
     gutterArea_.add_css_class("engine-gutter");
     gutterArea_.set_valign(Gtk::Align::FILL);
     gutterArea_.set_draw_func(sigc::mem_fun(*this, &BottomPanel::drawGutter));
@@ -47,7 +55,18 @@ BottomPanel::BottomPanel()
     // Repaint the gutter whenever the log scrolls or relayouts (resize/wrap
     // change the adjustment's range even when its value is unchanged).
     if (auto vadj = scrolledEngineLog_.get_vadjustment()) {
-        vadj->signal_value_changed().connect([this] { gutterArea_.queue_draw(); });
+        vadj->signal_value_changed().connect([this] {
+            gutterArea_.queue_draw();
+            // UI-10: the scroll position has actually settled here (value
+            // moved, layout is current), so the geometry is trustworthy —
+            // this is the ONE place we let it (re)decide stickiness. A user
+            // dragging up clears the intent; scrolling back to the bottom
+            // (or our own auto-scroll landing there) restores it. We do NOT
+            // recompute this on signal_changed (range grew but value didn't):
+            // that fires mid-stream with a not-yet-settled `upper`.
+            stickToBottom_ =
+                sticky_scroll::updateStickOnSettle(engineLogGeometry(), kBottomEpsilon);
+        });
         vadj->signal_changed().connect([this] { gutterArea_.queue_draw(); });
     }
 
@@ -204,12 +223,36 @@ void BottomPanel::scrollToEnd(Gtk::TextView &view)
     buf->delete_mark(mark);
 }
 
-bool BottomPanel::isScrolledToBottom()
+sticky_scroll::ScrollGeometry BottomPanel::engineLogGeometry() const
 {
     auto adj = scrolledEngineLog_.get_vadjustment();
-    if (!adj) return true;
-    constexpr double kEpsilon = 1.0;  // pixel tolerance
-    return adj->get_value() + adj->get_page_size() >= adj->get_upper() - kEpsilon;
+    if (!adj)
+        return {};
+    return {adj->get_value(), adj->get_page_size(), adj->get_upper()};
+}
+
+void BottomPanel::scrollEngineLogToBottom()
+{
+    if (!engineLogEndMark_)
+        return;
+
+    // Scroll now (handles the case where layout is already current)…
+    engineLogView_.scroll_to(engineLogEndMark_, 0.0, 0.0, 1.0);
+
+    // …and once more on the next idle, after GTK has processed the relayout
+    // triggered by this tick's insert. During a fast stream the immediate
+    // scroll above runs against a stale TextView height and lands short; the
+    // deferred re-issue against the SAME persistent mark catches up. This does
+    // not re-check "is the user at the bottom" — the decision to stick was
+    // already made by the caller before the insert.
+    if (!scrollIdlePending_) {
+        scrollIdlePending_ = true;
+        Glib::signal_idle().connect_once([this] {
+            scrollIdlePending_ = false;
+            if (engineLogEndMark_)
+                engineLogView_.scroll_to(engineLogEndMark_, 0.0, 0.0, 1.0);
+        });
+    }
 }
 
 bool BottomPanel::flushPending()
@@ -220,7 +263,11 @@ bool BottomPanel::flushPending()
     std::vector<EngineLogLine> toApply;
     toApply.swap(pendingAppend_);
 
-    bool wasAtBottom = isScrolledToBottom();
+    // UI-10: decide stickiness from the remembered intent, falling back to the
+    // pre-insert geometry. A single stale "not at bottom" reading on the flush
+    // tick must not silently disable auto-scroll (that was the bug).
+    const bool wantStick = sticky_scroll::shouldStickToBottom(
+        stickToBottom_, engineLogGeometry(), kBottomEpsilon);
 
     // Route every queued line through the bounded model first so it is the
     // single source of truth for how many lines are dropped.
@@ -251,8 +298,8 @@ bool BottomPanel::flushPending()
 
     buf->end_user_action();
 
-    if (wasAtBottom)
-        scrollToEnd(engineLogView_);
+    if (wantStick)
+        scrollEngineLogToBottom();
 
     updateEngineLogEmptyState();
     gutterArea_.queue_draw();
@@ -310,6 +357,9 @@ void BottomPanel::clearEngineLog()
     pendingAppend_.clear();
     engineLogModel_.clear();
     engineLogView_.get_buffer()->set_text("");
+    // UI-10: an empty log is trivially "at the bottom" — resume stickiness so
+    // the next analysis run follows its output from the first line.
+    stickToBottom_ = true;
     updateEngineLogEmptyState();
     gutterArea_.queue_draw();
 }
