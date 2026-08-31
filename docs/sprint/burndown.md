@@ -30,5 +30,8 @@ points at sprint start to 0 at the end date.
 
 | 2026-08-31 | 0 / 5 items | — | REL-02 landed. Single source of truth is now `project(rapfi-gui VERSION 0.1.0)` in the top-level `CMakeLists.txt`; `configure_file` generates `build/generated/version.h` (`#define APP_VERSION`) from `src/version.h.in`. `src/main.cpp` scans argv for `--version`/`-v` at the very top of `main()` (before `RapfiApplication::create()` / any GTK init) and prints `APP_VERSION`; `onAbout()`'s `set_version("2.0")` → `set_version(APP_VERSION)`. Script-based ctest `rel02-version-single-source` runs the real binary headless and asserts `--version`/`-v` output == CMake `PROJECT_VERSION` (links no gtkmm). `game_io.cpp` `kFormatVersion`/`yxgame_version` left untouched (save-file schema). Build clean; ctest 3/3 green (`rapfi-gui-tests`, `rel02-version-single-source`, `rapfi-gui-ui-tests`); `env -u DISPLAY -u WAYLAND_DISPLAY ./build/rapfi-gui --version` → `0.1.0` rc=0, no window. All 5 Sprint 7 items now landed. |
 
+| 2026-08-31 | — | — | Sprint 7 closed same day — all five items landed on `main`; archived to `docs/sprint/archive/sprint-7.md`; nothing rolled over. Table reset below for Sprint 8 |
+| 2026-08-31 | 2 / 2 items | — | Sprint 8 opened (goal "Engine-log sticky-bottom + About-window rewrite"): UI-10, UI-11 pulled from Backlog into Active — see `docs/sprint/current.md`. Backlog now empty |
+
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).

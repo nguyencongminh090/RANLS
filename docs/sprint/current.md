@@ -1,37 +1,32 @@
 # Current sprint
 
-## Sprint 7
+## Sprint 8
 
-**Goal:** UI polish + release prep. Close out the post-UI-review follow-ups (drop the empty-state
-placeholder text, stop engine auto-play from silently reverting to Off, make the win-rate graph
-readable and its SingleSide mode always-Black) and stand up user-facing versioning (a
-"Keep a Changelog" `CHANGELOG.md` backfilled through Sprint 6, a release checklist, and a
-single-sourced version string) so `v0.1.0` can be tagged.
+**Goal:** Engine-log sticky-bottom + About-window rewrite. Fix the Engine Log so it follows the
+newest streamed line during analysis (sticky-bottom, without yanking a user who has scrolled up),
+and replace the stock `Gtk::AboutDialog` with a deliberate custom layout carrying developer credit,
+tech/build info, and links — showing the correct app name `RANLS`.
 **Dates:** 2026-08-31 to — (open — no fixed end date set yet)
 
-**Dependency graph:** UI-08 is independent. ENG-02 builds on UI-06 (shipped Sprint 6) and touches
-the engine-lifecycle / `MatchConfig` path. UI-09 revisits UX-06's WinGraph work (drops the
-follow-engine-side coupling, WCAG line pass) — independent of the others but should land after any
-UI-08 panel churn to avoid conflicts in the analysis panel. **REL-02 depends on REL-01** (REL-01
-establishes the SemVer 0.x scheme + changelog that REL-02's version string points at), so REL-01 is
-done first and REL-02 after it.
+**Dependency graph:** UI-10 and UI-11 are independent of each other. UI-10 lives in
+`src/ui/bottom_panel.cpp` (`flushPending` / `isScrolledToBottom` / `scrollToEnd`, same path as
+RT-02). UI-11 adds a new `src/ui/about_dialog.{h,cpp}` class and must keep `APP_VERSION`
+single-sourced (must not regress REL-02); the app-wide `Rapfi Analysis → RANLS` rename is
+explicitly out of scope (filed separately as NAME-01).
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| UI-08 | Remove empty-state placeholder text; keep panels clean/empty (partial reversal of UX-01) | — | — | Active |
-| ENG-02 | Interrupting engine auto-play reverts "Engine plays" to Off instead of staying on the assigned side | UI-06 (done) | — | Done |
-| UI-09 | WinGraph SingleSide always Black (drop UX-06's follow-engine-side coupling); thicker, higher-contrast win-rate line (WCAG pass) | — | — | Done |
-| REL-01 | Root `CHANGELOG.md` ("Keep a Changelog", SemVer 0.x), backfill Sprints 1–6, "cut a release" checklist, tag `v0.1.0`; doc/process only | — | — | Done |
-| REL-02 | Single-source the version string (`configure_file` → `version.h`), wire into About dialog + a pre-GTK `--version` flag | REL-01 | — | Done |
+| UI-10 | Engine Log doesn't stay scrolled to the end while the engine is analysing — new streamed lines land off-screen | — | — | Active |
+| UI-11 | Rewrite the About window: custom layout (logo + info column), developer credit, tech/build info, links & protocol; correct app name to `RANLS`; keep `APP_VERSION` single-sourced (REL-02) | REL-02 (done) | — | Active |
 
-Points not yet estimated (consistent with Sprints 3–6).
+Points not yet estimated (consistent with Sprints 3–7).
 
-**Lesson carried in from Sprint 6:** whenever a reported defect is about what the user sees on
+**Lesson carried in from Sprints 6–7:** whenever a reported defect is about what the user sees on
 screen, reach for the `rapfi-gui-ui-tests` target (links gtkmm, asserts the rendered widget tree) —
-`rapfi-gui-tests` links no gtkmm and structurally cannot see widget-level bugs. Relevant to UI-08
-and UI-09.
+`rapfi-gui-tests` links no gtkmm and structurally cannot see widget-level bugs. Relevant to both
+UI-10 and UI-11.
 
-**Lesson carried from Sprints 4–6:** update `docs/sprint/burndown.md` as soon as an Active item's
+**Lesson carried from Sprints 4–7:** update `docs/sprint/burndown.md` as soon as an Active item's
 status changes, and close the sprint as soon as its last item lands ✅.
 
 See `docs/sprint/burndown.md` for the daily remaining-points table, and `docs/sprint/archive/` for

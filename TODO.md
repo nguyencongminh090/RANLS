@@ -53,6 +53,11 @@ Sprint 7 (opened 2026-08-31, goal "UI polish + release prep") — pulled from Ba
 - ✅ **REL-01.** No user-facing version history: create root `CHANGELOG.md` ("Keep a Changelog", SemVer 0.x), backfill Sprints 1–6, add a "cut a release" checklist + tag `v0.1.0`; doc/process only — [detail](docs/todo/REL-01-changelog-and-release-checklist.md)
 - ✅ **REL-02.** Version string disagrees across CMake (`1.0.0`), About dialog (`"2.0"`), and git (no tags): single-source it via `configure_file` → `version.h`, wire into About + a pre-GTK `--version` flag. Depends on REL-01 — [detail](docs/todo/REL-02-version-string-single-source.md)
 
+Sprint 8 (opened 2026-08-31, goal "Engine-log sticky-bottom + About-window rewrite") — pulled from Backlog:
+
+- 🔲 **UI-10.** Engine Log doesn't stay scrolled to the end while the engine is analysing — new streamed lines land off-screen; expected sticky-bottom during analysis — [detail](docs/todo/UI-10-engine-log-not-sticky-to-bottom-during-analysis.md)
+- 🔲 **UI-11.** Rewrite the About window: custom deliberate layout (logo + info column), add developer credit (Nguyen Minh), tech/build info, links & protocol; correct the app name to `RANLS`; keep `APP_VERSION` single-sourced (REL-02) — [detail](docs/todo/UI-11-about-window-rewrite.md)
+
 ## Backlog
 
 Filed 2026-08-21 from a full read of `src/` (UI/UX + codebase review). Prefixes: `RT` realtime
@@ -61,8 +66,11 @@ pipeline · `STATE` state lifetime · `PROTO` engine protocol · `ENG` engine li
 `IO` game persistence · `DOC` documentation · `TOOL` repo tooling · `REL` release/versioning.
 
 Filed 2026-08-30 from a follow-up UI review request and from `features/versioning-and-changelog/`
-(UI-08, ENG-02, UI-09, REL-01, REL-02) — **all pulled into Sprint 7's Active section 2026-08-31**
-(see above and `docs/sprint/current.md`). Backlog is otherwise empty.
+(UI-08, ENG-02, UI-09, REL-01, REL-02) — all shipped in Sprint 7 (archived
+`docs/sprint/archive/sprint-7.md`).
+
+Filed 2026-08-31 from user bug report / request (UI-10, UI-11) — **both pulled into Sprint 8's
+Active section 2026-08-31** (see above and `docs/sprint/current.md`). Backlog now empty.
 
 Earlier: IO-01/DOC-01/TOOL-01/CLEAN-02 (filed 2026-08-30, leftover-task sweep) shipped in Sprint 5.
 UI-04/UI-05/UX-06/UI-06 (filed 2026-08-30, UI review session) were committed straight into Sprint
