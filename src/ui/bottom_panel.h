@@ -1,7 +1,6 @@
 #pragma once
 
 #include "engine_log_model.h"
-#include "empty_state.h"
 #include "sticky_scroll.h"
 #include <gtkmm.h>
 #include <sigc++/sigc++.h>
@@ -69,9 +68,10 @@ private:
     /// "stick to bottom" decision — never re-evaluates at-bottom itself.
     void scrollEngineLogToBottom();
 
-    /// Scroll a log TextView so its last line is visible at the bottom edge.
-    /// Used by the Move Log only (the Engine Log has its own UI-10 path above).
-    static void scrollToEnd(Gtk::TextView &view);
+    /// UI-12: scroll the Move Log to its end via a persistent end-of-buffer
+    /// mark, re-issued once on the next idle so it survives GTK's deferred
+    /// scroll-to-mark pass after the insert relayout.
+    void scrollMoveLogToEnd();
 
     /// UI-10: pixel tolerance for "at the bottom".
     static constexpr double kBottomEpsilon = 1.0;
@@ -84,6 +84,13 @@ private:
 
     /// UI-10: guards against queueing more than one idle re-scroll at a time.
     bool scrollIdlePending_ = false;
+
+    /// UI-12: same one-in-flight guard for the Move Log's idle re-scroll.
+    bool moveLogScrollIdlePending_ = false;
+
+    /// UI-12: right-gravity mark permanently anchored at the end of the Move
+    /// Log buffer, created once — see `scrollMoveLogToEnd`.
+    Glib::RefPtr<Gtk::TextBuffer::Mark> moveLogEndMark_;
 
     /// UI-10: set while `flushPending` is mutating the buffer and auto-scrolling
     /// so the vadjustment `value_changed` handler does not mistake our own
@@ -107,20 +114,12 @@ private:
     Gtk::TextView       engineLogView_;
     int                 gutterWidth_ = 0;  // computed lazily on first draw
 
-    /// UI-08: thin passthrough wrappers around the log TextViews (UX-01 used
-    /// them to show idle-state placeholder messages; that text was removed —
-    /// empty logs now render clean).
-    /// UI-10: `engineLogOverlay_` is no longer in the widget tree — a
-    /// `Gtk::Overlay` between the ScrolledWindow and the TextView is not
-    /// `Gtk::Scrollable` and broke `TextView::scroll_to`. Kept only so
-    /// `updateEngineLogEmptyState()`'s (no-op) call site still compiles.
-    EmptyStateOverlay moveLogOverlay_{""};
-    EmptyStateOverlay engineLogOverlay_{""};
-
-    /// No-ops since UI-08; kept as the call sites still invoke them after each
-    /// buffer mutation.
-    void updateMoveLogEmptyState();
-    void updateEngineLogEmptyState();
+    // UI-08 removed the idle-state placeholder text; UI-10 (Engine Log) and
+    // UI-12 (Move Log) then dropped the `EmptyStateOverlay` wrappers entirely —
+    // a `Gtk::Overlay` between a `Gtk::ScrolledWindow` and its `Gtk::TextView`
+    // is not `Gtk::Scrollable`, so it forced an implicit `Gtk::Viewport` that
+    // silently swallowed every `TextView::scroll_to`. Both TextViews are now
+    // their ScrolledWindow's direct child.
 
     // Bounded, GUI-independent model of the retained log lines (source of
     // truth for the line cap) and the batch queue awaiting the next flush.
