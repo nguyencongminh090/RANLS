@@ -16,7 +16,7 @@ explicitly out of scope (filed separately as NAME-01).
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| UI-10 | Engine Log doesn't stay scrolled to the end while the engine is analysing — new streamed lines land off-screen | — | — | ✅ landed on branch (manual live-engine check pending) |
+| UI-10 | Engine Log doesn't stay scrolled to the end while the engine is analysing — new streamed lines land off-screen | — | — | ✅ Done (PR #2, squash `c9248e6`; manual live-engine check still pending — no engine binary on the build machine) |
 | UI-11 | Rewrite the About window: custom layout (logo + info column), developer credit, tech/build info, links & protocol; correct app name to `RANLS`; keep `APP_VERSION` single-sourced (REL-02) | REL-02 (done) | — | Active |
 
 Points not yet estimated (consistent with Sprints 3–7).
