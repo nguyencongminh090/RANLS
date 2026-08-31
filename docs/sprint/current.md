@@ -8,16 +8,20 @@ and replace the stock `Gtk::AboutDialog` with a deliberate custom layout carryin
 tech/build info, and links — showing the correct app name `RANLS`.
 **Dates:** 2026-08-31 to — (open — no fixed end date set yet)
 
-**Dependency graph:** UI-10 and UI-11 are independent of each other. UI-10 lives in
+**Dependency graph:** UI-11 is independent of UI-10/UI-12. UI-10 (done) lives in
 `src/ui/bottom_panel.cpp` (`flushPending` / `isScrolledToBottom` / `scrollToEnd`, same path as
-RT-02). UI-11 adds a new `src/ui/about_dialog.{h,cpp}` class and must keep `APP_VERSION`
-single-sourced (must not regress REL-02); the app-wide `Rapfi Analysis → RANLS` rename is
-explicitly out of scope (filed separately as NAME-01).
+RT-02). UI-12 is the same class of bug in the same file — the Move Log's `TextView` is wrapped in
+`Gtk::Overlay` so `scrollToEnd()` is a silent no-op; fix mirrors UI-10's second pass
+(`set_child(moveLogView_)` directly) and can reuse `src/ui/sticky_scroll.h`. UI-11 adds a new
+`src/ui/about_dialog.{h,cpp}` class and must keep `APP_VERSION` single-sourced (must not regress
+REL-02); the app-wide `Rapfi Analysis → RANLS` rename is explicitly out of scope (filed separately
+as NAME-01).
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
 | UI-10 | Engine Log doesn't stay scrolled to the end while the engine is analysing — new streamed lines land off-screen | — | — | ✅ Done (PR #2 then PR #4 `5b0bb13` — #2's scroll was a no-op, #4 found the real cause: TextView wasn't the ScrolledWindow's direct child. Real-widget regression tests added. Move Log has the same latent bug → UI-12 Backlog) |
 | UI-11 | Rewrite the About window: custom layout (logo + info column), developer credit, tech/build info, links & protocol; correct app name to `RANLS`; keep `APP_VERSION` single-sourced (REL-02) | REL-02 (done) | — | Active |
+| UI-12 | Move Log doesn't auto-scroll to the newest move — same `Gtk::Overlay`-breaks-`Gtk::Scrollable` no-op UI-10's second pass fixed for the Engine Log | UI-10 (done) | — | Active (pulled from Backlog 2026-08-31) |
 
 Points not yet estimated (consistent with Sprints 3–7).
 

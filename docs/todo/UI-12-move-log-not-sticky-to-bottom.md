@@ -1,6 +1,6 @@
 # UI-12 — Move Log doesn't auto-scroll to the newest move
 
-**Status:** 🔲 BACKLOG
+**Status:** 🔲 ACTIVE (Sprint 8, pulled from Backlog 2026-08-31)
 **Area:** bottom panel / Move Log (`src/ui/bottom_panel.cpp`)
 **Priority:** P3
 **Source:** found 2026-08-31 while fixing UI-10 (its second pass)
