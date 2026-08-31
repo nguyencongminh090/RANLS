@@ -51,6 +51,18 @@ New `GameSetupConfig` persistence struct; save/restore rule (global preference) 
 (new-game default). No new UI. Watch the STATE-02 "save() rewrites the whole file" hazard.
 [detail](docs/instruction/STATE-04-rule-and-board-size-not-persisted.md)
 
+## REL-01 — changelog-and-release-checklist
+
+Doc/process only. Resolve planning.md Q1 (starting version) with the user first; backfill as
+user-impact lines, not `CODE` lists; release checklist goes in the `github` skill, not `CLAUDE.md`.
+[detail](docs/instruction/REL-01-changelog-and-release-checklist.md)
+
+## REL-02 — version-string-single-source
+
+One literal in CMake `project(VERSION)` → `configure_file` `version.h`; `--version` handled before
+`gtk_init`; test asserts CLI version == CMake version in the gtkmm-free target. Not `kFormatVersion`.
+[detail](docs/instruction/REL-02-version-string-single-source.md)
+
 ---
 
 _Items without an entry here (RT-02/03/04, STATE-02/03, PROTO-02, NAV-01, UI-01/02/03, UX-01…04,

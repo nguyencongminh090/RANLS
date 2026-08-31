@@ -1,0 +1,158 @@
+---
+name: github
+description: GitHub workflow for YixinBoard — branch naming, the PR lifecycle for one TODO.md CODE, commit-message format, squash-merge and main protection, the label/milestone scheme, and how the GitHub Projects board maps to TODO.md. Use when opening a PR, creating a branch, filing or triaging an Issue, updating the Projects board or a sprint milestone, or reconciling GitHub state with the local tracking files. Not for the local tracking convention itself (see CLAUDE.md "Process model" + .claude/rules/tracking-files.md).
+---
+
+# GitHub workflow — YixinBoard
+
+Repo: `github.com/nguyencongminh090/RANLS`. Solo developer, AI-agent-assisted. **The local
+tracking files (`TODO.md`, `docs/todo/`, `docs/instruction/`, `docs/sprint/`, `docs/fix-log.md`,
+`docs/audit.md`) are the single source of truth.** GitHub adds review surface, CI history, and a
+visual board — it never becomes a second backlog. Every GitHub object (branch, PR, Issue,
+milestone) references the local task `CODE` (e.g. `UI-07`, `STATE-04`); when GitHub and the local
+docs disagree, the local docs win and you fix GitHub.
+
+Keep ceremony low: no required reviewers (would block a solo dev), no per-commit board sync. The
+board and milestones are reconciled only at sprint planning and sprint close.
+
+## Branching
+
+- Work happens on a short-lived branch off `main`, one branch per `CODE`.
+- Name: `<code-lowercased>/<short-slug>` — e.g. `ui-07/pv-cross-position`, `state-04/persist-rule`.
+  The `CODE` prefix already encodes the area, so no `fix/` prefix. (The one longer-lived exception
+  is a `feat/<feature-slug>` integration branch — see "Branch model".)
+- `/implement-task` dispatches into an isolated git worktree; those `worktree-agent-<hash>` branches
+  are harness-generated and fine to squash-merge as-is — rename to the convention only if you push
+  one for review.
+- Delete the branch after merge (`gh pr merge --delete-branch`).
+- Never commit directly to `main` **except** doc-only tracking-file edits, which `CLAUDE.md` already
+  permits (`features/<slug>/`, `docs/notes/`, backlog/sprint bookkeeping, this skill, audit rows).
+
+## Branch model — single-trunk now, feature branch when needed
+
+**Default (fixes and small tasks): single trunk.** `main` is the trunk *and* the closest thing to
+"production". No permanent `develop`/`dev` branch — with WIP ≈ 1 and no Releases yet, a second
+long-lived branch would just be `main` with a delay. Each task branches off `main` and squash-merges
+straight back (see "PR lifecycle"). This covers the current mode of work (fix patches).
+
+**When a feature is too big or too risky for one PR** — multi-task, spans layers, or you want to
+keep shipping fixes while it stabilises — use a **feature integration branch**, the code counterpart
+of the `features/<slug>/` design folder:
+
+1. `git switch -c feat/<feature-slug> main` — one longer-lived branch for the whole feature.
+2. Break the feature into `CODE`s (`docs/todo/`). Each sub-task gets its own short branch **off
+   `feat/<feature-slug>`**, PR'd **into** `feat/<feature-slug>` (not `main`), squash-merged there.
+3. Rebase the feature branch on `main` regularly (`git rebase main` or a merge) so it keeps
+   absorbing the fixes landing on the trunk. Resolve conflicts here, not at the end.
+4. When the feature is complete and its tests pass, open **one** PR from `feat/<feature-slug>` into
+   `main`. Merge (not squash — keep the per-`CODE` commits) so each sub-task stays a distinct commit.
+5. `main` stays releasable throughout: fix PRs merge to `main` normally in parallel.
+
+**Need a stable build to demo/ship mid-feature:** cut it from `main`, never from the feature branch.
+Simplest is a tag (`git tag v0.3.0-demo && git push --tags`); if the demo needs its own patches, a
+short-lived `release/v0.3` branch off `main`. Delete/forget it once the feature lands.
+
+**Escalate to a permanent `develop` only if** a second regular contributor joins and you have
+overlapping features in flight at once — not before. Until then it is pure overhead.
+
+## Commit messages
+
+Match existing history: `<CODE>: <imperative summary>` for the squashed commit (e.g.
+`Fix UI-02: tree Table tab can't click-to-jump`, `STATE-04: persist rule and board size`).
+Intermediate commits on the branch are unconstrained — the squash message is what lands on `main`.
+Keep the `Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>` trailer.
+
+## PR lifecycle for one CODE
+
+1. Branch: `git switch -c <code>/<slug>` off an up-to-date `main`.
+2. Implement per `docs/instruction/<CODE>-*.md`; write the regression test (`CLAUDE.md` bug-fix rule).
+3. Push and open the PR:
+   ```
+   gh pr create --title "<CODE>: <summary>" \
+     --body "Closes the local task in docs/todo/<CODE>-<slug>.md
+
+   <what changed, test evidence: e.g. 129/129 + UI tests pass>
+
+   Refs #<issue-number if one exists>" \
+     --milestone "Sprint <N>" --label "area:<prefix>,sprint:<N>"
+   ```
+   The PR body **links the local detail file** (not "Closes #" unless a GitHub Issue exists — a
+   local `docs/todo/` file is not an Issue).
+4. Let CI run when it exists (none yet — see Future). Self-review the diff.
+5. Squash-merge: `gh pr merge --squash --delete-branch`. Linear history, one commit per task.
+6. Same turn, per `.claude/rules/tracking-files.md`: mark `TODO.md` + `docs/todo/<CODE>-*.md` ✅,
+   add the `docs/fix-log/` row + detail file, update `docs/sprint/current.md` and
+   `docs/sprint/burndown.md`. The `Stop` hook (`check-tracking-sync.js`) enforces index/detail sync.
+7. Move the board card to Done (or do it in the sprint-close batch).
+
+## Issues — thin and optional
+
+The local `docs/todo/` tree is the backlog; do **not** mirror every `CODE` into an Issue. Open a
+GitHub Issue only for:
+- an externally reported bug (contributor / user), which you then triage into a `docs/todo/<CODE>`
+  file — the Issue is the intake, the `CODE` file is the tracked work;
+- an item you specifically want visible on the Projects board with a live checklist.
+
+Issue title: `<CODE>: <summary>` once triaged (before a CODE is assigned: plain description +
+`needs-triage` label). Always cross-link Issue ↔ `docs/todo/<CODE>-*.md` in the Issue body.
+
+## Labels
+
+Mirror the `TODO.md` prefixes exactly as `area:` labels:
+`area:RT` `area:STATE` `area:PROTO` `area:ENG` `area:NAV` `area:UI` `area:UX` `area:TEST`
+`area:CLEAN` `area:IO` `area:DOC` `area:TOOL` `area:REL` (add a label when you add a prefix to `TODO.md`).
+
+Plus: `sprint:<N>` (current-sprint items), `needs-triage` (Issue not yet a CODE),
+`blocked` (mirrors a "Depends on" in `docs/sprint/current.md`).
+
+Create them once:
+```
+for p in RT STATE PROTO ENG NAV UI UX TEST CLEAN IO DOC TOOL REL; do
+  gh label create "area:$p" --force; done
+gh label create needs-triage --force; gh label create blocked --force
+```
+
+## Milestones = sprints
+
+- One milestone per sprint, titled `Sprint <N>`, description = the sprint goal from
+  `docs/sprint/current.md`. Due date only if the sprint has a fixed end (several have been
+  open-ended — leave it unset then).
+- Assign a PR/Issue to `Sprint <N>` when its `CODE` is pulled into `docs/sprint/current.md` Active.
+- Close the milestone when the sprint is archived to `docs/sprint/archive/sprint-<N>.md`.
+
+## Projects board
+
+A board named "YixinBoard" with three columns mirroring `TODO.md`:
+
+| Column  | Mirrors                                   |
+|---------|-------------------------------------------|
+| Backlog | `TODO.md` **Backlog** section             |
+| Active  | `docs/sprint/current.md` committed items  |
+| Done    | ✅ items in the current + last sprint      |
+
+The board is a **view of the local files, hand-synced at two moments only**: sprint planning (pull
+Backlog→Active) and sprint close (Active→Done, archive). Do not chase per-commit accuracy. If the
+board drifts from the local docs between those moments, that is expected and harmless — the docs
+are canonical.
+
+## Reconciling GitHub with local docs
+
+- Local `docs/` wins every disagreement. `check-task-structure.js` / `check-tracking-sync.js` guard
+  the local side; there is no automated GitHub sync — that is deliberate.
+- At sprint close: verify each shipped `CODE` has a merged PR, its milestone is complete, its card
+  is in Done. Fix GitHub to match the archive file, never the reverse.
+
+## Releases and versioning
+
+Versioning is **SemVer `0.x`**; the user-facing history is a root `CHANGELOG.md` ("Keep a
+Changelog" format). A release is cut **at sprint close**: move `CHANGELOG.md`'s `[Unreleased]`
+section into `## [0.N.0] - <date>`, add a fresh empty `[Unreleased]`, commit `Release v0.N.0`,
+`git tag v0.N.0`, `git push --tags`. See `features/versioning-and-changelog/` and the `REL-01` /
+`REL-02` backlog items — until those ship, this section describes the target, not current practice.
+
+## Future (not in scope now — file as backlog when wanted)
+
+- **CI**: a GitHub Actions workflow building the GTK4 app and running the `doctest` +
+  `rapfi-gui-ui-tests` suites on every PR; then make it a required check on `main`.
+- **GitHub Releases**: mirror each `CHANGELOG.md` section into a Release on its `v<x.y.z>` tag with
+  a distributable Linux build attached (needs CI to produce the artifact first).

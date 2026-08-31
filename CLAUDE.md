@@ -103,6 +103,33 @@ choices, security reviews, protocol-compatibility checks against Rapfi/Yixin-pro
 build/toolchain decisions. Same index+detail, append-only shape as the fix log — a wrong past entry
 gets a new correcting entry, not a rewrite.
 
+## GitHub project management
+
+Development model: **personal Scrumban** — Scrum vocabulary (numbered sprints, Backlog/Active split,
+story points, burndown, retro "lessons") over a continuous single-piece flow (WIP ≈ 1: one dispatched
+task at a time, items pulled into a sprint mid-flight, sprints often open-ended), with V-Model-grade
+traceability: every work item runs `docs/notes/` → `features/<slug>/` → `docs/todo/` + `docs/instruction/`
+→ code → `docs/fix-log.md`/`docs/audit.md`, and every fix carries a regression test. See
+`docs/audit/2026-08-30-github-project-management.md` for the reasoning.
+
+GitHub's role is deliberately narrow — **the local tracking files stay the single source of truth**;
+GitHub adds review, CI history, and a visual board, never a second backlog:
+- **Branch + PR per `CODE`**: branch `<code>/<slug>`, PR title `<CODE>: <summary>`, PR body links
+  `docs/todo/<CODE>-*.md`, squash-merge to keep `main` one-commit-per-task and linear. `main` requires
+  a PR but not a reviewer (solo). Doc-only tracking edits still go straight to `main` (see above).
+- **Single trunk** — no permanent `dev` branch. A big/risky feature uses a longer-lived
+  `feat/<slug>` integration branch (sub-task PRs merge into it, it rebases on `main`, one PR back to
+  `main` at the end); demo/stable builds are tagged off `main`. See the `github` skill "Branch model".
+- **Issues are thin**: the `docs/todo/` tree is the backlog. Open an Issue only for an externally
+  reported bug (intake → triage into a `CODE`) or an item you want on the board; title `<CODE>: …`.
+- **Labels** mirror the `TODO.md` prefixes (`area:UI`, `area:STATE`, …) + `sprint:<N>`.
+- **Milestone = sprint** (`Sprint <N>`), closed when the sprint is archived.
+- **Projects board** (Backlog / Active / Done) mirrors `TODO.md` + `docs/sprint/current.md`,
+  hand-synced only at sprint planning and sprint close — not per commit.
+
+Step-by-step commands (PR lifecycle, label/milestone setup, board sync, reconciliation) live in the
+`github` skill — load it when doing any of the above.
+
 ## Agent management
 
 See `AGENTS.md` for which subagent type and model tier to reach for per task shape, and how
