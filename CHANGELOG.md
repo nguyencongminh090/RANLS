@@ -13,6 +13,24 @@ internal tracking files for traceability.
 
 _Nothing yet._
 
+## [0.1.1] - 2026-09-03
+
+Sprint 8 — a UI polish bundle: the Engine Log and Move Log now follow along as new content arrives,
+and the About window was rebuilt.
+
+### Changed
+
+- Help → About rebuilt: a deliberate custom layout showing the correct app name (RANLS), the
+  version, developer credit, build information (toolkit versions, build date, commit), and links to
+  the project and the engine protocol — replacing the bare stock dialog (UI-11).
+
+### Fixed
+
+- Engine Log now stays scrolled to the newest line while the engine is analysing, instead of
+  leaving fresh output off-screen; scrolling up to read back still holds your position (UI-10).
+- Move Log now auto-scrolls to the latest move as moves are played or a game is loaded (UI-12).
+- Engine Log direction tags (SEND / MESSAGE / …) now render in the same font as the log text.
+
 ## [0.1.0] - 2026-08-31
 
 First tagged release. Covers everything shipped through Sprint 6 — the initial hardening pass over
@@ -78,5 +96,6 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/nguyencongminh090/RANLS/releases/tag/v0.1.0

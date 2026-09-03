@@ -85,6 +85,13 @@ REL-02). Build date / git short-hash via `configure_file`, guarded for no-`.git`
 only — no app-wide `Rapfi Analysis → RANLS` rename here.
 [detail](docs/instruction/UI-11-about-window-rewrite.md)
 
+## UI-13 — wingraph-record-eval-regardless-of-side
+
+Bug + design call — run `systematic-debugging` first (todo file carries a 2026-09-03 trace; start
+from its open-questions list). Reproduce the NaN gaps, then pick candidate fix A/B/C with the user.
+Don't touch UI-01 attribution, UI-09 SingleSide, or the eval→win% maths.
+[detail](docs/instruction/UI-13-wingraph-record-eval-regardless-of-side.md)
+
 ---
 
 _Items without an entry here (RT-02/03/04, STATE-02/03, PROTO-02, NAV-01, UI-01/02/03, UX-01…04,

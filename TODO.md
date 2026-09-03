@@ -59,9 +59,14 @@ Sprint 8 (opened 2026-08-31, goal "Engine-log sticky-bottom + About-window rewri
 - ✅ **UI-11.** Rewrite the About window: custom deliberate layout (logo + info column), add developer credit (Nguyen Minh), tech/build info, links & protocol; correct the app name to `RANLS`; keep `APP_VERSION` single-sourced (REL-02) — [detail](docs/todo/UI-11-about-window-rewrite.md)
 - ✅ **UI-12.** Move Log doesn't auto-scroll to the newest move — same `Gtk::Overlay`-breaks-`Gtk::Scrollable` no-op that UI-10's second pass fixed for the Engine Log — [detail](docs/todo/UI-12-move-log-not-sticky-to-bottom.md) — pulled into Sprint 8 Active 2026-08-31
 
+Sprint 9 (opened 2026-09-03, goal "WinGraph coverage + app-wide RANLS rename") — pulled from Backlog:
+
+- 🔲 **UI-13.** WinGraph skips one side's plies: per-node evals are written only for the position at `currentPath()` during a search, so with "Engine plays <side>" the opponent's plies stay NaN. Graph should record the returned win% for every analysed position regardless of side. Trace + candidate fixes in detail file (filed 2026-09-03 from user report) — [detail](docs/todo/UI-13-wingraph-record-eval-regardless-of-side.md) · [instruction](docs/instruction/UI-13-wingraph-record-eval-regardless-of-side.md)
+- 🔲 **NAME-01.** Consistent app-wide rename `"Rapfi Analysis"` → `RANLS`: window title (`src/main_window.cpp:114`), `style.css` header comment, GTK application id, and a future `.desktop` file. Split out of UI-11 (which renamed only the About dialog's own text) per user decision 2026-08-31 — [detail](docs/todo/NAME-01-app-wide-rename-ranls.md)
+
 ## Backlog
 
-- 🔲 **NAME-01.** Consistent app-wide rename `"Rapfi Analysis"` → `RANLS`: window title (`src/main_window.cpp:114`), `style.css` header comment, GTK application id, and a future `.desktop` file. Split out of UI-11 (which renamed only the About dialog's own text) per user decision 2026-08-31 — [detail](docs/todo/NAME-01-app-wide-rename-ranls.md)
+_Empty — all filed items are committed to Sprint 9._
 
 Filed 2026-08-21 from a full read of `src/` (UI/UX + codebase review). Prefixes: `RT` realtime
 pipeline · `STATE` state lifetime · `PROTO` engine protocol · `ENG` engine lifecycle ·
@@ -74,6 +79,9 @@ Filed 2026-08-30 from a follow-up UI review request and from `features/versionin
 
 Filed 2026-08-31 from user bug report / request (UI-10, UI-11) — **both pulled into Sprint 8's
 Active section 2026-08-31** (see above and `docs/sprint/current.md`).
+
+Filed 2026-09-03 from a user report (UI-13, WinGraph coverage) — **pulled from Backlog into Sprint 9
+Active 2026-09-03**, alongside NAME-01 (see above and `docs/sprint/current.md`).
 
 Filed 2026-08-31 from UI-10's second pass (the Engine Log fix surfaced the same latent no-op in
 the Move Log): UI-12 — **pulled from Backlog into Sprint 8 Active 2026-08-31** (see
