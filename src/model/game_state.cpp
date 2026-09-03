@@ -314,6 +314,33 @@ void GameState::setAnalysisData(std::vector<PVLine> pvs, EngineStatus status)
         }
     }
 
+    // UI-13: the best PV also carries an evaluation for the position AFTER the
+    // engine's best move. If that position is already a node on the played
+    // line / variation tree, fill its eval from the complementary win% (side to
+    // move flips for the child) at a derived depth > 0, so evalHistory() plots
+    // a point there instead of a NaN "unevaluated" gap. Constraints:
+    //  - Never fabricate a node for an un-played PV move (findChild only — the
+    //    graph only walks the played line anyway).
+    //  - Only fill a child that has no analysis of its own — a real search on
+    //    that position always beats this derived estimate.
+    //  - Same "only if actually changed" guard + the treeDirty_/cache path as
+    //    the current-node write above (falls through to `if (treeChanged)`).
+    if (current_node && !pvLines_.empty()) {
+        const auto &bestPv = pvLines_[0];
+        if (!bestPv.moves.empty()) {
+            TreeNode *child = current_node->findChild(bestPv.moves[0]);
+            if (child && child->depth <= 0 && child->nodes <= 0) {
+                double childEval  = 1.0 - bestPv.score;
+                int    childDepth = bestPv.depth > 1 ? bestPv.depth - 1 : 1;
+                if (child->eval != childEval || child->depth != childDepth) {
+                    child->eval  = childEval;
+                    child->depth = childDepth;
+                    treeChanged  = true;
+                }
+            }
+        }
+    }
+
     if (treeChanged) {
         invalidateEvalHistoryCache();
         // RT-04: don't emit signal_tree_updated synchronously here — that drove

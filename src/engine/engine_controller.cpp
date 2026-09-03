@@ -46,15 +46,28 @@ void EngineController::connectProtocolSignals() {
     });
 
     protocol_->signal_move.connect([this](Coord move) {
-        if (state_ == EngineState::Analyzing) {
+        const bool wasSearching = (state_ == EngineState::Analyzing);
+        if (wasSearching) {
+            // UI-13 ordering: the search is over, but the board is still on the
+            // just-searched position and no state-change handler has run yet.
+            //  1. clear analyzing_ so GameState::makeMove() (driven by
+            //     signal_engine_move below) is accepted;
+            //  2. flush the coalesced analysis for the searched position NOW —
+            //     RT-01: immediate, not waiting for a tick, exactly one flush
+            //     on completion — so its final PV/eval lands on that position's
+            //     node before the board advances;
+            //  3. THEN play the move (board advances, tree node for the reply
+            //     ply is created);
+            //  4. THEN transition to Idle — so state-change handlers
+            //     (auto-move, control sensitivity) observe the played move and
+            //     the already-delivered final analysis, and cannot preempt the
+            //     flush for the searched position.
             gameState_.setAnalyzing(false);
-            setState(EngineState::Idle);
-            // RT-01: search completion must not wait for the next throttle
-            // tick — flush any coalesced analysis update immediately so the
-            // final PV/status is never delayed or dropped.
             gameState_.flush();
         }
         signal_engine_move.emit(move);
+        if (wasSearching)
+            setState(EngineState::Idle);
     });
 
     protocol_->signal_analysis.connect([this](const std::vector<PVLine>& pvs, const EngineStatus& status) {

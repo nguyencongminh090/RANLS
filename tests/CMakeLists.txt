@@ -29,6 +29,7 @@ add_executable(rapfi-gui-tests
     test_eng01_engine_state.cpp
     test_eng02_revert_predicate.cpp
     test_ui01_winrate_attribution.cpp
+    test_ui13_wingraph_eval_coverage.cpp
     test_ui02_tree_row_highlight.cpp
     test_ui03_renju_forbidden.cpp
     test_ui03_standard_overline.cpp
