@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.18.2)
-project(rapfi-gui
+project(ranls-gui
     VERSION     0.1.1
     LANGUAGES   CXX
-    DESCRIPTION "Rapfi Professional Analysis GUI"
+    DESCRIPTION "RANLS — Renju/Gomoku Analysis GUI"
 )
 
 set(CMAKE_CXX_STANDARD 20)
@@ -84,23 +84,23 @@ configure_file(
 )
 
 # ── Executable ───────────────────────────────────────────────────────────────
-add_executable(rapfi-gui ${GUI_SOURCES})
+add_executable(ranls-gui ${GUI_SOURCES})
 
-target_include_directories(rapfi-gui PRIVATE
+target_include_directories(ranls-gui PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_BINARY_DIR}/generated
 )
 
-target_link_libraries(rapfi-gui PRIVATE
+target_link_libraries(ranls-gui PRIVATE
     PkgConfig::GTKMM
 )
 
-target_compile_options(rapfi-gui PRIVATE
+target_compile_options(ranls-gui PRIVATE
     -Wall -Wextra -Wpedantic
 )
 
 # ── Copy style.css alongside the binary during build ────────────────────────
-add_custom_command(TARGET rapfi-gui POST_BUILD
+add_custom_command(TARGET ranls-gui POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_CURRENT_SOURCE_DIR}/src/resources/style.css"
         "${CMAKE_CURRENT_BINARY_DIR}/style.css"
@@ -108,12 +108,12 @@ add_custom_command(TARGET rapfi-gui POST_BUILD
 )
 
 # ── Install rules (used by package.sh via cmake --install) ──────────────────
-install(TARGETS rapfi-gui RUNTIME DESTINATION .)
+install(TARGETS ranls-gui RUNTIME DESTINATION .)
 install(FILES src/resources/style.css DESTINATION .)
 
 # ── Tests (model/engine layers only, no gtkmm/display server required) ──────
-option(RAPFI_GUI_BUILD_TESTS "Build the rapfi-gui-tests target" ON)
-if(RAPFI_GUI_BUILD_TESTS)
+option(RANLS_GUI_BUILD_TESTS "Build the ranls-gui-tests target" ON)
+if(RANLS_GUI_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()

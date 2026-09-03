@@ -111,7 +111,7 @@ MainWindow::MainWindow()
     , analysisPanel_(gameState_)
     , bottomPanel_()
 {
-    set_title("Rapfi Analysis");
+    set_title(kAppDisplayName);
     set_default_size(1280, 800);
 
     buildMenuBar();

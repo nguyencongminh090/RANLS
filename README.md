@@ -23,13 +23,13 @@ For more information, please visit www.aiexp.info and send me e-mail: sunkaicn@g
 
 Unit tests cover the `src/model/` and `src/engine/` layers (no GTK, no display server required).
 They use [doctest](https://github.com/doctest/doctest) (vendored, single header, at
-`tests/vendor/doctest.h`) and are wired into CMake as the `rapfi-gui-tests` target.
+`tests/vendor/doctest.h`) and are wired into CMake as the `ranls-gui-tests` target.
 
 From a build directory configured with the top-level `CMakeLists.txt`:
 
 ```sh
 cmake -S . -B build
-cmake --build build --target rapfi-gui-tests
+cmake --build build --target ranls-gui-tests
 ctest --test-dir build --output-on-failure
 ```
 
@@ -40,7 +40,7 @@ RUN_TESTS=1 ./build.sh          # Linux/macOS
 RUN_TESTS=1 ./build_msys2.sh    # MSYS2 (MINGW64/UCRT64 shell)
 ```
 
-Set `-DRAPFI_GUI_BUILD_TESTS=OFF` when configuring CMake to skip building the test target
+Set `-DRANLS_GUI_BUILD_TESTS=OFF` when configuring CMake to skip building the test target
 entirely (e.g. for a packaging build that shouldn't need `sigc++` dev headers standalone).
 
 # 弈心界面程序

@@ -23,7 +23,7 @@
 // genuinely correct; nothing asserted what the widget tree actually holds.
 // These cases do, by driving the REAL PVView / AnalysisPanel widgets.
 //
-// This binary links gtkmm (unlike rapfi-gui-tests, which deliberately does
+// This binary links gtkmm (unlike ranls-gui-tests, which deliberately does
 // not — see tests/CMakeLists.txt and docs/audit/2026-08-21-test-framework-choice.md).
 // It skips itself cleanly when no display server is available.
 

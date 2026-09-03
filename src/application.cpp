@@ -6,7 +6,7 @@
 
 // ─────────────────────────────────────────────────────────────────────────────
 RapfiApplication::RapfiApplication()
-    : Gtk::Application("com.rapfi.analysis", Gio::Application::Flags::DEFAULT_FLAGS)
+    : Gtk::Application("com.ranls.gui", Gio::Application::Flags::DEFAULT_FLAGS)
 {
 }
 
@@ -45,6 +45,6 @@ void RapfiApplication::loadStylesheet()
             GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     }
     else {
-        std::cerr << "[Rapfi GUI] Warning: style.css not found.\n";
+        std::cerr << "[RANLS] Warning: style.css not found.\n";
     }
 }

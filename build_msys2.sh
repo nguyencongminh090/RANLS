@@ -24,7 +24,7 @@ cpu_count() {
 cmake -S "$ROOT_DIR" -B "$BUILD_DIR" -G "$GENERATOR" -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
 cmake --build "$BUILD_DIR" -j "$(cpu_count)"
 
-# Set RUN_TESTS=1 to also run the model/engine unit tests (rapfi-gui-tests via
+# Set RUN_TESTS=1 to also run the model/engine unit tests (ranls-gui-tests via
 # ctest) after building. Off by default so a plain ./build_msys2.sh keeps
 # building only the application, matching prior behavior.
 if [[ "${RUN_TESTS:-0}" == "1" ]]; then
