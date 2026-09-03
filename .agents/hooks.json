@@ -1,0 +1,11 @@
+{
+  "tracking-sync-guard": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "node ./scripts/check-tracking-sync-hook.js",
+        "timeout": 15
+      }
+    ]
+  }
+}
