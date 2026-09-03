@@ -25,7 +25,7 @@ still leaks (window title, CSS, GTK application id) that UI-11 left out of scope
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
 | UI-13 | WinGraph: record the returned win% for every analysed position, regardless of side to move — opponent plies stay NaN under "Engine plays <side>" | — | — | ✅ Done — merged to `main` in PR #7 (squash `6133e41`) 2026-09-03 |
-| NAME-01 | Consistent app-wide rename `"Rapfi Analysis" → RANLS` (window title, `style.css`, GTK app id, CMake) — split out of UI-11 | — | — | 🔲 Not started |
+| NAME-01 | Consistent app-wide rename `"Rapfi Analysis" → RANLS` (window title, `style.css`, GTK app id, CMake) — split out of UI-11 | — | — | ✅ Done — implemented on branch `name-01/app-wide-rename-ranls` 2026-09-03 (full target rename `rapfi-gui` → `ranls-gui`; +`test_name01_window_title.cpp`; build + ctest 3/3 green) |
 
 Points not yet estimated (consistent with Sprints 3–8).
 

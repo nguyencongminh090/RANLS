@@ -14,6 +14,10 @@
 #include <functional>
 #include <memory>
 
+/// NAME-01: the application's display name — shown as the window title.
+/// Single source for the WM-visible identity string.
+inline constexpr const char *kAppDisplayName = "RANLS";
+
 /// Main application window.
 /// Assembles the 2-column layout: Board | Analysis+Tree, with bottom panel.
 class MainWindow : public Gtk::ApplicationWindow {
