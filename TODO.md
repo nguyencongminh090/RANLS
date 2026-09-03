@@ -61,7 +61,7 @@ Sprint 8 (opened 2026-08-31, goal "Engine-log sticky-bottom + About-window rewri
 
 Sprint 9 (opened 2026-09-03, goal "WinGraph coverage + app-wide RANLS rename") — pulled from Backlog:
 
-- 🔲 **UI-13.** WinGraph skips one side's plies: per-node evals are written only for the position at `currentPath()` during a search, so with "Engine plays <side>" the opponent's plies stay NaN. Graph should record the returned win% for every analysed position regardless of side. Trace + candidate fixes in detail file (filed 2026-09-03 from user report) — [detail](docs/todo/UI-13-wingraph-record-eval-regardless-of-side.md) · [instruction](docs/instruction/UI-13-wingraph-record-eval-regardless-of-side.md)
+- ✅ **UI-13.** WinGraph skips one side's plies: per-node evals are written only for the position at `currentPath()` during a search, so with "Engine plays <side>" the opponent's plies stay NaN. Graph should record the returned win% for every analysed position regardless of side. Trace + candidate fixes in detail file (filed 2026-09-03 from user report) — [detail](docs/todo/UI-13-wingraph-record-eval-regardless-of-side.md) · [instruction](docs/instruction/UI-13-wingraph-record-eval-regardless-of-side.md)
 - 🔲 **NAME-01.** Consistent app-wide rename `"Rapfi Analysis"` → `RANLS`: window title (`src/main_window.cpp:114`), `style.css` header comment, GTK application id, and a future `.desktop` file. Split out of UI-11 (which renamed only the About dialog's own text) per user decision 2026-08-31 — [detail](docs/todo/NAME-01-app-wide-rename-ranls.md)
 
 ## Backlog
