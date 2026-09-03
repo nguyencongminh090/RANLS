@@ -1,6 +1,37 @@
 # UI-13 — WinGraph: record the returned win% for every analysed position, regardless of side to move
 
-**Status:** 🔲 OPEN (investigation + fix)
+**Status:** ✅ FIXED
+
+**Resolution (2026-09-03):** Implemented candidate **A** (write the reply-ply child
+node from the best PV) + the `flush()`-before-move ordering fix. Candidates B and C
+and the broader "evaluate the whole played line" ambition were deferred with the
+user (Backlog follow-up recorded in the fix-log detail).
+
+- `src/model/game_state.cpp` `setAnalysisData`: when `pvLines_[0].moves[0]`'s child
+  is already a node on the played line and has no analysis of its own, fill it with
+  the complementary win% (`1 - bestPv.score`) at `depth = max(bestPv.depth-1, 1)` —
+  same "only if changed" guard + `treeChanged`→`invalidateEvalHistoryCache()` /
+  `treeDirty_` path as the existing current-node write. Never fabricates a node for
+  an un-played PV move.
+- `src/engine/engine_controller.cpp` `protocol_->signal_move`: reordered to
+  `setAnalyzing(false)` → `flush()` → `signal_engine_move` → `setState(Idle)`, so
+  the searched position's final analysis is delivered before the board advances and
+  before any `signal_state_changed` handler runs. RT-01 unchanged (one immediate
+  flush on completion, no tick wait).
+- Boundaries honoured: eval→win% maths, UI-01 attribution, `buildWinGraphSeries`
+  perspective logic, UI-09 `enginePlays` decoupling, RT-01 cadence, and graph
+  axes/layout/drawing all untouched.
+
+**Verification:** `./build.sh` clean (no new warnings — 3 pre-existing
+`-Wunused-function` in `gomocup_protocol.cpp` only). `ctest` 3/3: model suite
+`rapfi-gui-tests` 141 cases / 1112 assertions (+4 new UI-13); UI suite
+`rapfi-gui-ui-tests` 14 cases; `rel02-version-single-source` pass. Regression test:
+`tests/test_ui13_wingraph_eval_coverage.cpp` (4 cases, wired into the model ctest
+suite). Detail: `docs/fix-log/2026-09-03-wingraph-record-eval-regardless-of-side.md`.
+
+---
+
+_Original filing (2026-09-03):_ 🔲 OPEN (investigation + fix)
 **Area:** `src/model/game_state.cpp` (`setAnalysisData`, `evalHistory`), `src/engine/engine_controller.cpp`
 (`connectProtocolSignals` — the `signal_analysis` / `signal_move` handlers),
 `src/ui/analysis_panel.cpp` (`connectSignals`, `toDisplayWinrate`). Read-only reference:

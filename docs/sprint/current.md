@@ -24,7 +24,7 @@ still leaks (window title, CSS, GTK application id) that UI-11 left out of scope
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| UI-13 | WinGraph: record the returned win% for every analysed position, regardless of side to move — opponent plies stay NaN under "Engine plays <side>" | — | — | 🔲 Not started |
+| UI-13 | WinGraph: record the returned win% for every analysed position, regardless of side to move — opponent plies stay NaN under "Engine plays <side>" | — | — | ✅ Implemented on branch `ui-13/wingraph-record-eval-regardless-of-side` (pending merge) |
 | NAME-01 | Consistent app-wide rename `"Rapfi Analysis" → RANLS` (window title, `style.css`, GTK app id, CMake) — split out of UI-11 | — | — | 🔲 Not started |
 
 Points not yet estimated (consistent with Sprints 3–8).
