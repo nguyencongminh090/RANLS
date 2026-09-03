@@ -17,7 +17,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(SIGCXX REQUIRED IMPORTED_TARGET sigc++-3.0)
 pkg_check_modules(GIOMM REQUIRED IMPORTED_TARGET giomm-2.68)
 
-add_executable(rapfi-gui-tests
+add_executable(ranls-gui-tests
     test_main.cpp
     test_move_history.cpp
     test_gomocup_protocol.cpp
@@ -53,17 +53,17 @@ add_executable(rapfi-gui-tests
     ${CMAKE_SOURCE_DIR}/src/engine/engine_controller.cpp
 )
 
-target_include_directories(rapfi-gui-tests PRIVATE
+target_include_directories(ranls-gui-tests PRIVATE
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(rapfi-gui-tests PRIVATE
+target_link_libraries(ranls-gui-tests PRIVATE
     PkgConfig::SIGCXX
     PkgConfig::GIOMM
 )
 
-target_compile_features(rapfi-gui-tests PRIVATE cxx_std_20)
+target_compile_features(ranls-gui-tests PRIVATE cxx_std_20)
 
 include(CTest)
 
@@ -71,16 +71,16 @@ include(CTest)
 # ctest case per TEST_CASE; we don't vendor that helper, so register the
 # whole binary as a single ctest case instead — simpler and sufficient for
 # this harness's size.
-add_test(NAME rapfi-gui-tests COMMAND rapfi-gui-tests)
+add_test(NAME ranls-gui-tests COMMAND ranls-gui-tests)
 
 # ── REL-02: CLI --version must equal the CMake PROJECT_VERSION ───────────────
 #
-# Script-based ctest case (links no gtkmm): runs the real rapfi-gui binary
+# Script-based ctest case (links no gtkmm): runs the real ranls-gui binary
 # headless with --version / -v and asserts the output equals PROJECT_VERSION,
 # the single source of truth set in the top-level project(... VERSION ...).
 add_test(NAME rel02-version-single-source
     COMMAND ${CMAKE_COMMAND}
-        -DRAPFI_GUI_BIN=$<TARGET_FILE:rapfi-gui>
+        -DRANLS_GUI_BIN=$<TARGET_FILE:ranls-gui>
         -DEXPECTED_VERSION=${PROJECT_VERSION}
         -P ${CMAKE_CURRENT_SOURCE_DIR}/check_version.cmake
 )
@@ -91,24 +91,26 @@ add_test(NAME rel02-version-single-source
 # own bookkeeping — PVView::update() shrank its `rows_` vector while GTK
 # refused the corresponding listBox_.remove(), leaving orphaned rows on screen
 # — with every model/engine-layer assertion still perfectly green. Nothing in
-# rapfi-gui-tests could ever see that, by construction.
+# ranls-gui-tests could ever see that, by construction.
 #
-# So this is a SEPARATE binary rather than an addition to rapfi-gui-tests: the
-# "no gtkmm in rapfi-gui-tests" invariant documented above (and in
+# So this is a SEPARATE binary rather than an addition to ranls-gui-tests: the
+# "no gtkmm in ranls-gui-tests" invariant documented above (and in
 # docs/audit/2026-08-21-test-framework-choice.md) stays enforced by
 # construction for that target, while real widgets get real coverage here.
 # The binary skips its cases with a clean exit 0 when no display server is
 # available, so it is safe in a headless CI.
 pkg_check_modules(GTKMM REQUIRED IMPORTED_TARGET gtkmm-4.0)
 
-add_executable(rapfi-gui-ui-tests
+add_executable(ranls-gui-ui-tests
     test_ui07_pv_view_rows.cpp
     test_ui08_no_empty_state_text.cpp
     test_ui10_engine_log_scroll_target.cpp
     test_ui12_move_log_scroll_target.cpp
     test_ui11_about_dialog.cpp
+    test_name01_window_title.cpp
 
     # UI sources under test.
+    ${CMAKE_SOURCE_DIR}/src/main_window.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/about_dialog.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/bottom_panel.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/pv_view.cpp
@@ -118,6 +120,11 @@ add_executable(rapfi-gui-ui-tests
     ${CMAKE_SOURCE_DIR}/src/ui/tree_explorer.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/tree_node_view.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/win_graph_view.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/board_view.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/board_renderer.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/settings_dialog.cpp
+    ${CMAKE_SOURCE_DIR}/src/command/command.cpp
+    ${CMAKE_SOURCE_DIR}/src/command/command_dispatcher.cpp
 
     # Model/engine sources they depend on.
     ${CMAKE_SOURCE_DIR}/src/model/move_history.cpp
@@ -125,23 +132,26 @@ add_executable(rapfi-gui-ui-tests
     ${CMAKE_SOURCE_DIR}/src/model/game_state.cpp
     ${CMAKE_SOURCE_DIR}/src/model/variation_tree.cpp
     ${CMAKE_SOURCE_DIR}/src/model/renju_rule.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/board_view_model.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/settings_storage.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/game_io.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/gomocup_protocol.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_process.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_controller.cpp
 )
 
-target_include_directories(rapfi-gui-ui-tests PRIVATE
+target_include_directories(ranls-gui-ui-tests PRIVATE
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_BINARY_DIR}/generated   # UI-11: generated version.h / build_info.h
 )
 
-target_link_libraries(rapfi-gui-ui-tests PRIVATE
+target_link_libraries(ranls-gui-ui-tests PRIVATE
     PkgConfig::GTKMM
     PkgConfig::SIGCXX
     PkgConfig::GIOMM
 )
 
-target_compile_features(rapfi-gui-ui-tests PRIVATE cxx_std_20)
+target_compile_features(ranls-gui-ui-tests PRIVATE cxx_std_20)
 
-add_test(NAME rapfi-gui-ui-tests COMMAND rapfi-gui-ui-tests)
+add_test(NAME ranls-gui-ui-tests COMMAND ranls-gui-ui-tests)
