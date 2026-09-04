@@ -11,12 +11,23 @@ internal tracking files for traceability.
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.3.0] - 2026-09-04
+
+Sprint 11 — a new binary save format (`.rdb`) that keeps the whole analysis, not just the moves.
+
+### Added
+
+- Saved games now keep their **win-rate graph**: analyse a game, save it, re-open it later and the
+  graph is back exactly as you left it — no need to re-run the engine (RDB-03).
+- Saved games now keep the **whole variation tree** — every branch you explored and every comment,
+  not only the line you played (RDB-01, RDB-02).
+
 ### Changed
 
-- Games now save as `.rdb` (a compact binary format that preserves the full variation tree — every
-  branch and comment, not just the moves you played). Older `.yxgame` files still open, and can be
-  re-saved as `.rdb`; there is no `.yxgame` save any more (RDB-02).
-- Re-opening a saved game restores its win-rate graph without re-running analysis (RDB-03).
+- Games save as **`.rdb`** (Ranls Database — a compact binary format). Older `.yxgame` files still
+  open and can be re-saved as `.rdb`; there is no `.yxgame` save any more (RDB-02).
 
 ## [0.2.0] - 2026-09-04
 
@@ -136,7 +147,8 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/nguyencongminh090/RANLS/releases/tag/v0.3.0
 [0.2.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/nguyencongminh090/RANLS/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.1.0...v0.1.1
