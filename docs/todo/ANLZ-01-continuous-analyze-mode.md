@@ -1,8 +1,38 @@
 # ANLZ-01 — Analyze Mode: continuous background analysis so WinGraph fills for every visited position
 
-**Status:** 🔲 OPEN (Active — Sprint 10). `features/analyze-mode/planning.md` Q1–Q8 resolved
-with the user 2026-09-04 (all eight proposed defaults accepted verbatim); pulled from Backlog
-into Sprint 10 Active the same day.
+**Status:** ✅ DONE (implemented on branch `anlz-01/continuous-analyze-mode`, pending merge —
+Active, Sprint 10). `features/analyze-mode/planning.md` Q1–Q8 resolved with the user 2026-09-04
+(all eight proposed defaults accepted verbatim); pulled from Backlog into Sprint 10 Active the
+same day.
+
+**Summary (2026-09-04):** `ViewConfig::analyzeMode` bool + `analyze_mode=` persistence
+(`settings_storage.cpp`, STATE-02-safe). `MainWindow::scheduleAnalyzeModeRestart()` +
+`analyzeModeScheduled_` — verbatim copy of `maybeStartAutoMove()`'s single
+`Glib::signal_idle().connect_once` coalescing; wired to `signal_board_changed` and the
+engine→Idle transition. Idle guards: `analyzeMode` && `isRunning()` && `engineState()==Idle`;
+`isEnginesTurn(...)` → bail (let `maybeStartAutoMove` play); else `stopAnalysis(); analyze()`.
+`EngineController::analyze()`/`stopAnalysis()` reused unchanged — no second protocol path.
+Checkable `analyze-mode` menu action (own section of the "Engine plays" menu) +
+`EngineStatusView` "∞" `Gtk::ToggleButton` in the ▶/■/↻ cluster; `syncAnalyzeModeMenu()`
+mirrors `viewConfig().analyzeMode` onto both surfaces (mirrors `syncEnginePlaysMenu()`).
+`onToggleAnalyzeMode(bool)` persists via `persistGameSetup()` (all 4 blocks), then kicks a
+restart (on) / `stopAnalysis()` (off, process stays up). Strictly orthogonal to
+"Engine plays"/ENG-02 — never calls `revertEnginePlaysToOff()`, never writes `MatchConfig`.
+UI-13 candidate A + `test_ui13_wingraph_eval_coverage.cpp` untouched. One-shot Analyze/Stop
+unchanged (additive). Q5 text-only `1 − parent` estimate **deferred** (optional, not trivially
+in-bounds).
+
+**Verification:** `./build.sh` clean — only the 3 known pre-existing `-Wunused-function`
+warnings in `gomocup_protocol.cpp`. `ctest` 3/3 green: `ranls-gui-tests` (incl. new
+`tests/test_anlz01_analyze_mode_coverage.cpp` — 3 model cases: continuous feed → no NaN in
+`evalHistory()`; feed only plies 0&2 → gaps remain; `analyzeMode` default-off round-trip — plus
+a new `analyzeMode` round-trip case in `test_settings_storage.cpp`);
+`rel02-version-single-source`; `ranls-gui-ui-tests` (incl. new
+`tests/test_anlz01_analyze_mode_action.cpp` — real `MainWindow`, `analyze-mode` action exists /
+boolean-stateful / defaults off / state round-trips through `ViewConfig` + `syncAnalyzeModeMenu()`).
+Before/after NaN trace recorded in `docs/fix-log/2026-09-04-analyze-mode.md`. **Manual live
+smoke still needs a human** (no engine binary / no display on the build host) — checklist and
+reasoning trace in the fix-log detail.
 
 **Area:** `src/model/config.h` (`ViewConfig` — new `analyzeMode` flag),
 `src/model/settings_storage.cpp` (persist it), `src/main_window.cpp`
