@@ -1,58 +1,14 @@
 # Current sprint
 
-## Sprint 11
+## Sprint 12 — not yet opened
 
-**Goal:** New `.rdb` (Ranls Database) binary save format — persist the **whole variation tree** with
-**per-node analysis** so a reloaded game keeps its WinGraph without re-analysis. Replaces the flat
-text `.yxgame` format for saving (`.yxgame` stays import-only).
+Sprint 11 closed 2026-09-04 (archived: `docs/sprint/archive/sprint-11.md`, release `v0.3.0`).
 
-**Dates:** 2026-09-04 to — (open — no fixed end date set yet)
+Run `/sprint open 12 "<goal>" <CODE...>` to commit Backlog items and start it.
 
-**Re-planned 2026-09-04:** Sprint 11 opened around **ANLZ-03** ("additive win% token on the
-`.yxgame` text schema"). During implementation discussion the user **rejected** extending
-`.yxgame` and chose a new binary format. Design worked through `features/rdb-save-format/`
-(`user_story.md`, `planning.md` — Q1–Q8 all resolved, `diagram/container.md`). Decisions of record:
-**tree not DAG** (transposition/symmetry merge weighed, rejected — comment/navigation ambiguity);
-**single game per file** (container wraps it forward-compatibly); **CBOR payload + DEFLATE
-container** over the already-present `zlib` (`zstd` = reserved codec id 1); RenLib `.lib` studied
-(confirms flat DFS-preorder node stream) → import listed as a follow-up. ANLZ-03 → `⛔ SUPERSEDED`;
-work re-split into `RDB-01..03`.
+`TODO.md` Backlog currently holds: **TOOL-02** (`check-task-structure.js` doesn't recognise the
+`🔲` / `⛔` open-markers → false orphan reports; `[Model: Haiku 4.5]`, `_detail TBD_`).
 
-**Integration branch:** `feat/rdb-save-format`. Sub-PRs `RDB-01`, `RDB-02`, `RDB-03` merge into it;
-it rebases on `main`; one final PR `feat/rdb-save-format → main`. (github skill "Branch model".)
-
-**Dependency graph:**
-- **RDB-01** — no upstream dep. `src/model/rdb/`: container framing + `ICompressor`
-  (Raw / DEFLATE-zlib) + `GameGraph` DTO + hand-rolled CBOR subset + `VariationTree`↔`GameGraph`
-  convert. Pure model layer, unit-tested, no UI, no `game_io.cpp` change. NaN eval ⇒ absent
-  `winrate`, never `0.5` (UI-01). `schema` / `container_version` are NOT `APP_VERSION` (REL-02).
-- **RDB-02** — needs RDB-01. `IGameArchiveReader/Writer` + `RdbArchive` + `YxgameReader`
-  (import-only) + extension factory; rewire `onSaveGame` / `onLoadGame`; delete `GameIO::saveGame`;
-  dialog filters; `docs/audit/` entry for the format change.
-- **RDB-03** — needs RDB-01 + RDB-02. Extend `TreeNode` (`std::optional<NodeAnalysis>`), resolve
-  the `evalHistory()` gate (`TreeNode::eval` defaults to `0.0` not NaN — the task's riskiest
-  point), full save→reopen→WinGraph-identical path. **Closes the original ANLZ-03 goal** + carries
-  its NaN-round-trip / legacy-import / out-of-range regression tests. `docs/fix-log/` entry.
-
-| CODE | Summary | Depends on | Points | Status |
-|---|---|---|---|---|
-| ~~ANLZ-03~~ | ~~Persist per-node win% into the `.yxgame` save file~~ | — | — | ⛔ Superseded by RDB-01/02/03 |
-| RDB-01 | `.rdb` container + `ICompressor` + `GameGraph` DTO + CBOR payload + convert | — | — | ✅ Merged to `feat/rdb-save-format` (PR #11, squash `ad69e55`) |
-| RDB-02 | Wire `.rdb` into Save/Open; `IGameArchive*` + `RdbArchive` + `YxgameReader`; retire `GameIO::saveGame` | RDB-01 | — | ✅ Merged to `feat/rdb-save-format` (PR #12, squash `d1182d2`) |
-| RDB-03 | Persist + restore per-node analysis end-to-end (closes ANLZ-03 goal) | RDB-01, RDB-02 | — | ✅ Merged to `feat/rdb-save-format` (PR #13, squash `51ff892`) |
-
-**All three RDB tasks are on `feat/rdb-save-format` (`51ff892`).** Next: one merge PR
-`feat/rdb-save-format → main` (`--merge`, not squash — keeps the per-`CODE` commits), then sprint
-close + `v0.3.0` release cut (MINOR — `.rdb` is a new user-visible save format). Outstanding across
-the feature: manual live/visual WinGraph smoke of a real save→reopen (no display/engine on the
-build host — carried in the RDB-03 fix-log).
-
-Points not yet estimated (consistent with Sprints 3–10).
-
-**Lesson carried in from Sprint 10:** split a pure helper out of any Cairo/GTK path for
-testability. For the RDB tasks the whole storage layer is already gtkmm-free by design (new
-`src/model/rdb/`, exercised by `ranls-gui-tests`) — keep it that way; the only UI touch is the two
-`MainWindow` slots in RDB-02. Also carried: run `/sprint close` the same day the last item merges.
-
-See `docs/sprint/burndown.md` for the daily remaining-points table, and `docs/sprint/archive/` for
-closed sprints. Starting the next sprint = one edit per `/CLAUDE.md` ("Sprint cadence").
+**Carried outstanding from Sprint 11:** manual live/visual WinGraph smoke of a real save→reopen
+`.rdb` round-trip — no display/engine on the build host
+(`docs/fix-log/2026-09-04-rdb-03-persist-node-analysis.md`).
