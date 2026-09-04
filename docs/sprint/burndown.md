@@ -58,5 +58,8 @@ points at sprint start to 0 at the end date.
 
 | 2026-09-04 | 0 / 2 items | — | ANLZ-04 **merged** to `main` via PR #10 (squash `9fb7317`); branch + worktree cleaned. Orchestrator re-verified independently on the agent's branch before merge: `./build.sh` clean (only the 3 pre-existing `-Wunused-function` warnings in `gomocup_protocol.cpp`), `ctest` 3/3 (`ranls-gui-tests` incl. new `test_anlz04_wingraph_bridge.cpp` 8 cases / 21 assertions; `ranls-gui-ui-tests`; `rel02-version-single-source` green). `current.md` ANLZ-04 → Done. **Both Sprint 10 Active items now landed — sprint ready to close + cut a release.** Visual/live WinGraph smoke still needs a human (no display on the build host). |
 
+| 2026-09-04 | 0 / 2 items | — | Sprint 10 **closed** — ANLZ-01, ANLZ-04 landed on `main` (PRs #9, #10); archived to `docs/sprint/archive/sprint-10.md`, nothing rolled over (ANLZ-03's detail + instruction files scaffolded ahead of a Sprint 11 pull; ANLZ-02 dropped earlier). Release `v0.2.0` cut (MINOR — Analyze Mode is a new user-visible feature): `CHANGELOG.md` `[Unreleased]` → `[0.2.0] - 2026-09-04`, CMake `project(VERSION)` 0.1.2 → 0.2.0, tag `v0.2.0` pushed. Milestone `Sprint 10` closed. Table reset below for Sprint 11 |
+| 2026-09-04 | 1 / 1 items | — | Sprint 11 **opened** (goal "Persist per-node win% in the save-game file so a reloaded game keeps its WinGraph"): ANLZ-03 pulled from Backlog into Active — see `docs/sprint/current.md`. Milestone `Sprint 11` + labels `sprint:11` / `area:ANLZ`. Backlog now has 1 item (TOOL-02). Next: `/implement-task ANLZ-03`. |
+
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).
