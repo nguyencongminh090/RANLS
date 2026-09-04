@@ -18,6 +18,10 @@ EngineController::EngineController(GameState &gameState, EngineProcess &engine)
         // or already Crashed/Stopping-to-completion is not a fresh event.
         if (state_ == EngineState::NotStarted || state_ == EngineState::Crashed) return;
         gameState_.setAnalyzing(false);
+        // ANLZ-06: a dead process cannot deliver any further coordinate line
+        // for whatever search was in flight — inert it so a stray line from
+        // a half-flushed pipe buffer can't be misread as a real move.
+        searchIntent_ = SearchIntent::None;
         setState(EngineState::Crashed);
     });
 }
@@ -47,25 +51,50 @@ void EngineController::connectProtocolSignals() {
 
     protocol_->signal_move.connect([this](Coord move) {
         const bool wasSearching = (state_ == EngineState::Analyzing);
+        // ANLZ-06: capture and consume the intent before deciding anything.
+        // Both analyze() (YXNBEST) and requestEngineMove() end in the engine
+        // emitting a bare coordinate line the same way, so state_ alone
+        // cannot tell "search-completion marker, discard" apart from "a real
+        // move the caller asked for, play it". Reset to None immediately so
+        // a second/trailing coordinate line for the same finished search
+        // (or one arriving after a stop already reset it) can't be
+        // misread as a fresh request.
+        const SearchIntent intent = searchIntent_;
+        searchIntent_ = SearchIntent::None;
+
         if (wasSearching) {
             // UI-13 ordering: the search is over, but the board is still on the
             // just-searched position and no state-change handler has run yet.
             //  1. clear analyzing_ so GameState::makeMove() (driven by
-            //     signal_engine_move below) is accepted;
+            //     signal_engine_move below, for a Move-intent search) is
+            //     accepted;
             //  2. flush the coalesced analysis for the searched position NOW —
             //     RT-01: immediate, not waiting for a tick, exactly one flush
             //     on completion — so its final PV/eval lands on that position's
             //     node before the board advances;
-            //  3. THEN play the move (board advances, tree node for the reply
-            //     ply is created);
+            //  3. THEN play the move, if intent says to (board advances, tree
+            //     node for the reply ply is created);
             //  4. THEN transition to Idle — so state-change handlers
             //     (auto-move, control sensitivity) observe the played move and
             //     the already-delivered final analysis, and cannot preempt the
-            //     flush for the searched position.
+            //     flush for the searched position. Idle also re-enters
+            //     scheduleAnalyzeModeRestart() via signal_state_changed, so a
+            //     discarded Analysis-intent coordinate simply re-ponders the
+            //     same position instead of being lost.
             gameState_.setAnalyzing(false);
             gameState_.flush();
         }
-        signal_engine_move.emit(move);
+
+        // ANLZ-06: only a genuinely requested move (requestEngineMove(), the
+        // ENG-02/UI-06 "engine plays <side>" path) is ever played. An
+        // Analysis-intent coordinate — analyze()'s YXNBEST search reaching
+        // its best move — is a search-completion marker only, never a move
+        // the user or the auto-move logic asked for; playing it is exactly
+        // the ANLZ-06 bug. Intent None (e.g. a late line after stopAnalysis()
+        // already reset it) is likewise discarded.
+        if (intent == SearchIntent::Move)
+            signal_engine_move.emit(move);
+
         if (wasSearching)
             setState(EngineState::Idle);
     });
@@ -166,6 +195,9 @@ void EngineController::stopEngine(std::function<void()> onComplete)
     }
 
     gameState_.setAnalyzing(false);
+    // ANLZ-06: same reasoning as stopAnalysis() — a shutdown must also inert
+    // any trailing coordinate line an in-flight search still emits.
+    searchIntent_ = SearchIntent::None;
     setState(EngineState::Stopping);
 
     // Non-blocking: no g_usleep, no g_main_context_iteration (ENG-01). The UI
@@ -234,6 +266,9 @@ void EngineController::analyze()
         engine_.sendLine(cmd);
     }
 
+    // ANLZ-06: this search's terminal coordinate line (YXNBEST still emits
+    // one) must be discarded, not played — see the signal_move handler.
+    searchIntent_ = SearchIntent::Analysis;
     gameState_.setAnalyzing(true);
     setState(EngineState::Analyzing);
 }
@@ -252,6 +287,9 @@ void EngineController::requestEngineMove()
     // position mutations must be blocked until its move arrives. protocol_->
     // signal_move (wired in connectProtocolSignals) flips us back to Idle and
     // emits signal_engine_move when the reply comes in.
+    // ANLZ-06: this search's terminal coordinate is a real requested move —
+    // signal_move must play it, unlike an analyze()-driven search.
+    searchIntent_ = SearchIntent::Move;
     gameState_.setAnalyzing(true);
     setState(EngineState::Analyzing);
 }
@@ -262,6 +300,14 @@ void EngineController::stopAnalysis()
     if (!isUsable()) return;
 
     engine_.sendLine(protocol_->generateStop());
+
+    // ANLZ-06: unconditional, regardless of state_ — inert any trailing
+    // coordinate line the aborted search still emits after STOP. state_
+    // alone is not enough: by the time that line arrives state_ is already
+    // Idle (set just below), so wasSearching in the signal_move handler
+    // would read false either way; it's this intent reset that makes the
+    // line inert rather than accidentally falling through as "Move".
+    searchIntent_ = SearchIntent::None;
 
     if (state_ == EngineState::Analyzing) {
         gameState_.setAnalyzing(false);
