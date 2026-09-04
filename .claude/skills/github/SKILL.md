@@ -134,7 +134,7 @@ Issue title: `<CODE>: <summary>` once triaged (before a CODE is assigned: plain 
 
 Mirror the `TODO.md` prefixes exactly as `area:` labels:
 `area:RT` `area:STATE` `area:PROTO` `area:ENG` `area:NAV` `area:UI` `area:UX` `area:TEST`
-`area:CLEAN` `area:IO` `area:DOC` `area:TOOL` `area:REL` (add a label when you add a prefix to `TODO.md`).
+`area:CLEAN` `area:IO` `area:DOC` `area:TOOL` `area:REL` `area:NAME` `area:ANLZ` (add a label when you add a prefix to `TODO.md`).
 
 Plus: `sprint:<N>` (current-sprint items), `needs-triage` (Issue not yet a CODE),
 `blocked` (mirrors a "Depends on" in `docs/sprint/current.md`).

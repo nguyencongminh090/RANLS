@@ -2,9 +2,13 @@
 
 See [user_story.md](user_story.md) · [diagram/flow.md](diagram/flow.md).
 
-## Open questions (resolve with user before ANLZ-01 leaves Backlog)
+## Open questions — RESOLVED 2026-09-04
 
-| # | Question | Proposed default |
+All eight proposed defaults were accepted verbatim by the user on 2026-09-04 as the resolution.
+No changes. ANLZ-01 is therefore sprint-ready and was pulled into Sprint 10 Active the same day
+(see `docs/sprint/current.md`). The "Proposed default" column below is now the decision of record.
+
+| # | Question | Resolution (= proposed default, accepted 2026-09-04) |
 |---|---|---|
 | Q1 | Where does the Analyze Mode flag live + is it persisted? | `ViewConfig` bool `analyzeMode`, persisted via `SettingsStorage::save` like other UI toggles. Restored on launch but engine only ponders once running. |
 | Q2 | UI surface for the toggle? | A checkable menu item under an "Engine" / "Analysis" menu **and** reuse the analysis-panel play/stop/refresh control cluster already in the screenshot (the "● ON" row). No new toolbar button. |
@@ -15,7 +19,7 @@ See [user_story.md](user_story.md) · [diagram/flow.md](diagram/flow.md).
 | Q7 | Does turning Analyze Mode off stop the engine or just stop restarting? | Stop the current search (`stopAnalysis()`), leave the process running. |
 | Q8 | Interaction with ENG-02 revert? | Analyze Mode is orthogonal — it must NOT call `revertEnginePlaysToOff()`, and Stop/one-shot-Analyze keep their existing ENG-02 behaviour. Toggling Analyze Mode off does not touch `enginePlays`. |
 
-## Implementation sequencing (once Q1–Q8 resolved)
+## Implementation sequencing (Q1–Q8 resolved 2026-09-04)
 
 1. `ViewConfig::analyzeMode` + persistence (Q1) — model layer, unit-testable.
 2. `MainWindow::scheduleAnalyzeModeRestart()` + `analyzeModeScheduled_` idle

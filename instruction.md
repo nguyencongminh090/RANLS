@@ -94,7 +94,8 @@ Don't touch UI-01 attribution, UI-09 SingleSide, or the eval→win% maths.
 
 ## ANLZ-01 — continuous-analyze-mode
 
-Feature (the "Lizzie way"). Resolve `features/analyze-mode/planning.md` Q1–Q8 first. Pure
+Feature (the "Lizzie way"). `features/analyze-mode/planning.md` Q1–Q8 resolved 2026-09-04 (all
+defaults accepted). Pure
 `MainWindow` orchestration: copy `maybeStartAutoMove()`'s idle-coalescing; reuse
 `EngineController::analyze()`/`stopAnalysis()` unchanged; stay orthogonal to "Engine plays" /
 ENG-02; leave UI-13 candidate A alone. `stopAnalysis()` before `analyze()` or the restart no-ops.

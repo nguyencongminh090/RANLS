@@ -1,7 +1,8 @@
 # ANLZ-01 — Analyze Mode: continuous background analysis so WinGraph fills for every visited position
 
-**Status:** 🔲 OPEN (Backlog) — **gated on `features/analyze-mode/planning.md` Q1–Q8
-being resolved with the user before this leaves Backlog / enters a sprint.**
+**Status:** 🔲 OPEN (Active — Sprint 10). `features/analyze-mode/planning.md` Q1–Q8 resolved
+with the user 2026-09-04 (all eight proposed defaults accepted verbatim); pulled from Backlog
+into Sprint 10 Active the same day.
 
 **Area:** `src/model/config.h` (`ViewConfig` — new `analyzeMode` flag),
 `src/model/settings_storage.cpp` (persist it), `src/main_window.cpp`

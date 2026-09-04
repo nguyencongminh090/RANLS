@@ -64,16 +64,21 @@ Sprint 9 (opened 2026-09-03, goal "WinGraph coverage + app-wide RANLS rename") �
 - ✅ **UI-13.** WinGraph skips one side's plies: per-node evals are written only for the position at `currentPath()` during a search, so with "Engine plays <side>" the opponent's plies stay NaN. Graph should record the returned win% for every analysed position regardless of side. Trace + candidate fixes in detail file (filed 2026-09-03 from user report) — [detail](docs/todo/UI-13-wingraph-record-eval-regardless-of-side.md) · [instruction](docs/instruction/UI-13-wingraph-record-eval-regardless-of-side.md)
 - ✅ **NAME-01.** Consistent app-wide rename `"Rapfi Analysis"` → `RANLS`: window title (`src/main_window.cpp:114`), `style.css` header comment, GTK application id, and a future `.desktop` file. Split out of UI-11 (which renamed only the About dialog's own text) per user decision 2026-08-31 — [detail](docs/todo/NAME-01-app-wide-rename-ranls.md)
 
+Sprint 10 (opened 2026-09-04, goal "Analyze Mode — continuous background analysis for full WinGraph coverage") — pulled from Backlog:
+
+- 🔲 **ANLZ-01.** Analyze Mode — continuous background analysis so WinGraph fills a real point for every position the user visits (the "Lizzie way"); no formula backfill on the plotted line. Orthogonal to "Engine plays". Design resolved — `features/analyze-mode/planning.md` Q1–Q8 accepted 2026-09-04. Supersedes the `GRAPH-xx` "evaluate the whole played line" idea. [Model: Sonnet 5] — [detail](docs/todo/ANLZ-01-continuous-analyze-mode.md) · [instruction](docs/instruction/ANLZ-01-continuous-analyze-mode.md) · design `features/analyze-mode/`
+
 ## Backlog
 
-- 🔲 **ANLZ-01.** Analyze Mode — continuous background analysis so WinGraph fills a real point for every position the user visits (the "Lizzie way"); no formula backfill on the plotted line. Orthogonal to "Engine plays". **Gated on `features/analyze-mode/planning.md` Q1–Q8.** Supersedes the `GRAPH-xx` "evaluate the whole played line" idea. [Model: Sonnet 5] — [detail](docs/todo/ANLZ-01-continuous-analyze-mode.md) · [instruction](docs/instruction/ANLZ-01-continuous-analyze-mode.md) · design `features/analyze-mode/`
 - 🔲 **ANLZ-02.** "Analyze entire game" — one-shot sweep of every played node with a fixed per-move budget (Lizzie "Auto analyze" / KaTrain "analyse all"). Follows ANLZ-01. — _detail TBD_
 - 🔲 **ANLZ-03.** Persist per-node win% into the save-game file so re-opening a game keeps the WinGraph (Sabaki/SGF `SBKV`). Follows ANLZ-01. — _detail TBD_
 
 Filed 2026-09-04 from the WinGraph-coverage discussion (`docs/notes/2026-09-04-wingraph-analyze-mode-and-backfill.md`)
 after web/GitHub research into how Lizzie/LizzieYZY, Sabaki, KaTrain and En Croissant handle it —
-user chose the continuous-analysis ("Lizzie way") approach. ANLZ-01 still needs its
-`features/analyze-mode/planning.md` open questions resolved before sprint commitment.
+user chose the continuous-analysis ("Lizzie way") approach. ANLZ-01's
+`features/analyze-mode/planning.md` Q1–Q8 were resolved with the user 2026-09-04 (all 8 proposed
+defaults accepted verbatim) — **ANLZ-01 pulled into Sprint 10 Active 2026-09-04** (see
+`docs/sprint/current.md`). ANLZ-02/03 stay in Backlog (`_detail TBD_`, follow ANLZ-01).
 
 Filed 2026-08-21 from a full read of `src/` (UI/UX + codebase review). Prefixes: `RT` realtime
 pipeline · `STATE` state lifetime · `PROTO` engine protocol · `ENG` engine lifecycle ·
