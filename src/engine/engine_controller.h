@@ -113,6 +113,15 @@ private:
     /// True if commands may be sent to the process right now.
     bool isUsable() const;
 
+    /// ANLZ-06: discriminates why the current/most-recent search was
+    /// started, so the protocol's signal_move handler can tell a real
+    /// requested move apart from an analysis search's completion coordinate.
+    /// Both analyze() and requestEngineMove() transition through
+    /// EngineState::Analyzing identically, so state_ alone cannot
+    /// distinguish them.
+    enum class SearchIntent { None, Analysis, Move };
+    SearchIntent searchIntent_ = SearchIntent::None;
+
     GameState     &gameState_;
     EngineProcess &engine_;
     std::unique_ptr<IEngineProtocol> protocol_;

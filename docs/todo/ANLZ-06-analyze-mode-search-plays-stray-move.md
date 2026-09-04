@@ -1,6 +1,22 @@
 # ANLZ-06 — Analyze Mode: an analysis search's best move is auto-played on the board
 
-**Status:** 🔲 OPEN (Sprint 12 Active) — filed 2026-09-04
+**Status:** ✅ DONE — fixed 2026-09-04
+
+Fixed in `src/engine/engine_controller.{h,cpp}` by adding a `SearchIntent {None, Analysis, Move}`
+discriminator: `analyze()`/`requestEngineMove()` set it, the `protocol_->signal_move` handler
+captures+resets it before deciding and only emits `signal_engine_move` when the intent is `Move`
+(UI-13 flush/state bookkeeping still runs unconditionally), and every stop path
+(`stopAnalysis()`/`stopEngine()`/`signal_process_died`) resets it to `None` so a trailing
+coordinate line for an aborted search is inert. `YXNBEST` request shape, the ANLZ-05 `MainWindow`
+guards, `GameState::makeMove()`'s `analyzing_` guard, and ENG-02/UI-06/one-shot-Analyze all
+untouched, per scope. New regression suite `tests/test_anlz06_search_intent_gate.cpp` (4 cases,
+`ranls-gui-tests`) feeds inbound coordinate lines via `EngineProcess::signal_line_received` and
+pins all 4 acceptance-criteria scenarios, including the exact double-move repro (`a1 a2 a3` + user
+`a4` + late engine `b1` → move count stays 4, no `b1`). `RUN_TESTS=1 ./build.sh` clean (only the 3
+pre-existing `-Wunused-function` warnings, none new); `ctest` 3/3 green, including all existing
+`test_anlz05_*` cases re-checked in isolation. Manual live-engine smoke NOT run (no engine/display
+on the build host) — checklist in the instruction file, still needed from a human. Full detail:
+`docs/fix-log/2026-09-04-analyze-mode-search-plays-stray-move.md`.
 
 Regression surfaced against the just-shipped **ANLZ-05**. ANLZ-05's todo/instruction both promise
 "pressing Stop just stops the search — it never triggers a move" and "a board click mid-search

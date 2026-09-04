@@ -32,6 +32,7 @@ add_executable(ranls-gui-tests
     test_ui13_wingraph_eval_coverage.cpp
     test_anlz01_analyze_mode_coverage.cpp
     test_anlz05_stop_then_move.cpp
+    test_anlz06_search_intent_gate.cpp
     test_ui02_tree_row_highlight.cpp
     test_ui03_renju_forbidden.cpp
     test_ui03_standard_overline.cpp
