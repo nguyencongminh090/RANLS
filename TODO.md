@@ -69,9 +69,12 @@ Sprint 10 (opened 2026-09-04, goal "Analyze Mode — continuous background analy
 - ✅ **ANLZ-01.** Analyze Mode — continuous background analysis so WinGraph fills a real point for every position the user visits (the "Lizzie way"); no formula backfill on the plotted line. Orthogonal to "Engine plays". Design resolved — `features/analyze-mode/planning.md` Q1–Q8 accepted 2026-09-04. Supersedes the `GRAPH-xx` "evaluate the whole played line" idea. [Model: Sonnet 5] — shipped 2026-09-04 (PR #9, squash `0ae2b8a`); build clean, ctest 3/3, +`test_anlz01_analyze_mode_coverage.cpp` / `test_anlz01_analyze_mode_action.cpp` / +1 settings case; manual live-engine smoke still needs a human — [detail](docs/todo/ANLZ-01-continuous-analyze-mode.md) · [instruction](docs/instruction/ANLZ-01-continuous-analyze-mode.md) · [fix-log](docs/fix-log/2026-09-04-analyze-mode.md) · design `features/analyze-mode/`
 - ✅ **ANLZ-04.** WinGraph: draw a faint dashed "bridge" segment connecting the two nearest evaluated plies across a NaN run, instead of breaking the line into disjoint segments. Always on, no gap-length cap; gap plies still get no dot and hover still reads "(no eval)". Deliberate refinement of UI-01's "disjoint segments" rule — needs a `docs/audit/` entry. [Model: Sonnet 5] — pulled from Backlog into Sprint 10 Active 2026-09-04 (mid-sprint, after ANLZ-01 shipped) — [detail](docs/todo/ANLZ-04-wingraph-bridge-nan-gaps.md) · [instruction](docs/instruction/ANLZ-04-wingraph-bridge-nan-gaps.md)
 
-Sprint 11 (opened 2026-09-04, goal "Persist per-node win% in the save-game file so a reloaded game keeps its WinGraph") — pulled from Backlog:
+Sprint 11 (opened 2026-09-04, goal "New `.rdb` binary save format — persist the full variation tree + per-node analysis so a reloaded game keeps its WinGraph") — pulled from Backlog. Integration branch `feat/rdb-save-format` (sub-PRs merge into it; one PR back to `main`):
 
-- 🔲 **ANLZ-03.** Persist per-node win% into the save-game file so re-opening a game keeps the WinGraph (Sabaki/SGF `SBKV` precedent); additive backward-compatible `.yxgame` field, bumps `kFormatVersion` only. Follows ANLZ-01. [Model: Sonnet 5] — [detail](docs/todo/ANLZ-03-persist-winrate-in-save-file.md) · [instruction](docs/instruction/ANLZ-03-persist-winrate-in-save-file.md)
+- ⛔ **ANLZ-03. SUPERSEDED** by RDB-01/02/03 (user decision 2026-09-04: reject extending `.yxgame`, introduce binary `.rdb` instead). Its goal (reloaded game keeps its WinGraph) + regression-test intent carry into RDB-03. — [detail](docs/todo/ANLZ-03-persist-winrate-in-save-file.md) · design [features/rdb-save-format/](features/rdb-save-format/)
+- 🔲 **RDB-01.** `.rdb` container framing (`"RDB1"` magic + header) + `ICompressor` (Raw / DEFLATE-over-zlib) + `GameGraph` serialisation DTO + hand-rolled CBOR payload codec + `VariationTree`↔`GameGraph` convert. Model-layer only, no UI. [Model: Sonnet 5] — [detail](docs/todo/RDB-01-rdb-container-and-codec.md) · [instruction](docs/instruction/RDB-01-rdb-container-and-codec.md)
+- 🔲 **RDB-02.** Wire `.rdb` into Save/Open via `IGameArchiveReader/Writer` + `RdbArchive` + `YxgameReader` (import-only) + extension factory; retire `GameIO::saveGame`; dialog filters. Depends on RDB-01. [Model: Sonnet 5] — [detail](docs/todo/RDB-02-wire-rdb-into-save-open.md) · [instruction](docs/instruction/RDB-02-wire-rdb-into-save-open.md)
+- 🔲 **RDB-03.** Persist + restore per-node analysis end-to-end (extend `TreeNode`, resolve the `evalHistory()` gate, full save→reopen→WinGraph-identical path) — **closes the original ANLZ-03 goal** + carries its NaN-round-trip / legacy-import / out-of-range regression tests. Depends on RDB-01+02. [Model: Sonnet 5] — [detail](docs/todo/RDB-03-persist-restore-node-analysis.md) · [instruction](docs/instruction/RDB-03-persist-restore-node-analysis.md)
 
 ## Backlog
 
@@ -93,6 +96,13 @@ see `docs/sprint/current.md`). ANLZ-03 (follows ANLZ-01) had its
 `docs/todo/ANLZ-03-persist-winrate-in-save-file.md` + `docs/instruction/` detail files scaffolded
 2026-09-04, then was **pulled from Backlog into Sprint 11 Active 2026-09-04** (see
 `docs/sprint/current.md`) — Sprint 11 goal: make the per-position win% durable across save/load.
+**Superseded 2026-09-04 during implementation discussion**: user rejected extending the `.yxgame`
+text schema and chose a new binary `.rdb` (Ranls Database) format — CBOR payload + DEFLATE
+container, whole variation tree + per-node analysis, open/versioned structure (tree not DAG,
+single-game — reasoning in `features/rdb-save-format/planning.md`). ANLZ-03 → `⛔ SUPERSEDED`;
+work re-split into `RDB-01` (container/codec/DTO), `RDB-02` (Save/Open wiring, `.yxgame`
+import-only), `RDB-03` (per-node analysis persistence — closes ANLZ-03's goal). Sprint 11 re-planned
+around `RDB-01..03` on integration branch `feat/rdb-save-format`.
 
 Filed 2026-09-04 (TOOL-02) — surfaced while scaffolding ANLZ-03: `check-task-structure.js` doesn't
 recognise the `🔲` open-marker, so an open item with a detail file trips its orphan check. Not a

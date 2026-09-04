@@ -2,41 +2,51 @@
 
 ## Sprint 11
 
-**Goal:** Persist per-node win% into the save-game file so a reloaded game keeps its WinGraph.
-ANLZ-01 made every visited position carry a measured eval in memory; this makes those evals durable
-— save a game with a populated win-rate graph, re-open it, and the graph comes back without
-re-running analysis (the Sabaki/SGF `SBKV` precedent).
+**Goal:** New `.rdb` (Ranls Database) binary save format — persist the **whole variation tree** with
+**per-node analysis** so a reloaded game keeps its WinGraph without re-analysis. Replaces the flat
+text `.yxgame` format for saving (`.yxgame` stays import-only).
 
 **Dates:** 2026-09-04 to — (open — no fixed end date set yet)
 
+**Re-planned 2026-09-04:** Sprint 11 opened around **ANLZ-03** ("additive win% token on the
+`.yxgame` text schema"). During implementation discussion the user **rejected** extending
+`.yxgame` and chose a new binary format. Design worked through `features/rdb-save-format/`
+(`user_story.md`, `planning.md` — Q1–Q8 all resolved, `diagram/container.md`). Decisions of record:
+**tree not DAG** (transposition/symmetry merge weighed, rejected — comment/navigation ambiguity);
+**single game per file** (container wraps it forward-compatibly); **CBOR payload + DEFLATE
+container** over the already-present `zlib` (`zstd` = reserved codec id 1); RenLib `.lib` studied
+(confirms flat DFS-preorder node stream) → import listed as a follow-up. ANLZ-03 → `⛔ SUPERSEDED`;
+work re-split into `RDB-01..03`.
+
+**Integration branch:** `feat/rdb-save-format`. Sub-PRs `RDB-01`, `RDB-02`, `RDB-03` merge into it;
+it rebases on `main`; one final PR `feat/rdb-save-format → main`. (github skill "Branch model".)
+
 **Dependency graph:**
-- **ANLZ-03** — model layer only: `src/model/game_io.cpp` (the `.yxgame` plain-text schema —
-  add an optional per-move win% token, bump `kFormatVersion`), `src/model/game_state.{h,cpp}` /
-  `src/model/variation_tree.*` (expose the per-node eval for serialisation, accept it on load,
-  then `invalidateEvalHistoryCache()` / `treeDirty_`). **Additive + backward-compatible**: a file
-  with no win% token loads exactly as today (all nodes NaN); old binary + new file must also load.
-  **NaN round-trips as absence** — never write `0.5` for an unevaluated node (that is the exact
-  UI-01 "false 50%" bug). **`kFormatVersion` is not `APP_VERSION`** — REL-02 single-sourced the app
-  version; the save-file schema version is separate, and is the only version string this task
-  touches (do not touch CMake `project(VERSION)` / `src/version.h.in`). Must not trigger analysis
-  on load, must not change eval→win% maths, UI-01 attribution, ANLZ-04 bridge rendering, or
-  `buildWinGraphSeries`. No new file format, no SGF — extend `.yxgame` in place. No
-  `systematic-debugging` first (additive feature, not a bug). No "pick X with the user" design
-  calls open — scoped directly from `docs/notes/2026-09-04-wingraph-analyze-mode-and-backfill.md`.
-  See `docs/todo/ANLZ-03-persist-winrate-in-save-file.md` +
-  `docs/instruction/ANLZ-03-persist-winrate-in-save-file.md`.
+- **RDB-01** — no upstream dep. `src/model/rdb/`: container framing + `ICompressor`
+  (Raw / DEFLATE-zlib) + `GameGraph` DTO + hand-rolled CBOR subset + `VariationTree`↔`GameGraph`
+  convert. Pure model layer, unit-tested, no UI, no `game_io.cpp` change. NaN eval ⇒ absent
+  `winrate`, never `0.5` (UI-01). `schema` / `container_version` are NOT `APP_VERSION` (REL-02).
+- **RDB-02** — needs RDB-01. `IGameArchiveReader/Writer` + `RdbArchive` + `YxgameReader`
+  (import-only) + extension factory; rewire `onSaveGame` / `onLoadGame`; delete `GameIO::saveGame`;
+  dialog filters; `docs/audit/` entry for the format change.
+- **RDB-03** — needs RDB-01 + RDB-02. Extend `TreeNode` (`std::optional<NodeAnalysis>`), resolve
+  the `evalHistory()` gate (`TreeNode::eval` defaults to `0.0` not NaN — the task's riskiest
+  point), full save→reopen→WinGraph-identical path. **Closes the original ANLZ-03 goal** + carries
+  its NaN-round-trip / legacy-import / out-of-range regression tests. `docs/fix-log/` entry.
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| ANLZ-03 | Persist per-node win% into the `.yxgame` save file so a reloaded game keeps its WinGraph (additive backward-compatible field, bumps `kFormatVersion` only) | follows ANLZ-01 (produces the evals this persists); relates to UI-13 (candidate A's derived reply-ply eval persists the same way), UI-01 (NaN ⇒ absent, never `0.5`), REL-02 (app version untouched) | — | 🔲 Not started |
+| ~~ANLZ-03~~ | ~~Persist per-node win% into the `.yxgame` save file~~ | — | — | ⛔ Superseded by RDB-01/02/03 |
+| RDB-01 | `.rdb` container + `ICompressor` + `GameGraph` DTO + CBOR payload + convert | — | — | 🔲 Not started |
+| RDB-02 | Wire `.rdb` into Save/Open; `IGameArchive*` + `RdbArchive` + `YxgameReader`; retire `GameIO::saveGame` | RDB-01 | — | 🔲 Not started |
+| RDB-03 | Persist + restore per-node analysis end-to-end (closes ANLZ-03 goal) | RDB-01, RDB-02 | — | 🔲 Not started |
 
 Points not yet estimated (consistent with Sprints 3–10).
 
 **Lesson carried in from Sprint 10:** split a pure helper out of any Cairo/GTK path for
-testability (ANLZ-04's `computeGapBridges`, mirroring UX-06's `buildWinGraphSeries` split) — for
-ANLZ-03, keep the win%-token parse/format as a pure function so the round-trip gets real
-model-layer coverage without a display. Also carried: run `/sprint close` the same day the last
-item merges (Sprint 10 held to this; keep it up).
+testability. For the RDB tasks the whole storage layer is already gtkmm-free by design (new
+`src/model/rdb/`, exercised by `ranls-gui-tests`) — keep it that way; the only UI touch is the two
+`MainWindow` slots in RDB-02. Also carried: run `/sprint close` the same day the last item merges.
 
 See `docs/sprint/burndown.md` for the daily remaining-points table, and `docs/sprint/archive/` for
 closed sprints. Starting the next sprint = one edit per `/CLAUDE.md` ("Sprint cadence").

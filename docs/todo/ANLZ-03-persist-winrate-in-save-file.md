@@ -1,6 +1,23 @@
 # ANLZ-03 — Persist per-node win% into the save-game file so a reloaded game keeps its WinGraph
 
-**Status:** 🔲 OPEN (Active — Sprint 11)
+**Status:** ⛔ SUPERSEDED 2026-09-04 (Active — Sprint 11) — this task's approach ("additive
+per-move win% token on the `.yxgame` plain-text schema, bump `kFormatVersion`") was rejected by the
+user during implementation discussion. Replacement: a new **binary `.rdb` (Ranls Database)** save
+format — CBOR payload + DEFLATE container, whole variation tree + per-node analysis, open/versioned
+structure (a **tree**, not a DAG — transposition/symmetry merge weighed and rejected; **single
+game** per file). Design: `features/rdb-save-format/` (`user_story.md`, `planning.md` Q1–Q8 all
+resolved, `diagram/container.md`). Re-split into **RDB-01** (`docs/todo/RDB-01-rdb-container-and-codec.md`
+— container + `ICompressor` + `GameGraph` DTO + CBOR), **RDB-02**
+(`docs/todo/RDB-02-wire-rdb-into-save-open.md` — Save/Open wiring, `GameIO::saveGame` retired,
+`.yxgame` import-only via `YxgameReader`), **RDB-03**
+(`docs/todo/RDB-03-persist-restore-node-analysis.md` — per-node analysis persistence end-to-end,
+**closes this task's original goal**, carries its NaN-round-trip / legacy-import / out-of-range
+regression tests). All three on integration branch `feat/rdb-save-format`. Everything below is the
+original (pre-supersession) scope, kept for context.
+
+---
+
+**Original status:** 🔲 OPEN (Active — Sprint 11)
 **Area:** `src/model/game_io.cpp` (save/load — the plain-text `.yxgame` schema, `kFormatVersion` /
 `yxgame_version`), `src/model/game_state.{h,cpp}` (per-node eval already stored on the variation
 tree by UI-13 / ANLZ-01 — expose it for serialisation + accept it on load), `src/model/variation_tree.*`

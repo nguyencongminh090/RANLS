@@ -110,13 +110,40 @@ behaviour for gap plies. Consider factoring a pure `computeGapBridges()` helper 
 Needs a `docs/audit/` entry for the UI-01 "disjoint segments" refinement.
 [detail](docs/instruction/ANLZ-04-wingraph-bridge-nan-gaps.md)
 
-## ANLZ-03 — persist-winrate-in-save-file
+## ANLZ-03 — persist-winrate-in-save-file — ⛔ SUPERSEDED by RDB-01/02/03
 
-Additive backward-compatible per-move win% on the `.yxgame` plain-text schema. Persists the
-per-node evals ANLZ-01 already produces; no new analysis on load. NaN round-trips as *absence*
-(never a written `0.5` — UI-01). Bump `kFormatVersion` only — **not** `APP_VERSION` (REL-02).
-Old file + new binary and new file + old binary must both load.
+Original plan (extend `.yxgame` text schema) rejected by the user 2026-09-04. Replaced by the
+binary `.rdb` format — see `features/rdb-save-format/` and the RDB-0x entries below.
 [detail](docs/instruction/ANLZ-03-persist-winrate-in-save-file.md)
+
+## RDB-01 — rdb-container-and-codec
+
+Model-layer only, no UI, no `game_io.cpp` change. Build `src/model/rdb/`: `"RDB1"` container
+framing + atomic write, `ICompressor` (Raw + DEFLATE over the already-present `zlib`), `GameGraph`
+DTO, a **hand-rolled RFC 8949 subset** CBOR codec (string keys, skip unknown keys, total on
+truncation), `VariationTree`↔`GameGraph` convert. NaN eval ⇒ no `winrate` written. `toGameGraph`
+serialises only today's `TreeNode` fields (RDB-03 extends the struct). Add `ZLIB::ZLIB` to
+`ranls-gui` + both test targets.
+[detail](docs/instruction/RDB-01-rdb-container-and-codec.md)
+
+## RDB-02 — wire-rdb-into-save-open
+
+Depends on RDB-01. `IGameArchiveReader/Writer` + `RdbArchive` (both) + `YxgameReader` (read-only,
+wraps `GameIO::loadGame` → linear all-NaN `GameGraph`) + extension factory. Rewire `onSaveGame` /
+`onLoadGame` (`src/main_window.cpp` ~L754 / ~L721). Delete `GameIO::saveGame` + its dead test
+cases. Branch replay must operate on `tree()` directly, not `makeMove` down branches. `docs/audit/`
+entry for the format change. No `TreeNode` / `evalHistory` gate change — RDB-03.
+[detail](docs/instruction/RDB-02-wire-rdb-into-save-open.md)
+
+## RDB-03 — persist-restore-node-analysis
+
+Depends on RDB-01+02. Closes the ANLZ-03 goal. **D1:** resolve the `evalHistory()`
+`depth>0||nodes>0` gate — prefer `!std::isnan(node->eval)` **but** `TreeNode::eval` defaults to
+`0.0` not NaN (riskiest point — either re-default to NaN and fix assumers, or take the "always
+persist depth/nodes" fallback; test fresh game *and* loaded game). **D2:** extend `TreeNode` (prefer
+`std::optional<NodeAnalysis>` — evalText/pv/glyph/engineRef/analyzedUtc). Full round-trip +
+carried ANLZ-03 regression set + fresh-game-still-all-NaN test. Record D1/D2 in the fix-log.
+[detail](docs/instruction/RDB-03-persist-restore-node-analysis.md)
 
 ---
 
