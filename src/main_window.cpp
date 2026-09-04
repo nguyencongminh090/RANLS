@@ -497,7 +497,10 @@ void MainWindow::connectSignals()
 
         // ANLZ-01: a position change means the current analysis (if any) is now
         // stale — restart it on the new position so the WinGraph gains a point.
-        scheduleAnalyzeModeRestart();
+        // ANLZ-07: force=true — this is a genuine position change, so any
+        // cached "converged" result (necessarily for a DIFFERENT position)
+        // must never suppress analysing this one.
+        scheduleAnalyzeModeRestart(/*force=*/true);
     });
 
     // UI-03: rule changed → refresh the persistent rule indicator and
@@ -1110,7 +1113,10 @@ void MainWindow::onToggleAnalyzeMode(bool active)
     if (active) {
         // Turning it on kicks an immediate restart on the current position
         // (the idle-coalesced check re-verifies engine running / Idle / turn).
-        scheduleAnalyzeModeRestart();
+        // ANLZ-07: force=true — the user explicitly asked for a restart; any
+        // cached "converged" result from before Analyze Mode was toggled off
+        // must not suppress it.
+        scheduleAnalyzeModeRestart(/*force=*/true);
     } else {
         // Q7: stop the current search, leave the process running. Orthogonal to
         // ENG-02 — deliberately NO revertEnginePlaysToOff() here.
@@ -1126,10 +1132,16 @@ void MainWindow::syncAnalyzeModeMenu()
     analysisPanel_.engineStatus().setAnalyzeModeActive(on);
 }
 
-void MainWindow::scheduleAnalyzeModeRestart()
+void MainWindow::scheduleAnalyzeModeRestart(bool force)
 {
-    if (analyzeModeScheduled_) return;
     if (!gameState_.viewConfig().analyzeMode) return;
+
+    // ANLZ-07: latch `force` across coalesced calls — see analyzeModeForce_'s
+    // doc comment. A later non-forced call must never downgrade an earlier
+    // forced one still waiting on the idle callback.
+    if (force) analyzeModeForce_ = true;
+
+    if (analyzeModeScheduled_) return;
 
     // Defer to a single idle callback — same rationale as maybeStartAutoMove():
     // signal_board_changed can fire many times in one synchronous batch (a game
@@ -1138,6 +1150,8 @@ void MainWindow::scheduleAnalyzeModeRestart()
     analyzeModeScheduled_ = true;
     Glib::signal_idle().connect_once([this]() {
         analyzeModeScheduled_ = false;
+        const bool doForce = analyzeModeForce_;
+        analyzeModeForce_ = false;
 
         if (!gameState_.viewConfig().analyzeMode) return;
         if (!engine_.isRunning()) return;
@@ -1147,6 +1161,16 @@ void MainWindow::scheduleAnalyzeModeRestart()
         // `isEnginesTurn(...) return;` bail existed only to hand that position to
         // maybeStartAutoMove(), which no longer runs while Analyze Mode is on
         // (planning.md Q6 reversed). Analyze Mode is now a pure study mode.
+
+        // ANLZ-07: skip re-arming when the search that just finished on this
+        // position already converged to the same result as the one before it
+        // — nothing new to find, and re-running it would just repeat the
+        // same YXBOARD+YXNBEST request/response forever (the busy-loop this
+        // task fixes). `doForce` (a genuine position change, or the user
+        // explicitly toggling Analyze Mode off/on) always bypasses this —
+        // never let a stale cached result suppress analysing a position the
+        // user actually asked to (re)study.
+        if (!doForce && controller_.analysisConverged()) return;
 
         // Restart order matters: analyze() early-returns unless state == Idle,
         // so stopAnalysis() (Idle + RT-01 flush) must precede it.

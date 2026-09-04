@@ -31,6 +31,10 @@ private:
     // which requires reaching the private gameState_/engine_/controller_
     // members and the scheduler methods. Test-only seam — no production API.
     friend struct RanlsAnlz05Probe;
+    // ANLZ-07: same rationale as RanlsAnlz05Probe — the restart-convergence
+    // regression test needs to drive scheduleAnalyzeModeRestart()'s `force`
+    // parameter and inspect controller_ directly.
+    friend struct RanlsAnlz07Probe;
 
     void buildMenuBar();
     void buildToolbar();
@@ -126,10 +130,22 @@ private:
     /// same shape as syncEnginePlaysMenu().
     void syncAnalyzeModeMenu();
     /// If Analyze Mode is on, coalesce a burst of position changes into a single
-    /// deferred check that, when the engine is running + Idle + it is not the
-    /// engine's turn, does stopAnalysis(); analyze() on the new current
-    /// position. Copy of maybeStartAutoMove()'s idle-coalescing structure.
-    void scheduleAnalyzeModeRestart();
+    /// deferred check that, when the engine is running + Idle, does
+    /// stopAnalysis(); analyze() on the new current position. Copy of
+    /// maybeStartAutoMove()'s idle-coalescing structure.
+    ///
+    /// ANLZ-07: `force` bypasses the "skip if the last analysis-intent search
+    /// already converged to the same result on this position" check
+    /// (EngineController::analysisConverged()) — pass true for a genuine
+    /// reason to restart regardless of any cached result: a real position
+    /// change (signal_board_changed) or the user explicitly toggling Analyze
+    /// Mode off/on. The default (false) is for the routine
+    /// engine-just-went-Idle re-arm, where a converged, unchanged result
+    /// means re-running the search would just repeat it forever (the
+    /// busy-loop this task fixes). Multiple coalesced calls before the
+    /// deferred check runs latch `force` if ANY of them requested it — see
+    /// analyzeModeForce_.
+    void scheduleAnalyzeModeRestart(bool force = false);
 
     void onUndoAll();
     void onUndo();
@@ -172,6 +188,13 @@ private:
     // position — same rationale as autoMoveScheduled_ above.
     Glib::RefPtr<Gio::SimpleAction> analyzeModeAction_;
     bool analyzeModeScheduled_ = false;
+
+    // ANLZ-07: latches whether ANY scheduleAnalyzeModeRestart() call
+    // coalesced into the pending idle callback requested `force` — a
+    // non-forced call arriving after a forced one (or vice versa) must not
+    // downgrade the eventual restart, so this is OR'd in, never overwritten,
+    // until the deferred callback consumes and resets it.
+    bool analyzeModeForce_ = false;
 
     // ── Layout ──────────────────────────────────────────────────────────────
     Gtk::HeaderBar     headerBar_;

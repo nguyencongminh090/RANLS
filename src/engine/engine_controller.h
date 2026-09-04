@@ -106,6 +106,19 @@ public:
             || state_ == EngineState::Analyzing || state_ == EngineState::Stopping;
     }
 
+    /// ANLZ-07: true if the most recently completed analysis-intent
+    /// (analyze()/YXNBEST) search produced the same result — best move +
+    /// eval text, whatever EngineStatus/PVLine already carry — as the
+    /// previous completed analysis-intent search on that exact position.
+    /// MainWindow::scheduleAnalyzeModeRestart() uses this to skip re-arming
+    /// a search that has already converged and would just repeat the same
+    /// request/response forever. Always false until at least two
+    /// analysis-intent searches have completed back to back on the same
+    /// position (a first/only completion has nothing to compare against, so
+    /// it is treated as "still new" — restart proceeds, matching ANLZ-01's
+    /// guarantee that every newly-visited position gets analysed).
+    bool analysisConverged() const { return lastAnalysisConverged_; }
+
 private:
     void onEngineLine(const std::string &line);
     void connectProtocolSignals();
@@ -121,6 +134,26 @@ private:
     /// distinguish them.
     enum class SearchIntent { None, Analysis, Move };
     SearchIntent searchIntent_ = SearchIntent::None;
+
+    /// ANLZ-07: the result (best move + eval text) of the most recently
+    /// completed analysis-intent search, keyed to the position it ran on.
+    /// No new engine query — this is exactly what GameState::pvLines()/
+    /// engineStatus() already hold once signal_analysis has updated them,
+    /// read at the moment the search's completion coordinate arrives.
+    struct AnalysisResult {
+        Coord       bestMove;
+        std::string evalText;
+        bool operator==(const AnalysisResult &other) const
+        {
+            return bestMove == other.bestMove && evalText == other.evalText;
+        }
+    };
+    AnalysisResult captureAnalysisResult() const;
+
+    bool                haveLastAnalysis_ = false;
+    std::vector<Coord>  lastAnalysisPath_;
+    AnalysisResult       lastAnalysisResult_;
+    bool                lastAnalysisConverged_ = false;
 
     GameState     &gameState_;
     EngineProcess &engine_;

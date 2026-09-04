@@ -1,7 +1,28 @@
 # ANLZ-07 — Analyze Mode: Stop/restart busy-loops instead of settling once a search converges
 
-**Status:** 🔲 OPEN (Sprint 12 Active) — filed 2026-09-04, pulled into Active 2026-09-04, design
-resolved with the user 2026-09-04 (see "Scope" below) — ready for `/implement-task ANLZ-07`.
+**Status:** ✅ DONE — fixed 2026-09-04.
+
+Fixed in `src/engine/engine_controller.{h,cpp}` + `src/main_window.{h,cpp}` per the resolved
+skip-restart-if-unchanged design (no backstop timer): `EngineController` now tracks the best-move +
+eval-text result of each completed analysis-intent (`analyze()`/`YXNBEST`) search, keyed to
+`currentPath()`, and exposes `analysisConverged()` — true when the just-finished search matched the
+previous completed one on the exact same position (derived from data `signal_analysis` already
+parsed into `GameState`, no new engine query; populated only for `SearchIntent::Analysis`
+completions, so `requestEngineMove()`/ENG-02/UI-06 is untouched). `MainWindow::scheduleAnalyzeModeRestart()`
+gained a `force` parameter (default false) that skips re-arming when converged; `force=true` at the
+`signal_board_changed` handler (a real position change) and `onToggleAnalyzeMode(true)` (user-
+requested restart) so neither can ever be suppressed by a stale/cross-position cached result.
+Coalesced calls latch `force` via a new `analyzeModeForce_` member. ANLZ-01's "every visited position
+gets a WinGraph point" guarantee holds — a position's first completed analysis is never treated as
+converged. New `tests/test_anlz07_analyze_restart_convergence.cpp` (3 cases, `ranls-gui-ui-tests`)
+pins: two identical results skip the 2nd restart (proven as a negative over a 200ms pump window); a
+changed result keeps restarting; a real position change always restarts even when it would otherwise
+match a *different* position's cached result. `./build.sh` clean (only the 3 pre-existing
+`-Wunused-function` warnings, none new); `ctest`: `ranls-gui-tests` 24/24, `rel02-version-single-source`
+pass, `ranls-gui-ui-tests` 23/24 — the 1 failure (`UI-12` Move Log scroll-timing) is a pre-existing,
+unrelated flake, confirmed failing identically at the pre-fix commit. Manual live-engine smoke NOT
+run (no engine/display on the build host). Full detail:
+`docs/fix-log/2026-09-04-anlz07-analyze-mode-restart-busy-loop.md`.
 
 Regression surfaced against the just-shipped **ANLZ-06**. ANLZ-06 correctly stopped an
 analysis-intent search's terminal coordinate from being played (Stop no longer drops a stone) —

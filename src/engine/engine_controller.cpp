@@ -85,6 +85,26 @@ void EngineController::connectProtocolSignals() {
             gameState_.flush();
         }
 
+        // ANLZ-07: an analysis-intent search just completed — capture its
+        // result (best move + eval text, already parsed into GameState by
+        // signal_analysis) and compare it to the previous completed
+        // analysis-intent result for this exact position. Identical means
+        // the search has converged and re-running it would just repeat the
+        // same request/response forever (the busy-loop this task fixes);
+        // MainWindow::scheduleAnalyzeModeRestart() reads analysisConverged()
+        // before re-arming. This must happen before the intent is discarded
+        // below and regardless of whether the coordinate itself is played.
+        if (wasSearching && intent == SearchIntent::Analysis) {
+            auto path = gameState_.currentPath();
+            AnalysisResult result = captureAnalysisResult();
+            lastAnalysisConverged_ = haveLastAnalysis_
+                && lastAnalysisPath_ == path
+                && lastAnalysisResult_ == result;
+            lastAnalysisPath_ = std::move(path);
+            lastAnalysisResult_ = result;
+            haveLastAnalysis_ = true;
+        }
+
         // ANLZ-06: only a genuinely requested move (requestEngineMove(), the
         // ENG-02/UI-06 "engine plays <side>" path) is ever played. An
         // Analysis-intent coordinate — analyze()'s YXNBEST search reaching
@@ -330,6 +350,23 @@ void EngineController::sendRawCommand(const std::string &command)
 {
     if (!isUsable()) return;
     engine_.sendLine(command);
+}
+
+// ANLZ-07: same "best move + eval" derivation EngineStatusView::update() uses
+// for display (src/ui/engine_status.cpp) — prefer pvLines()[0] when present
+// (it's the authoritative current-round best line), fall back to the raw
+// EngineStatus otherwise. No new engine query: both are already parsed into
+// GameState by the protocol's signal_analysis handler above.
+EngineController::AnalysisResult EngineController::captureAnalysisResult() const
+{
+    const auto &pvs = gameState_.pvLines();
+    const auto &status = gameState_.engineStatus();
+    const PVLine *bestPv = !pvs.empty() && !pvs[0].moves.empty() ? &pvs[0] : nullptr;
+
+    AnalysisResult result;
+    result.bestMove = bestPv ? bestPv->moves.front() : status.bestMove;
+    result.evalText = bestPv ? bestPv->evalText : status.evalText;
+    return result;
 }
 
 // ─── Line parsing ────────────────────────────────────────────────────────────
