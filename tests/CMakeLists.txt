@@ -40,6 +40,7 @@ add_executable(ranls-gui-tests
     test_ui05_gutter_clipboard.cpp
     test_ui10_sticky_scroll.cpp
     test_ux06_wingraph_series.cpp
+    test_anlz04_wingraph_bridge.cpp
 
     # Sources under test (model/engine only — no UI, no gtkmm).
     ${CMAKE_SOURCE_DIR}/src/model/move_history.cpp
