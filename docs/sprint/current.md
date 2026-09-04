@@ -50,7 +50,7 @@
 | ANLZ-05 | Analyze Mode never auto-moves; a board click mid-search stops the search, places the stone, restarts analysis | ANLZ-01 (shipped) | — | ✅ Done — PR #15 squash-merged to `main` (`f3bad66`) 2026-09-04 |
 | ENG-03 | Engine subprocess no longer orphaned on WM-close ("X") or GUI crash: `signal_close_request` → graceful stop + `PR_SET_PDEATHSIG` | ENG-01 (shipped) | — | 🔲 Not started |
 | ANLZ-06 | Analyze-Mode search's best move must not be auto-played (Stop drops a stone; mid-search click double-moves) — `EngineController` search-intent gate | ANLZ-05 (merged) | — | ✅ Done — PR #16 squash-merged to `main` (`576b25a`) 2026-09-04 |
-| ANLZ-07 | Analyze-Mode restart busy-loops (STOP/redump/search/discard forever) once a search converges quickly | ANLZ-06 (merged) | — | 🔲 Not started — design resolved, ready for `/implement-task` |
+| ANLZ-07 | Analyze-Mode restart busy-loops (STOP/redump/search/discard forever) once a search converges quickly | ANLZ-06 (merged) | — | ✅ Done — PR #17 squash-merged to `main` (`82be450`) 2026-09-05 |
 
 Points not yet estimated (consistent with Sprints 3–11).
 
