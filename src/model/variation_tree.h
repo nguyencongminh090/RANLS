@@ -2,18 +2,38 @@
 
 #include "board_state.h"
 
+#include <cstdint>
+#include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
+
+/// RDB-03: the per-node engine analysis that is persisted to `.rdb` but has no
+/// home among TreeNode's scalar fields. `eval`/`nodes`/`depth` stay where they
+/// are (many call sites); this optional member carries the rest and doubles as
+/// the "was this node ever analysed by a real engine search" flag.
+struct NodeAnalysisExtras {
+    std::string        evalText;         ///< engine eval text, e.g. "+0.53"
+    std::vector<Coord> pv;               ///< principal variation from this position
+    std::string        glyph;            ///< annotation glyph / label, e.g. "?!"
+    int                engineRef   = -1; ///< index into the persisted engine list, -1 = none
+    int64_t            analyzedUtc = 0;  ///< analysed-at unix seconds, 0 = unknown
+};
 
 /// A node in the variation tree.
 /// Each node represents a single move and may have multiple children (branches).
 struct TreeNode {
     Coord                                move;
-    double                               eval       = 0.0;   ///< Evaluation at this node
+    /// Evaluation at this node. RDB-03: defaults to NaN ("never evaluated") so
+    /// GameState::evalHistory() can treat "eval is not NaN" as the single source
+    /// of truth. A freshly-added, unanalysed node must read back as a NaN gap,
+    /// never a false 0.0 (= catastrophic loss for Black).
+    double                               eval       = std::numeric_limits<double>::quiet_NaN();
     int64_t                              nodes      = 0;     ///< Nodes searched
     int                                  depth      = 0;     ///< Search depth
     std::string                          comment;
+    std::optional<NodeAnalysisExtras>    analysis;           ///< RDB-03: persisted extras; set iff analysed
     std::vector<std::unique_ptr<TreeNode>> children;
     TreeNode                            *parent     = nullptr;
 

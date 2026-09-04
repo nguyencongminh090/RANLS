@@ -1,6 +1,7 @@
 #include "game_archive.h"
 
 #include "game_graph_cbor.h"
+#include "game_graph_convert.h"
 #include "rdb_container.h"
 
 #include "../game_io.h"
@@ -144,8 +145,6 @@ bool applyGameGraphToState(GameState &gs, const GameGraph &g, std::string *error
                         + std::to_string(c.x) + "," + std::to_string(c.y) + ").");
     }
 
-    constexpr double kNaN = std::numeric_limits<double>::quiet_NaN();
-
     // ── Mutate: from here everything succeeds. ──
     gs.newGame(g.board);
     gs.setRule(static_cast<GameRule>(g.rule));
@@ -160,18 +159,10 @@ bool applyGameGraphToState(GameState &gs, const GameGraph &g, std::string *error
         TreeNode        *child  = tree.addMove(parent, Coord{n.move->x, n.move->y});
 
         child->comment = n.comment;
-        if (n.analysis) {
-            const NodeAnalysis &a = *n.analysis;
-            child->depth = a.depth.value_or(0);
-            child->nodes = a.nodes.value_or(0);
-            child->eval  = (a.winrate && *a.winrate >= 0.0 && *a.winrate <= 1.0)
-                               ? *a.winrate
-                               : kNaN;
-        } else {
-            child->eval  = kNaN;
-            child->depth = 0;
-            child->nodes = 0;
-        }
+        // RDB-03: restore the full per-node analysis (winrate/depth/nodes +
+        // evalText/pv/glyph/engineRef/analyzedUtc), validating winrate ∈ [0,1]
+        // and every pv coord against the board — never aborting on a bad value.
+        applyNodeAnalysis(n, g.board, *child);
         tnodes[i] = child;
     }
 

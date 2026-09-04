@@ -22,6 +22,21 @@ void flatten(const TreeNode *node, uint32_t selfIndex, GameGraph &g)
                                      // it if outside [0,1]
             a.depth   = child->depth;
             a.nodes   = child->nodes;
+
+            // RDB-03: the rest of the persisted analysis lives on the optional
+            // TreeNode::analysis member. Present iff the node carries engine
+            // extras beyond the bare score.
+            if (child->analysis) {
+                const NodeAnalysisExtras &na = *child->analysis;
+                a.evalText = na.evalText;
+                for (const Coord &c : na.pv)
+                    a.pv.push_back(Move{c.x, c.y});
+                if (na.engineRef >= 0)
+                    a.engineRef = static_cast<uint16_t>(na.engineRef);
+                if (na.analyzedUtc != 0)
+                    a.analyzedUtc = na.analyzedUtc;
+                gn.glyph = na.glyph;
+            }
             gn.analysis = std::move(a);
         }
 
@@ -33,6 +48,57 @@ void flatten(const TreeNode *node, uint32_t selfIndex, GameGraph &g)
 
 } // namespace
 
+void applyNodeAnalysis(const GraphNode &n, int boardSize, TreeNode &child)
+{
+    constexpr double kNaN = std::numeric_limits<double>::quiet_NaN();
+
+    if (!n.analysis) {
+        child.eval  = kNaN;
+        child.depth = 0;
+        child.nodes = 0;
+        child.analysis.reset();
+        return;
+    }
+
+    const NodeAnalysis &a = *n.analysis;
+
+    // RDB-03: a winrate outside [0,1] (or absent) ⇒ drop the whole analysis
+    // block, leave eval NaN. Never abort the load.
+    if (!(a.winrate && *a.winrate >= 0.0 && *a.winrate <= 1.0)) {
+        child.eval  = kNaN;
+        child.depth = 0;
+        child.nodes = 0;
+        child.analysis.reset();
+        return;
+    }
+
+    child.eval  = *a.winrate;
+    child.depth = a.depth.value_or(0);
+    child.nodes = a.nodes.value_or(0);
+
+    NodeAnalysisExtras na;
+    na.evalText    = a.evalText;
+    na.glyph       = n.glyph;
+    na.engineRef   = a.engineRef ? static_cast<int>(*a.engineRef) : -1;
+    na.analyzedUtc = a.analyzedUtc.value_or(0);
+
+    // Validate every pv coord against the board; drop the whole pv on any
+    // off-board coord rather than abort.
+    bool pvOk = true;
+    for (const Move &m : a.pv) {
+        if (!Coord{m.x, m.y}.isValid(boardSize)) {
+            pvOk = false;
+            break;
+        }
+    }
+    if (pvOk) {
+        for (const Move &m : a.pv)
+            na.pv.push_back(Coord{m.x, m.y});
+    }
+
+    child.analysis = std::move(na);
+}
+
 GameGraph toGameGraph(const VariationTree &tree, int boardSize, GameRule rule,
                       const GraphMeta &meta)
 {
@@ -43,6 +109,7 @@ GameGraph toGameGraph(const VariationTree &tree, int boardSize, GameRule rule,
     g.created   = meta.created;
     g.modified  = meta.modified;
     g.generator = meta.generator;
+    g.engines   = meta.engines;
 
     GraphNode root;         // nodes[0] — sentinel
     root.hasParent = false; // no parent, no move
@@ -95,26 +162,13 @@ bool applyGameGraph(const GameGraph &g, VariationTree &out, int &boardSize,
     std::vector<TreeNode *> tnodes(g.nodes.size(), nullptr);
     tnodes[0] = out.root();
 
-    constexpr double kNaN = std::numeric_limits<double>::quiet_NaN();
-
     for (size_t i = 1; i < g.nodes.size(); ++i) {
         const GraphNode &n      = g.nodes[i];
         TreeNode        *parent = tnodes[n.parent];
         TreeNode        *child  = out.addMove(parent, Coord{n.move->x, n.move->y});
 
         child->comment = n.comment;
-        if (n.analysis) {
-            const NodeAnalysis &a = *n.analysis;
-            child->depth = a.depth.value_or(0);
-            child->nodes = a.nodes.value_or(0);
-            child->eval  = (a.winrate && *a.winrate >= 0.0 && *a.winrate <= 1.0)
-                               ? *a.winrate
-                               : kNaN;
-        } else {
-            child->eval  = kNaN;
-            child->depth = 0;
-            child->nodes = 0;
-        }
+        applyNodeAnalysis(n, g.board, *child);
         tnodes[i] = child;
     }
 

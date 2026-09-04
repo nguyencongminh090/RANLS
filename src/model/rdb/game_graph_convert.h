@@ -5,10 +5,13 @@
 // This is the ONLY file in src/model/rdb/ that includes variation_tree.h — the
 // DTO, CBOR and container layers stay free of the in-memory model.
 //
-// Scope boundary (RDB-03 lifts it): toGameGraph serialises only the TreeNode
-// fields that exist today — move, eval, nodes, depth, comment. A node whose
-// eval is NaN emits NO analysis block (never winrate 0 or 0.5). applyGameGraph
-// restores only those same fields.
+// RDB-03: toGameGraph now serialises the full per-node analysis — winrate,
+// depth, nodes, evalText, pv, glyph, engineRef, analyzedUtc — for every node
+// whose eval is not NaN. A NaN node still emits NO analysis block (never
+// winrate 0 or 0.5). applyGameGraph restores every field, validates
+// winrate ∈ [0,1] (else drops the block, leaving eval NaN) and every pv coord
+// against the graph's board size (else drops that node's pv), and never aborts
+// the load on a bad analysis value.
 
 #include "game_graph.h"
 
@@ -17,6 +20,7 @@
 
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace rdb {
 
@@ -25,6 +29,9 @@ struct GraphMeta {
     std::string            generator;
     std::optional<int64_t> created;
     std::optional<int64_t> modified;
+    /// RDB-03: display-only engine metadata (name/version/params). Copied
+    /// verbatim into GameGraph::engines. A missing/empty list is fine.
+    std::vector<EngineInfo> engines;
 };
 
 /// Flatten `tree` into a GameGraph in DFS pre-order. nodes[0] is the root
@@ -41,5 +48,16 @@ GameGraph toGameGraph(const VariationTree &tree, int boardSize, GameRule rule,
 /// rebuilt, and `boardSize`/`rule` are set from the graph header.
 bool applyGameGraph(const GameGraph &g, VariationTree &out, int &boardSize,
                     GameRule &rule, std::string *error = nullptr);
+
+/// RDB-03: apply one GraphNode's analysis onto an already-created TreeNode.
+/// Shared by applyGameGraph and applyGameGraphToState so both restore the exact
+/// same field set with the exact same validation:
+///   - no analysis block, or winrate absent / outside [0,1]  => eval = NaN,
+///     depth/nodes = 0, TreeNode::analysis cleared (never aborts)
+///   - otherwise eval/depth/nodes are set and TreeNode::analysis is populated
+///     with evalText / glyph / engineRef / analyzedUtc; the pv is restored only
+///     if every coord is on-board for `boardSize` (else that pv is dropped).
+/// The caller sets `child.comment` (it is a GraphNode field, not analysis).
+void applyNodeAnalysis(const GraphNode &n, int boardSize, TreeNode &child);
 
 } // namespace rdb
