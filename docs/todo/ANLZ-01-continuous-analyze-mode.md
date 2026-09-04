@@ -1,7 +1,6 @@
 # ANLZ-01 — Analyze Mode: continuous background analysis so WinGraph fills for every visited position
 
-**Status:** ✅ DONE (implemented on branch `anlz-01/continuous-analyze-mode`, pending merge —
-Active, Sprint 10). `features/analyze-mode/planning.md` Q1–Q8 resolved with the user 2026-09-04
+**Status:** ✅ DONE (shipped 2026-09-04 — PR #9, squash `0ae2b8a` on `main`; Active, Sprint 10). `features/analyze-mode/planning.md` Q1–Q8 resolved with the user 2026-09-04
 (all eight proposed defaults accepted verbatim); pulled from Backlog into Sprint 10 Active the
 same day.
 

@@ -28,7 +28,7 @@ formula-derived value is ever plotted. Orthogonal to "Engine plays".
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| ANLZ-01 | Analyze Mode — continuous background re-analysis so the WinGraph fills a measured point for every visited position (the "Lizzie way") | — (builds on UI-06 patterns, orthogonal to ENG-02, leaves UI-13 candidate A intact) | — | ✅ Implemented on branch `anlz-01/continuous-analyze-mode` 2026-09-04 (pending merge); build clean, ctest 3/3, +2 test files; manual live smoke needs a human |
+| ANLZ-01 | Analyze Mode — continuous background re-analysis so the WinGraph fills a measured point for every visited position (the "Lizzie way") | — (builds on UI-06 patterns, orthogonal to ENG-02, leaves UI-13 candidate A intact) | — | ✅ Done — shipped 2026-09-04 (PR #9, squash `0ae2b8a`); build clean, ctest 3/3, +2 test files; manual live-engine smoke needs a human |
 
 Points not yet estimated (consistent with Sprints 3–9).
 
