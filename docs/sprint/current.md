@@ -47,7 +47,7 @@ into disjoint segments — the rendering-side complement to ANLZ-01's data-side 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
 | ANLZ-01 | Analyze Mode — continuous background re-analysis so the WinGraph fills a measured point for every visited position (the "Lizzie way") | — (builds on UI-06 patterns, orthogonal to ENG-02, leaves UI-13 candidate A intact) | — | ✅ Done — shipped 2026-09-04 (PR #9, squash `0ae2b8a`); build clean, ctest 3/3, +2 test files; manual live-engine smoke needs a human |
-| ANLZ-04 | WinGraph: faint dashed "bridge" across residual NaN runs instead of breaking the line into disjoint segments (always on, no gap cap; still no dot / "(no eval)" for gap plies) | relates to UI-01 (refines its "disjoint segments" rule — audit entry required), UI-09, UX-06; follows ANLZ-01 | — | ✅ Done (branch `anlz-04/wingraph-bridge-nan-gaps`, pending merge) — 2026-09-04. `computeGapBridges()` helper + two-pass `onDraw`; build clean, ctest 3/3, +`test_anlz04_wingraph_bridge.cpp` (8 cases); audit + fix-log written. Visual smoke needs a human (no display) |
+| ANLZ-04 | WinGraph: faint dashed "bridge" across residual NaN runs instead of breaking the line into disjoint segments (always on, no gap cap; still no dot / "(no eval)" for gap plies) | relates to UI-01 (refines its "disjoint segments" rule — audit entry required), UI-09, UX-06; follows ANLZ-01 | — | ✅ Done — shipped 2026-09-04 (PR #10, squash `9fb7317`). `computeGapBridges()` helper + two-pass `onDraw`; orchestrator re-verified on the branch: build clean, ctest 3/3, `test_anlz04_wingraph_bridge.cpp` 8 cases / 21 assertions; audit + fix-log written. Visual smoke needs a human (no display) |
 
 Points not yet estimated (consistent with Sprints 3–9).
 
