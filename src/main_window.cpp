@@ -817,6 +817,20 @@ void MainWindow::onSaveGame()
 
         rdb::GraphMeta meta;
         meta.generator = kAppDisplayName;
+        // RDB-03: one display-only engine entry from the current EngineConfig.
+        // Referenced by per-node analysis (engineRef); never affects load
+        // behaviour, and a missing/empty list must not fail a load.
+        {
+            const auto &ec = gameState_.engineConfig();
+            if (!ec.enginePath.empty()) {
+                rdb::EngineInfo ei;
+                ei.id     = 0;
+                ei.name   = std::filesystem::path(ec.enginePath).filename().string();
+                ei.params = "threads=" + std::to_string(ec.threads)
+                            + " hash=" + std::to_string(ec.hashSizeMB) + "MB";
+                meta.engines.push_back(std::move(ei));
+            }
+        }
         const auto graph = rdb::toGameGraph(gameState_.tree(),
                                             gameState_.boardSize(),
                                             gameState_.rule(), meta);
