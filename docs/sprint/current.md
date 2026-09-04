@@ -39,7 +39,13 @@ it rebases on `main`; one final PR `feat/rdb-save-format → main`. (github skil
 | ~~ANLZ-03~~ | ~~Persist per-node win% into the `.yxgame` save file~~ | — | — | ⛔ Superseded by RDB-01/02/03 |
 | RDB-01 | `.rdb` container + `ICompressor` + `GameGraph` DTO + CBOR payload + convert | — | — | ✅ Merged to `feat/rdb-save-format` (PR #11, squash `ad69e55`) |
 | RDB-02 | Wire `.rdb` into Save/Open; `IGameArchive*` + `RdbArchive` + `YxgameReader`; retire `GameIO::saveGame` | RDB-01 | — | ✅ Merged to `feat/rdb-save-format` (PR #12, squash `d1182d2`) |
-| RDB-03 | Persist + restore per-node analysis end-to-end (closes ANLZ-03 goal) | RDB-01, RDB-02 | — | 🔲 Not started |
+| RDB-03 | Persist + restore per-node analysis end-to-end (closes ANLZ-03 goal) | RDB-01, RDB-02 | — | ✅ Merged to `feat/rdb-save-format` (PR #13, squash `51ff892`) |
+
+**All three RDB tasks are on `feat/rdb-save-format` (`51ff892`).** Next: one merge PR
+`feat/rdb-save-format → main` (`--merge`, not squash — keeps the per-`CODE` commits), then sprint
+close + `v0.3.0` release cut (MINOR — `.rdb` is a new user-visible save format). Outstanding across
+the feature: manual live/visual WinGraph smoke of a real save→reopen (no display/engine on the
+build host — carried in the RDB-03 fix-log).
 
 Points not yet estimated (consistent with Sprints 3–10).
 
