@@ -11,7 +11,15 @@ internal tracking files for traceability.
 
 ## [Unreleased]
 
-_Nothing yet._
+### Changed
+
+- **Analyze Mode** is now a pure study mode: while it is on the engine only ever analyses the
+  current position and never auto-plays a move — not even on its own turn under "Engine plays
+  &lt;side&gt;". Pressing Stop or turning Analyze Mode off just stops the search. With Analyze Mode
+  off, "Engine plays" auto-move is unchanged (ANLZ-05).
+- Clicking the board **during** an Analyze-Mode search now places the stone: the search stops, the
+  move is applied, and analysis restarts on the new position (previously the click was silently
+  ignored) (ANLZ-05).
 
 ## [0.3.0] - 2026-09-04
 

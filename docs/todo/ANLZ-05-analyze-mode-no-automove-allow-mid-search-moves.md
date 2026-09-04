@@ -1,6 +1,35 @@
 # ANLZ-05 — Analyze Mode: never auto-move, and allow placing a stone mid-search
 
-**Status:** 🔲 OPEN (Backlog) — filed 2026-09-04
+**Status:** ✅ DONE (2026-09-04, Sprint 12 Active) — branch
+`anlz-05/analyze-mode-no-automove-allow-mid-search-moves`.
+
+**Summary:** `MainWindow`-orchestration only. `maybeStartAutoMove()`'s idle body
+now bails on `gameState_.viewConfig().analyzeMode` (engine never auto-plays while
+Analyze Mode is on — reverses planning.md Q6 for Analyze Mode; off, unchanged).
+`scheduleAnalyzeModeRestart()` lost its `isEnginesTurn(...)` early-return, so the
+engine's-turn position is analysed too; remaining body `analyzeMode` on →
+`isRunning()` → `engineState()==Idle` → `stopAnalysis(); analyze()`. The
+`signal_move_clicked` handler calls `controller_.stopAnalysis()` before
+`gameState_.makeMove(pos)` when `controller_.isAnalyzing()` (gated so a click with
+no engine/search stays a plain `makeMove()`). `GameState::makeMove()`'s
+`if (analyzing_) return false;` guard unchanged; no `revertEnginePlaysToOff()` /
+`MatchConfig` write; no `ViewConfig` field / Settings row / protocol change.
+`main_window.h` gained a test-only `friend struct RanlsAnlz05Probe`.
+planning.md carries a dated implementation note.
+
+**Verification:** `./build.sh` clean (only the 3 pre-existing
+`-Wunused-function` warnings). `ctest` 3/3: `ranls-gui-tests` 183 cases / 2317
+assertions (+`tests/test_anlz05_stop_then_move.cpp`, 2 cases);
+`ranls-gui-ui-tests` 21 cases / 140 assertions
+(+`tests/test_anlz05_no_automove_action.cpp`, 1 case, real `MainWindow` + wire
+spy); `rel02-version-single-source` pass. No existing ANLZ-01 test asserted the
+old Q6 skip, so none updated. Manual live-engine smoke still needs a human (no
+engine/display on the build host) — checklist in the instruction file.
+Fix-log: `docs/fix-log/2026-09-04-anlz05-analyze-mode-no-automove-mid-search-click.md`.
+
+---
+
+_Original filing:_ 🔲 OPEN (Backlog) — filed 2026-09-04
 
 Refinement of the shipped **ANLZ-01** (Analyze Mode). Two linked behaviour changes, both
 scoped to when Analyze Mode is ON:

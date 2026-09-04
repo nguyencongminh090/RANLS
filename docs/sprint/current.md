@@ -28,7 +28,7 @@
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| ANLZ-05 | Analyze Mode never auto-moves; a board click mid-search stops the search, places the stone, restarts analysis | ANLZ-01 (shipped) | — | 🔲 Not started |
+| ANLZ-05 | Analyze Mode never auto-moves; a board click mid-search stops the search, places the stone, restarts analysis | ANLZ-01 (shipped) | — | ✅ Implemented on branch `anlz-05/analyze-mode-no-automove-allow-mid-search-moves` — pending merge |
 | ENG-03 | Engine subprocess no longer orphaned on WM-close ("X") or GUI crash: `signal_close_request` → graceful stop + `PR_SET_PDEATHSIG` | ENG-01 (shipped) | — | 🔲 Not started |
 
 Points not yet estimated (consistent with Sprints 3–11).

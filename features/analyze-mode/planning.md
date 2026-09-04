@@ -33,6 +33,14 @@ board click during the background search was silently swallowed. Resolution:
 
 Tracked as **ANLZ-05** (`docs/todo/ANLZ-05-analyze-mode-no-automove-allow-mid-search-moves.md`).
 
+**2026-09-04 — implemented.** ANLZ-05 landed: `maybeStartAutoMove()` bails while
+`viewConfig().analyzeMode` is on; `scheduleAnalyzeModeRestart()` dropped its
+`isEnginesTurn(...)` early-return (engine's-turn position is analysed too); the
+board-click handler calls `controller_.stopAnalysis()` before `makeMove()` when a
+search is in flight. `GameState::makeMove()`'s `analyzing_` guard is unchanged.
+The Q6 row above is now superseded for Analyze Mode; with Analyze Mode off it
+still stands. See `docs/fix-log/2026-09-04-anlz05-analyze-mode-no-automove-mid-search-click.md`.
+
 ## Implementation sequencing (Q1–Q8 resolved 2026-09-04)
 
 1. `ViewConfig::analyzeMode` + persistence (Q1) — model layer, unit-testable.
