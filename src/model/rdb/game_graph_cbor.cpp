@@ -1,6 +1,5 @@
 #include "game_graph_cbor.h"
 
-#include <cmath>
 #include <cstring>
 #include <limits>
 
@@ -54,8 +53,6 @@ void putDouble(std::string &o, double d)
     for (int i = 7; i >= 0; --i)
         o.push_back(static_cast<char>((bits >> (8 * i)) & 0xFF));
 }
-
-void putBool(std::string &o, bool b) { o.push_back(static_cast<char>(b ? 0xF5 : 0xF4)); }
 
 void encodeMove(std::string &o, const Move &m)
 {
