@@ -120,6 +120,20 @@ ENG-02 / one-shot Analyze / auto-move-with-analyze-mode-off. Reverses planning Q
 ANLZ-01 test assertions that pinned the old behaviour.
 [detail](docs/instruction/ANLZ-05-analyze-mode-no-automove-allow-mid-search-moves.md)
 
+## ANLZ-06 — analyze-mode-search-plays-stray-move
+
+Regression against shipped ANLZ-05. `src/engine/engine_controller.{h,cpp}` only. `analyze()`'s
+`YXNBEST` search ends by emitting a bestmove coordinate line, which `EngineController` relays to
+`signal_engine_move` unconditionally. Add a `SearchIntent { None, Analysis, Move }` member set by
+`analyze()` / `requestEngineMove()`; in the `protocol_->signal_move` handler emit
+`signal_engine_move` only for `Move` intent, else treat the coord as search-completion only; reset
+the intent to `None` in `stopAnalysis()` / `stopEngine()` / `signal_process_died`. Don't change the
+`YXNBEST` request, the ANLZ-05 `MainWindow` guards, or the ENG-02 / UI-06 / one-shot paths. Keep
+the UI-13 flush ordering for the `Move` case. Regression test must feed **inbound** coordinate
+lines (the gap in `test_anlz05_no_automove_action.cpp`). `/systematic-debugging` Phase 1–2 already
+done — see the todo file.
+[detail](docs/instruction/ANLZ-06-analyze-mode-search-plays-stray-move.md)
+
 ## ANLZ-03 — persist-winrate-in-save-file — ⛔ SUPERSEDED by RDB-01/02/03
 
 Original plan (extend `.yxgame` text schema) rejected by the user 2026-09-04. Replaced by the

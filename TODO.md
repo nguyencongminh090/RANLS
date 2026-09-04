@@ -80,6 +80,7 @@ Sprint 12 (opened 2026-09-04, goal "Post-ANLZ-01 Analyze Mode fixes plus engine-
 
 - ✅ **ANLZ-05.** Analyze Mode refinement (user report 2026-09-04 against shipped ANLZ-01): (1) while Analyze Mode is on the engine must **never** auto-move — not even on its own turn under "Engine plays &lt;side&gt;" — it only analyses; Stop just stops the search. **Reverses `features/analyze-mode/planning.md` Q6.** (2) A board click during an in-flight Analyze-Mode search stops the search, places the stone, and restarts analysis (today `makeMove()`'s `analyzing_` guard silently swallows it). `MainWindow`-layer only, orthogonal to ENG-02; one-shot Analyze / "Engine plays" with Analyze Mode off unchanged. [Model: Sonnet 5] — [detail](docs/todo/ANLZ-05-analyze-mode-no-automove-allow-mid-search-moves.md) · [instruction](docs/instruction/ANLZ-05-analyze-mode-no-automove-allow-mid-search-moves.md)
 - 🔲 **ENG-03.** Engine subprocess can be orphaned when the window is closed via the WM close button ("X") or when the GUI crashes: `signal_close_request` is unwired (only the Quit menu/hotkey stops the engine), the heap `MainWindow` is never `delete`d, and there is no `PR_SET_PDEATHSIG`. Relies on the engine self-exiting on stdin EOF — a mid-search engine lingers, a non-compliant one leaks. Wire close-request → graceful stop + add PDEATHSIG. Builds on ENG-01, must not regress ENG-02. [Model: Sonnet 5] — [detail](docs/todo/ENG-03-orphaned-engine-on-crash-or-wm-close.md) · [instruction](docs/instruction/ENG-03-orphaned-engine-on-crash-or-wm-close.md)
+- 🔲 **ANLZ-06.** Regression against shipped ANLZ-05 (user report 2026-09-04): in Analyze Mode an analysis search's best move is auto-played on the board — (1) pressing Stop drops a stone; (2) a board click mid-search produces a double move (user's stone **and** the engine's for the same turn, e.g. `a1 a2 a3` + user `a4` → `a1 a2 a3 a4 b1`). Root cause (`/systematic-debugging` Phase 1–2 done): `analyze()`'s `YXNBEST` request culminates in the engine emitting a bestmove coordinate line, and `EngineController` relays **every** coordinate line to `signal_engine_move` unconditionally (`engine_controller.cpp:68`) — no analysis-vs-move-intent discriminator. Fix in `EngineController` only: a `SearchIntent` flag set by `analyze()` / `requestEngineMove()`, gate `signal_engine_move`, reset on every stop path. `YXNBEST` request unchanged; ENG-02 / UI-06 / one-shot Analyze unchanged. [Model: Sonnet 5] — [detail](docs/todo/ANLZ-06-analyze-mode-search-plays-stray-move.md) · [instruction](docs/instruction/ANLZ-06-analyze-mode-search-plays-stray-move.md)
 
 ## Backlog
 
@@ -113,6 +114,13 @@ Filed 2026-09-04 (ANLZ-05) from a user report against the shipped ANLZ-01: in An
 engine should never auto-move and a click should be accepted mid-search. Reverses planning Q6
 (see `features/analyze-mode/planning.md` "Revision 2026-09-04") — **pulled into Sprint 12 Active
 2026-09-04** (see `docs/sprint/current.md`).
+
+Filed 2026-09-04 (ANLZ-06) from a user report against the just-merged ANLZ-05 (PR #15): in Analyze
+Mode an analysis search's best move is auto-played (Stop drops a stone; a board click mid-search
+double-moves). `/systematic-debugging` Phase 1–2 completed same day — root cause is
+`EngineController` relaying every engine coordinate line to `signal_engine_move` with no
+analysis-vs-move discriminator, since `YXNBEST` (used by `analyze()`) still ends by emitting a
+bestmove. **Pulled into Sprint 12 Active 2026-09-04** (see `docs/sprint/current.md`).
 
 Filed 2026-09-04 (ENG-03) from a user safety question — "if the program crashes / the user closes
 normally or while analyzing, does the engine subprocess terminate correctly?" — plus a trace of the

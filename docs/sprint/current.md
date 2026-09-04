@@ -22,14 +22,22 @@
   child-setup (`#ifdef __linux__`). Builds on ENG-01's `stop()`/`stopAsync()` split; must not
   regress ENG-02. No `systematic-debugging` gate — the lifecycle gap is already traced in
   `docs/todo/ENG-03-*.md`.
+- **ANLZ-06** — `src/engine/engine_controller.{h,cpp}` only. Regression found against the merged
+  ANLZ-05: `analyze()`'s `YXNBEST` search ends by emitting a bestmove coordinate, which
+  `EngineController` relays to `signal_engine_move` unconditionally (no analysis-vs-move intent) —
+  so Stop drops a stone and a mid-search click double-moves. Add a `SearchIntent` flag, gate the
+  emission, reset on every stop path. `/systematic-debugging` Phase 1–2 done (in the todo file).
+  Don't touch the `YXNBEST` request, the ANLZ-05 `MainWindow` guards, or ENG-02 / UI-06.
 - ANLZ-05 and ENG-03 are independent of each other, but both touch `MainWindow::connectSignals()`
   and interact with the ENG-02 auto-play-revert path — whichever lands second rebases and re-runs
-  the ENG-02 regression cases.
+  the ENG-02 regression cases. ANLZ-06 is downstream of ANLZ-05 (fixes a gap it left) and touches
+  `EngineController`, not `MainWindow` — independent of ENG-03.
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
 | ANLZ-05 | Analyze Mode never auto-moves; a board click mid-search stops the search, places the stone, restarts analysis | ANLZ-01 (shipped) | — | ✅ Done — PR #15 squash-merged to `main` (`f3bad66`) 2026-09-04 |
 | ENG-03 | Engine subprocess no longer orphaned on WM-close ("X") or GUI crash: `signal_close_request` → graceful stop + `PR_SET_PDEATHSIG` | ENG-01 (shipped) | — | 🔲 Not started |
+| ANLZ-06 | Analyze-Mode search's best move must not be auto-played (Stop drops a stone; mid-search click double-moves) — `EngineController` search-intent gate | ANLZ-05 (merged) | — | 🔲 Not started |
 
 Points not yet estimated (consistent with Sprints 3–11).
 

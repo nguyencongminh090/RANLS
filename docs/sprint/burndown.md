@@ -74,5 +74,7 @@ points at sprint start to 0 at the end date.
 
 | 2026-09-04 | 1 / 2 items | — | **ANLZ-05 merged** to `main` — PR #15 squash `f3bad66`. Orchestrator re-verified independently on the branch before merge: `./build.sh` clean (3 known warnings), `ctest` 3/3 (`ranls-gui-tests` 183 / 2317, `ranls-gui-ui-tests` 21 / 140), the 3 new `ANLZ-05` test cases confirmed running + passing. No merge conflict. `current.md` status → Done. Sprint 12 down to 1 open item (ENG-03). |
 
+| 2026-09-04 | 2 / 3 items | — | **ANLZ-06 filed** into Sprint 12 Active — regression against the just-merged ANLZ-05 (Stop drops a stone; a board click mid-search double-moves). `/systematic-debugging` Phase 1–2 done: root cause is `EngineController` relaying every engine coordinate line to `signal_engine_move` unconditionally, since `analyze()`'s `YXNBEST` request culminates in a bestmove line. Fix scoped to `EngineController` (`SearchIntent` gate) — `docs/todo/ANLZ-06-*.md` + `docs/instruction/ANLZ-06-*.md`. Sprint 12 back up to 2 open items (ANLZ-06, ENG-03). |
+
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).
