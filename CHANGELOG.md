@@ -13,6 +13,22 @@ internal tracking files for traceability.
 
 _Nothing yet._
 
+## [0.1.2] - 2026-09-04
+
+Sprint 9 — a win-rate-graph coverage fix plus completion of the app rename.
+
+### Fixed
+
+- The win-rate graph now plots a point for every position the engine evaluates, including the reply
+  move it recommends. Previously, with "Engine plays <side>" active, one side's plies were left as
+  gaps on the line (UI-13).
+
+### Changed
+
+- The application is now consistently named **RANLS** everywhere — window title, application
+  identity, and internal resources — completing the rename that started with the About dialog
+  (NAME-01).
+
 ## [0.1.1] - 2026-09-03
 
 Sprint 8 — a UI polish bundle: the Engine Log and Move Log now follow along as new content arrives,
@@ -96,6 +112,7 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/nguyencongminh090/RANLS/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/nguyencongminh090/RANLS/releases/tag/v0.1.0
