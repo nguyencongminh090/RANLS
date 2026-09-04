@@ -1,6 +1,58 @@
 # RDB-02 — Wire `.rdb` into Save/Open; retire `.yxgame` write; keep `.yxgame` import
 
-**Status:** 🔲 OPEN (Active — Sprint 11) [Model: Sonnet 5]
+**Status:** ✅ DONE (Active — Sprint 11) [Model: Sonnet 5]
+
+Implemented on branch `rdb-02/wire-rdb-into-save-open` (off `feat/rdb-save-format`).
+
+- **New `src/model/rdb/game_archive.{h,cpp}`** — `IGameArchiveReader` / `IGameArchiveWriter`
+  interfaces; `RdbArchive` (reader+writer: RDB-01 `writeContainer`/`readContainer` with the
+  DEFLATE codec + `encodeCbor`/`decodeCbor`); `YxgameReader` (reader only — calls the unchanged
+  `GameIO::loadGame` and maps `LoadedGame` → a linear-chain `GameGraph`: `nodes[0]` sentinel,
+  node *i* parent = *i*−1, no `analysis` on any node ⇒ every eval NaN). Factory
+  `archiveReaderFor` / `archiveWriterFor` pick by lowercased extension — `.rdb` ⇒ `RdbArchive`,
+  `.yxgame` ⇒ `YxgameReader` for read / **nullptr** for write (saving `.yxgame` is a
+  caller-visible error), any other/absent extension ⇒ `RdbArchive` for read (fails cleanly on a
+  bad magic, never guesses `.yxgame`).
+- **`applyGameGraphToState(GameState&, const GameGraph&, string*)`** in `game_archive.cpp` — the
+  testable "apply on load" helper (NOT inline in `MainWindow`). Validates board size, rule, every
+  parent back-reference **and every move coord against `graph.board`** (carried RDB-01-review
+  note — RDB-01's `applyGameGraph` does not range-check coords) *before* mutating anything; on
+  any problem returns false + sets `*error`, current game untouched. On success: `newGame(board)`
+  → `setRule(rule)` → rebuild the whole variation tree from `graph.nodes` via `tree().addMove`
+  from the correct parent `TreeNode*` (branches on the tree directly, never `makeMove`/undo) →
+  replay the mainline first-child chain through `makeMove` so `history_`/`board_` advance →
+  emit `signal_tree_updated` + `signal_board_changed`. `sendConfig()` stays in `onLoadGame`.
+- **`src/main_window.cpp`** — `onSaveGame`: default name `game.rdb`, single "RANLS game (*.rdb)"
+  filter, appends `.rdb` when the chosen path has no extension, `toGameGraph(tree, boardSize,
+  rule, {generator="RANLS"})` → `archiveWriterFor(path)->save(...)`; a non-`.rdb` target (no
+  writer) → error dialog. `GameIO::saveGame` call removed. `onLoadGame`: `.rdb` (default) +
+  `.yxgame` + all-files filters, `archiveReaderFor(path)->load(...)` → `applyGameGraphToState`
+  → `sendConfig()`; parse/apply failure → `showErrorDialog`, current game untouched; stops
+  Analyze Mode first if active.
+- **Retired `.yxgame` write** — `GameIO::saveGame` declaration + definition deleted, `game_io.h`
+  header comment rewritten (import-only). `grep -rn saveGame` → only the changelog-style comment
+  in `test_io01_game_io.cpp` remains, no writer. `test_io01` save/round-trip cases rewritten as
+  hand-written-file load cases (all load / corrupt-input cases kept).
+- **`docs/audit/2026-09-04-rdb-save-format.md`** + `docs/audit.md` row (format-change decision);
+  **`CHANGELOG.md`** `[Unreleased]` line; **`docs/fix-log`** entry.
+
+### Verification
+
+- `./build.sh build_cmd` clean — only the 3 known pre-existing `-Wunused-function` warnings in
+  `gomocup_protocol.cpp`.
+- `ctest --test-dir build_cmd` — 3/3 green: `ranls-gui-tests`, `ranls-gui-ui-tests`,
+  `rel02-version-single-source`.
+- New `tests/test_rdb02_archive.cpp` (`ranls-gui-tests`, 5 cases / 62 assertions): factory picks
+  `RdbArchive` for `.rdb`/`.RDB`/unknown and `YxgameReader` for `.yxgame`/`.YxGame`, no
+  `.yxgame` writer; `RdbArchive` save→load round-trips a branched tree with a comment + in-range
+  eval (node count, mainline move count, branch comment/eval survive); `YxgameReader` on a
+  hand-written legacy string → linear chain, `analysis` absent on every node, `evalHistory()`
+  all-NaN after apply; a bad legacy line and an off-board `.rdb` coord both fail cleanly with the
+  current game intact.
+- New `tests/test_rdb02_save_open.cpp` (`ranls-gui-ui-tests`, 2 cases / 14 assertions,
+  display-skip guarded): a real `MainWindow` links the new wiring and still exposes the
+  `save-game` / `load-game` actions; a branched tree saved to a temp `.rdb`, then `newGame`,
+  then opened, restores board size / rule / total node count / mainline move count.
 **Area:** new `src/model/rdb/game_archive.{h,cpp}` (`IGameArchiveReader`/`IGameArchiveWriter`,
 `RdbArchive`, `YxgameReader`, extension factory). `src/main_window.cpp` (`onSaveGame` ~L754,
 `onLoadGame` ~L721 — swap to the archive interface; file-dialog filters + default name/extension).

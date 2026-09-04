@@ -43,6 +43,7 @@ add_executable(ranls-gui-tests
     test_anlz04_wingraph_bridge.cpp
     test_rdb01_container.cpp
     test_rdb01_game_graph.cpp
+    test_rdb02_archive.cpp
 
     # Sources under test (model/engine only — no UI, no gtkmm).
     ${CMAKE_SOURCE_DIR}/src/model/move_history.cpp
@@ -56,6 +57,7 @@ add_executable(ranls-gui-tests
     ${CMAKE_SOURCE_DIR}/src/model/rdb/rdb_container.cpp
     ${CMAKE_SOURCE_DIR}/src/model/rdb/game_graph_cbor.cpp
     ${CMAKE_SOURCE_DIR}/src/model/rdb/game_graph_convert.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/rdb/game_archive.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/gomocup_protocol.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_process.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_controller.cpp
@@ -118,6 +120,7 @@ add_executable(ranls-gui-ui-tests
     test_ui11_about_dialog.cpp
     test_name01_window_title.cpp
     test_anlz01_analyze_mode_action.cpp
+    test_rdb02_save_open.cpp
 
     # UI sources under test.
     ${CMAKE_SOURCE_DIR}/src/main_window.cpp
@@ -149,6 +152,7 @@ add_executable(ranls-gui-ui-tests
     ${CMAKE_SOURCE_DIR}/src/model/rdb/rdb_container.cpp
     ${CMAKE_SOURCE_DIR}/src/model/rdb/game_graph_cbor.cpp
     ${CMAKE_SOURCE_DIR}/src/model/rdb/game_graph_convert.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/rdb/game_archive.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/gomocup_protocol.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_process.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_controller.cpp

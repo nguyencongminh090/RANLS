@@ -1,10 +1,13 @@
 #pragma once
 
-// IO-01: plain-text serialization of the current game line (board size, rule,
-// move sequence) to/from a user-chosen file. Deliberately free of gtkmm/glibmm
-// so it stays unit-testable in tests/CMakeLists.txt (model/engine only — see
-// that file's header comment). Mirrors the hand-rolled key=value style of
-// src/model/settings_storage.cpp; no JSON dependency.
+// IO-01 / RDB-02: plain-text parser for the legacy `.yxgame` game-line format
+// (board size, rule, move sequence). RDB-02 made the binary `.rdb` container the
+// only format RANLS *writes* (see src/model/rdb/game_archive.*); `.yxgame` is
+// now IMPORT-ONLY and this file provides just the reader, wrapped unchanged by
+// rdb::YxgameReader. Deliberately free of gtkmm/glibmm so it stays unit-testable
+// in tests/CMakeLists.txt (model/engine only — see that file's header comment).
+// Mirrors the hand-rolled key=value style of src/model/settings_storage.cpp; no
+// JSON dependency.
 //
 // Out of scope (per docs/todo/IO-01-load-save-game.md): recent-files list,
 // auto-save, format migration. The version field below is checked-and-rejected
@@ -30,16 +33,7 @@ struct LoadedGame {
     std::vector<Coord> moves;
 };
 
-/// Serialize a game to `path`. `moves` must be in play order. Returns false on
-/// any write failure (and sets `*error` if non-null). Does not validate the
-/// moves against each other — the caller owns a consistent GameState.
-bool saveGame(const std::filesystem::path &path,
-              int                           boardSize,
-              GameRule                      rule,
-              const std::vector<Coord>     &moves,
-              std::string                  *error = nullptr);
-
-/// Parse a file written by saveGame(). Returns std::nullopt on any problem
+/// Parse a legacy `.yxgame` file. Returns std::nullopt on any problem
 /// (missing/unreadable file, wrong/absent version, missing or out-of-range
 /// board size / rule, malformed or out-of-range / duplicated move) and sets
 /// `*error` if non-null. Never throws, never partially succeeds.
