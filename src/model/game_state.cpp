@@ -1,5 +1,6 @@
 #include "game_state.h"
 
+#include <cmath>
 #include <limits>
 
 GameState::GameState(int boardSize)
@@ -397,9 +398,13 @@ std::vector<double> GameState::evalHistory() const
             evalHistoryCache_.push_back(std::numeric_limits<double>::quiet_NaN());
             continue;
         }
-        evalHistoryCache_.push_back((node->depth > 0 || node->nodes > 0)
-                                         ? node->eval
-                                         : std::numeric_limits<double>::quiet_NaN());
+        // RDB-03 (D1): trust `node->eval` whenever it is not NaN. `TreeNode::eval`
+        // now defaults to NaN, so an unanalysed node is still a genuine gap; a
+        // restored node needs nothing but its eval (no reliance on depth/nodes,
+        // which a hand-persisted eval may legitimately lack).
+        evalHistoryCache_.push_back(std::isnan(node->eval)
+                                         ? std::numeric_limits<double>::quiet_NaN()
+                                         : node->eval);
     }
     evalHistoryDirty_ = false;
     return evalHistoryCache_;

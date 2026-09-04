@@ -1,6 +1,25 @@
 # RDB-03 — Persist + restore per-node analysis end-to-end (closes the ANLZ-03 goal)
 
-**Status:** 🔲 OPEN (Active — Sprint 11) [Model: Sonnet 5]
+**Status:** ✅ DONE (Sprint 11) [Model: Sonnet 5] — branch `rdb-03/persist-restore-node-analysis`
+off `feat/rdb-save-format`. Delivers the ANLZ-03 goal: a saved `.rdb` reopens with its win-rate
+graph intact, no re-analysis, no engine call.
+
+**Decisions (see `docs/fix-log/2026-09-04-rdb-03-persist-node-analysis.md`):**
+- **D1 — `evalHistory()` gate:** preferred path. Gate `(depth>0 || nodes>0)` → `!std::isnan(eval)`;
+  `TreeNode::eval` default `0.0` → `quiet_NaN()`. Only consequential out-of-scope file:
+  `src/ui/tree_explorer.cpp` (eval column NaN-guarded). UI-01 / UI-13 tests green, unchanged — no
+  ripple.
+- **D2 — `TreeNode` shape:** `std::optional<NodeAnalysisExtras>` member (`evalText` / `pv` /
+  `glyph` / `engineRef` / `analyzedUtc`); `eval`/`nodes`/`depth` unchanged.
+- **`kSchemaVersion` NOT bumped** (stays 1) — pv/glyph/engineRef/analyzedUtc keys were already in
+  the schema-1 CBOR codec + DTO; `toGameGraph` only populates more of the existing key set.
+
+**Verification:** `./build.sh` clean (only the 3 pre-existing `-Wunused-function` warnings in
+`gomocup_protocol.cpp`); `ctest --test-dir build_cmd` 3/3. New `tests/test_rdb03_node_analysis.cpp`
+(8 cases) + `tests/test_rdb03_ui_node_analysis.cpp` (1 case, display-skip guarded) pass, covering
+the full ANLZ-03 regression set incl. the fresh-game all-NaN case. `test_ui01_winrate_attribution`
++ `test_ui13_wingraph_eval_coverage` still green. **Outstanding:** manual live/visual WinGraph
+smoke (no display/engine on the build host).
 **Area:** `src/model/variation_tree.h` (extend `TreeNode` — or add a `NodeAnalysis` member — with
 the persisted analysis fields the DTO already models). `src/model/rdb/game_graph_convert.cpp`
 (populate/restore the full `NodeAnalysis` in both directions). `src/model/game_state.{h,cpp}`
