@@ -37,7 +37,7 @@ it rebases on `main`; one final PR `feat/rdb-save-format → main`. (github skil
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
 | ~~ANLZ-03~~ | ~~Persist per-node win% into the `.yxgame` save file~~ | — | — | ⛔ Superseded by RDB-01/02/03 |
-| RDB-01 | `.rdb` container + `ICompressor` + `GameGraph` DTO + CBOR payload + convert | — | — | 🔲 Not started |
+| RDB-01 | `.rdb` container + `ICompressor` + `GameGraph` DTO + CBOR payload + convert | — | — | ✅ Merged to `feat/rdb-save-format` (PR #11, squash `ad69e55`) |
 | RDB-02 | Wire `.rdb` into Save/Open; `IGameArchive*` + `RdbArchive` + `YxgameReader`; retire `GameIO::saveGame` | RDB-01 | — | 🔲 Not started |
 | RDB-03 | Persist + restore per-node analysis end-to-end (closes ANLZ-03 goal) | RDB-01, RDB-02 | — | 🔲 Not started |
 
