@@ -1,6 +1,27 @@
 # ANLZ-04 — WinGraph: bridge NaN gaps with a faint dashed connector instead of breaking the line
 
-**Status:** 🔲 OPEN (Active — Sprint 10, pulled from Backlog 2026-09-04)
+**Status:** ✅ DONE (Active — Sprint 10) — 2026-09-04
+
+Implemented as a pure rendering change in `WinGraphView::onDraw` plus a new pure helper
+`computeGapBridges()` in `src/ui/win_graph_bridge.h` (split out for gtkmm-free unit testing,
+mirroring the UX-06 `buildWinGraphSeries` split). Per series (`blackData_`, and `whiteData_` under
+`WinGraphMode::BothSide`): pass 1 strokes one dashed connector per interior NaN run — dash
+`{4.0, 3.0}` (distinct pitch from the UI-09 White dash `{6.0, 4.0}`), series colour at 0.4 alpha
+(`set_source_rgba(kBlack*/kWhite*, 0.4)`, not grey), width `kSeries*W * 0.6`; all connectors in one
+path, one `stroke()`, then `unset_dash()` (never `set_dash` mid-path). Pass 2 is the pre-existing
+solid-run loop, unchanged. Current-move-dot guard and hover `(no eval)` branch untouched; nothing
+written back to the data, no synthesised 50%. Leading/trailing runs and `n <= 1` / all-NaN produce
+no bridge. `buildWinGraphSeries`, the `evalHistory` NaN sentinel, eval→win% maths, UI-01
+attribution, UI-09 colour/weight, RT-01 cadence, axes/labels/50%-line/highlight/hover-box all
+untouched; no `ViewConfig` flag / Settings entry / gap cap.
+
+**Verification:** `./build.sh` clean (only the 3 pre-existing `-Wunused-function` warnings in
+`gomocup_protocol.cpp`); `ctest` 3/3 (`ranls-gui-tests`, `ranls-gui-ui-tests`,
+`rel02-version-single-source`); new `tests/test_anlz04_wingraph_bridge.cpp` (8 cases / 21
+assertions in `ranls-gui-tests`) pins the helper. Manual live/visual smoke not possible (no
+display/engine on the build host) — substituted by the helper unit test asserting interior gaps →
+one correct bridge pair, leading/trailing → none. Audit: `docs/audit/2026-09-04-wingraph-nan-bridge.md`;
+fix-log: `docs/fix-log/2026-09-04-anlz-04-wingraph-nan-bridge.md`.
 
 **Area:** `src/ui/win_graph_view.cpp` (`WinGraphView::onDraw` — the Black series
 loop ~L135-145, the BothSide White series loop ~L159-168). Read-only reference:

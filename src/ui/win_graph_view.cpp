@@ -1,5 +1,7 @@
 #include "win_graph_view.h"
 
+#include "win_graph_bridge.h"
+
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
@@ -128,10 +130,42 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
     // evalHistory / toDisplayWinrate). Break the line into disjoint
     // segments around any NaN run instead of interpolating through it or
     // silently plotting it as a confident 50%.
-    cr->set_source_rgb(kBlackR, kBlackG, kBlackB);
-    cr->set_line_width(kSeriesW);
     cr->set_line_join(Cairo::Context::LineJoin::ROUND);
     cr->set_line_cap(Cairo::Context::LineCap::ROUND);
+
+    // ANLZ-04 (pass 1): bridge every interior NaN run with ONE dashed, faint,
+    // thin connector from the last real point before the gap to the first real
+    // point after it. This softens UI-01's "disjoint segments around any NaN
+    // run" so a residual ANLZ-01 gap no longer fragments the trace — but the
+    // bridged ply is still unevaluated for every other purpose (no dot, hover
+    // still "(no eval)", no synthesised 50%). Style must stay visually
+    // subordinate to both the solid Black line and the UI-09 dashed White line:
+    // narrower dash pitch than UI-09's {6,4}, series colour at 0.4 alpha (not
+    // grey — grey would read as a guide), width <= the solid series width.
+    // Separate stroke() so Cairo's dash state never bleeds into the solid runs.
+    {
+        auto bridges = computeGapBridges(blackData_);
+        if (!bridges.empty()) {
+            cr->set_source_rgba(kBlackR, kBlackG, kBlackB, 0.4);
+            cr->set_line_width(kSeriesW * 0.6);
+            cr->set_dash(std::vector<double>{4.0, 3.0}, 0.0);
+            for (const auto &b : bridges) {
+                double xa = kPadL + b.first * step;
+                double ya = kPadT + graphH * (1.0 - std::clamp(blackData_[b.first], 0.0, 1.0));
+                double xb = kPadL + b.second * step;
+                double yb = kPadT + graphH * (1.0 - std::clamp(blackData_[b.second], 0.0, 1.0));
+                cr->move_to(xa, ya);
+                cr->line_to(xb, yb);
+            }
+            cr->stroke();
+            cr->unset_dash();
+        }
+    }
+
+    // ANLZ-04 (pass 2): the existing solid-run loop, unchanged — real
+    // consecutive-point segments stay solid, full width, full alpha.
+    cr->set_source_rgb(kBlackR, kBlackG, kBlackB);
+    cr->set_line_width(kSeriesW);
     {
         bool penDown = false;
         for (int i = 0; i < n; ++i) {
@@ -153,6 +187,28 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
         // UX-03 / UI-09: the two series are told apart by hue (blue #1A73E8 vs
         // green #1E8E3E) AND by shape — the White line is dashed — so they stay
         // distinct under tritan-type CVD where the hue ΔE is small.
+        // ANLZ-04 (pass 1, White): same subordinate dashed bridge over the
+        // White series' interior NaN runs. Dash pitch {4,3} stays distinct
+        // from this series' own UI-09 solid-run dash {6,4}.
+        {
+            auto bridges = computeGapBridges(whiteData_);
+            if (!bridges.empty()) {
+                cr->set_source_rgba(kWhiteR, kWhiteG, kWhiteB, 0.4);
+                cr->set_line_width(kSeriesWWhite * 0.6);
+                cr->set_dash(std::vector<double>{4.0, 3.0}, 0.0);
+                for (const auto &b : bridges) {
+                    double xa = kPadL + b.first * step;
+                    double ya = kPadT + graphH * (1.0 - std::clamp(whiteData_[b.first], 0.0, 1.0));
+                    double xb = kPadL + b.second * step;
+                    double yb = kPadT + graphH * (1.0 - std::clamp(whiteData_[b.second], 0.0, 1.0));
+                    cr->move_to(xa, ya);
+                    cr->line_to(xb, yb);
+                }
+                cr->stroke();
+                cr->unset_dash();
+            }
+        }
+
         cr->set_source_rgb(kWhiteR, kWhiteG, kWhiteB);
         cr->set_line_width(kSeriesWWhite);
         cr->set_dash(std::vector<double>{6.0, 4.0}, 0.0);
