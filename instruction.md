@@ -134,6 +134,16 @@ lines (the gap in `test_anlz05_no_automove_action.cpp`). `/systematic-debugging`
 done — see the todo file.
 [detail](docs/instruction/ANLZ-06-analyze-mode-search-plays-stray-move.md)
 
+## ANLZ-07 — analyze-mode-restart-busy-loop
+
+Regression against shipped ANLZ-06, same user transcript. Not yet pulled into a sprint — resolve
+the open design question with the user first (skip-restart-if-unchanged vs. minimum restart
+interval vs. both; recommended default in the detail file) before implementing. Once resolved:
+`MainWindow`/`EngineController` only, no protocol change; regression test asserts only one
+`YXBOARD` round-trip for two identical back-to-back completed results on the same position.
+`/systematic-debugging` Phase 1–2 already done from the transcript alone — see the todo file.
+[detail](docs/instruction/ANLZ-07-analyze-mode-restart-busy-loop.md)
+
 ## ANLZ-03 — persist-winrate-in-save-file — ⛔ SUPERSEDED by RDB-01/02/03
 
 Original plan (extend `.yxgame` text schema) rejected by the user 2026-09-04. Replaced by the

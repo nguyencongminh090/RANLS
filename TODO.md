@@ -84,6 +84,7 @@ Sprint 12 (opened 2026-09-04, goal "Post-ANLZ-01 Analyze Mode fixes plus engine-
 
 ## Backlog
 
+- 🔲 **ANLZ-07.** Regression against shipped ANLZ-06 (user report 2026-09-04, same transcript): once ANLZ-06 correctly stops playing the discarded coordinate, Analyze Mode never settles — `scheduleAnalyzeModeRestart()` re-arms unconditionally on every Idle transition with no check that the position or result changed, so once a search converges quickly (a forced mate in the report, but any fast-converging position) it busy-loops `STOP`→full board redump→`YXNBEST`→discard→`STOP`→… at native CPU speed, forever. `/systematic-debugging` Phase 1–2 done from the transcript alone. Needs a design decision with the user first (skip-restart-if-unchanged vs. a minimum restart interval vs. both) before it can be pulled into a sprint — see open questions in the detail file. [Model: Sonnet 5] — [detail](docs/todo/ANLZ-07-analyze-mode-restart-busy-loop.md) · [instruction](docs/instruction/ANLZ-07-analyze-mode-restart-busy-loop.md)
 - 🔲 **TOOL-02.** `check-task-structure.js` regexes (`BULLET_START_RE` / `TODO_LINE_RE`) only recognise `✅` or no marker — a `🔲` open-marker line is silently skipped, so an open Backlog/Active item with a detail file is falsely reported as an orphan. Add `🔲` (and `🚧`) to the marker alternation. [Model: Haiku 4.5] — _detail TBD_
 
 Filed 2026-09-04 from the WinGraph-coverage discussion (`docs/notes/2026-09-04-wingraph-analyze-mode-and-backfill.md`)
@@ -121,6 +122,15 @@ double-moves). `/systematic-debugging` Phase 1–2 completed same day — root c
 `EngineController` relaying every engine coordinate line to `signal_engine_move` with no
 analysis-vs-move discriminator, since `YXNBEST` (used by `analyze()`) still ends by emitting a
 bestmove. **Pulled into Sprint 12 Active 2026-09-04** (see `docs/sprint/current.md`).
+
+Filed 2026-09-04 (ANLZ-07) from a user report against the just-merged ANLZ-06 (PR #16), same
+transcript: once ANLZ-06 correctly discards the analysis-intent coordinate, nothing else stops
+`scheduleAnalyzeModeRestart()` re-arming itself on every Idle transition, so a quickly-converging
+search (a forced mate in the report) busy-loops STOP/redump/search/discard forever.
+`/systematic-debugging` Phase 1–2 completed same day from the transcript. Open design question
+(skip-if-unchanged vs. minimum interval vs. both) not yet resolved with the user — **not** pulled
+into Sprint 12 Active yet; stays in Backlog until that's decided. See
+`docs/todo/ANLZ-07-analyze-mode-restart-busy-loop.md`.
 
 Filed 2026-09-04 (ENG-03) from a user safety question — "if the program crashes / the user closes
 normally or while analyzing, does the engine subprocess terminate correctly?" — plus a trace of the
