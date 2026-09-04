@@ -26,6 +26,12 @@ public:
     ~MainWindow() override;
 
 private:
+    // ANLZ-05: the widget-level regression test drives the auto-move /
+    // analyze-restart idle callbacks against real engine + controller state,
+    // which requires reaching the private gameState_/engine_/controller_
+    // members and the scheduler methods. Test-only seam — no production API.
+    friend struct RanlsAnlz05Probe;
+
     void buildMenuBar();
     void buildToolbar();
     void buildLayout();

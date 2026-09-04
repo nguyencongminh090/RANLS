@@ -444,6 +444,15 @@ void MainWindow::connectSignals()
 {
     // Board click → place a move.
     boardView_.signal_move_clicked.connect([this](Coord pos) {
+        // ANLZ-05: a click during an in-flight analysis places the stone. Stop
+        // the search first — stopAnalysis() clears GameState::analyzing_ and
+        // returns the controller to Idle synchronously, so makeMove()'s
+        // `if (analyzing_) return false;` guard (deliberately unchanged) passes.
+        // The signal_board_changed it emits re-enters scheduleAnalyzeModeRestart()
+        // for the new position. Gate on isAnalyzing() so a click with no engine /
+        // no search stays a plain makeMove().
+        if (controller_.isAnalyzing())
+            controller_.stopAnalysis();
         gameState_.makeMove(pos);
     });
 
@@ -1065,6 +1074,12 @@ void MainWindow::maybeStartAutoMove()
 
         const auto plays = gameState_.matchConfig().enginePlays;
         if (plays == EnginePlaysSide::Off) return;
+        // ANLZ-05: while Analyze Mode is on the engine never auto-plays — not even
+        // on its own assigned turn. It only ever analyses the current position
+        // (scheduleAnalyzeModeRestart() now covers the engine's-turn position too).
+        // This reverses planning.md Q6 for Analyze Mode; with Analyze Mode off the
+        // auto-move / ENG-02 behaviour is unchanged.
+        if (gameState_.viewConfig().analyzeMode) return;
         if (!engine_.isRunning()) return;
         if (controller_.engineState() != EngineController::EngineState::Idle) return;
 
@@ -1128,12 +1143,10 @@ void MainWindow::scheduleAnalyzeModeRestart()
         if (!engine_.isRunning()) return;
         if (controller_.engineState() != EngineController::EngineState::Idle) return;
 
-        // On the engine's turn under "Engine plays <side>", the auto-move path
-        // owns this position — bail and let maybeStartAutoMove() play it. The
-        // resulting signal_board_changed reschedules us for the new position.
-        if (isEnginesTurn(gameState_.matchConfig().enginePlays,
-                          gameState_.board().sideToMove()))
-            return;
+        // ANLZ-05: the engine's-turn position is analysed too. The old
+        // `isEnginesTurn(...) return;` bail existed only to hand that position to
+        // maybeStartAutoMove(), which no longer runs while Analyze Mode is on
+        // (planning.md Q6 reversed). Analyze Mode is now a pure study mode.
 
         // Restart order matters: analyze() early-returns unless state == Idle,
         // so stopAnalysis() (Idle + RT-01 flush) must precede it.
