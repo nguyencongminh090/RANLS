@@ -164,6 +164,8 @@ SettingsBundle load()
     out.view.winGraphMode = (mode == static_cast<int>(WinGraphMode::SingleSide))
                                 ? WinGraphMode::SingleSide
                                 : WinGraphMode::BothSide;
+    // ANLZ-01: continuous background analysis toggle (default off).
+    out.view.analyzeMode = parseBool(get("analyze_mode"), out.view.analyzeMode);
     // UX-06: `ui_profile` was removed (never had a spec). An old settings
     // file may still carry the key — it is silently ignored here, not an error.
     if (!get("hotkey_analyze").empty()) out.view.hotkeyAnalyze = get("hotkey_analyze");
@@ -224,6 +226,7 @@ bool save(const EngineConfig &engine, const ViewConfig &view, const MatchConfig 
     out << "show_move_numbers=" << (view.showMoveNumbers ? "true" : "false") << "\n";
     out << "show_coordinates=" << (view.showCoordinates ? "true" : "false") << "\n";
     out << "win_graph_mode=" << static_cast<int>(view.winGraphMode) << "\n";
+    out << "analyze_mode=" << (view.analyzeMode ? "true" : "false") << "\n";
     out << "hotkey_analyze=" << escapeValue(view.hotkeyAnalyze) << "\n";
     out << "hotkey_stop=" << escapeValue(view.hotkeyStop) << "\n";
     out << "hotkey_undo=" << escapeValue(view.hotkeyUndo) << "\n";

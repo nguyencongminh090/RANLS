@@ -30,6 +30,7 @@ add_executable(ranls-gui-tests
     test_eng02_revert_predicate.cpp
     test_ui01_winrate_attribution.cpp
     test_ui13_wingraph_eval_coverage.cpp
+    test_anlz01_analyze_mode_coverage.cpp
     test_ui02_tree_row_highlight.cpp
     test_ui03_renju_forbidden.cpp
     test_ui03_standard_overline.cpp
@@ -108,6 +109,7 @@ add_executable(ranls-gui-ui-tests
     test_ui12_move_log_scroll_target.cpp
     test_ui11_about_dialog.cpp
     test_name01_window_title.cpp
+    test_anlz01_analyze_mode_action.cpp
 
     # UI sources under test.
     ${CMAKE_SOURCE_DIR}/src/main_window.cpp

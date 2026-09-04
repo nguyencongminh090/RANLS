@@ -71,10 +71,20 @@ EngineStatusView::EngineStatusView()
     btnReload_.set_tooltip_text("Reload Engine");
     btnReload_.signal_clicked().connect([this]() { signal_reload.emit(); });
 
+    // ANLZ-01: continuous "Analyze Mode" toggle. When active, MainWindow
+    // re-analyses the current position after every position change.
+    btnAnalyzeMode_.set_label("∞");
+    btnAnalyzeMode_.set_tooltip_text("Analyze Mode: continuously analyse every position");
+    btnAnalyzeMode_.signal_toggled().connect([this]() {
+        if (suppressAnalyzeModeSignal_) return;
+        signal_analyze_mode_toggled.emit(btnAnalyzeMode_.get_active());
+    });
+
     stateBox->append(labelState_);
     stateBox->append(btnStart_);
     stateBox->append(btnStop_);
     stateBox->append(btnReload_);
+    stateBox->append(btnAnalyzeMode_);
     append(*stateBox);
 
     // ── Separator ────────────────────────────────────────────────────────────
@@ -102,6 +112,14 @@ EngineStatusView::EngineStatusView()
     addPair(labelTime_,  valueTime_,  "T:");
     addPair(labelEval_,  valueEval_,  "Eval:");
     addPair(labelBest_,  valueBest_,  "Best:");
+}
+
+void EngineStatusView::setAnalyzeModeActive(bool active)
+{
+    if (btnAnalyzeMode_.get_active() == active) return;
+    suppressAnalyzeModeSignal_ = true;
+    btnAnalyzeMode_.set_active(active);
+    suppressAnalyzeModeSignal_ = false;
 }
 
 void EngineStatusView::update(const EngineStatus &s, const std::vector<PVLine> &pvLines, int boardSize)

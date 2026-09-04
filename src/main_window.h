@@ -108,6 +108,23 @@ private:
     /// No-op when enginePlays is already Off.
     void revertEnginePlaysToOff();
 
+    // ── ANLZ-01: Analyze Mode (continuous background analysis) ──────────────
+    /// Toggle handler (menu checkbox or analysis-panel button): push the new
+    /// state into ViewConfig, persist all four config blocks (STATE-02), sync
+    /// both toggle surfaces, and either kick an analysis restart (on) or stop
+    /// the current search (off). Orthogonal to "Engine plays" / ENG-02 — never
+    /// touches MatchConfig.
+    void onToggleAnalyzeMode(bool active);
+    /// Mirror gameState_.viewConfig().analyzeMode onto the menu checkbox action
+    /// and the analysis-panel toggle button. State-only (no re-entrant persist),
+    /// same shape as syncEnginePlaysMenu().
+    void syncAnalyzeModeMenu();
+    /// If Analyze Mode is on, coalesce a burst of position changes into a single
+    /// deferred check that, when the engine is running + Idle + it is not the
+    /// engine's turn, does stopAnalysis(); analyze() on the new current
+    /// position. Copy of maybeStartAutoMove()'s idle-coalescing structure.
+    void scheduleAnalyzeModeRestart();
+
     void onUndoAll();
     void onUndo();
     void onRedo();
@@ -140,6 +157,15 @@ private:
     // by one) triggers at most one move request, for the final position.
     Glib::RefPtr<Gio::SimpleAction> enginePlaysAction_;
     bool autoMoveScheduled_ = false;
+
+    // ANLZ-01: the menu-bar "Analyze Mode" checkable (bool) action, kept in
+    // sync with gameState_.viewConfig().analyzeMode in both directions.
+    // `analyzeModeScheduled_` coalesces the idle-callback that restarts the
+    // engine's analysis so a burst of signal_board_changed emissions (a game
+    // load, undoAll/redoAll) triggers at most one restart, for the final
+    // position — same rationale as autoMoveScheduled_ above.
+    Glib::RefPtr<Gio::SimpleAction> analyzeModeAction_;
+    bool analyzeModeScheduled_ = false;
 
     // ── Layout ──────────────────────────────────────────────────────────────
     Gtk::HeaderBar     headerBar_;

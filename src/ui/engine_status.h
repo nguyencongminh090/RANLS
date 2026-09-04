@@ -33,11 +33,21 @@ public:
     sigc::signal<void()> signal_stop;
     sigc::signal<void()> signal_reload;
 
+    /// ANLZ-01: emitted when the user toggles the "Auto" (Analyze Mode) button.
+    /// Carries the new desired state. Not emitted by setAnalyzeModeActive().
+    sigc::signal<void(bool)> signal_analyze_mode_toggled;
+
+    /// ANLZ-01: reflect the persisted / externally-changed Analyze Mode state
+    /// onto the toggle button without firing signal_analyze_mode_toggled.
+    void setAnalyzeModeActive(bool active);
+
 private:
     Gtk::Label labelState_;
     Gtk::Button btnStart_;
     Gtk::Button btnStop_;
     Gtk::Button btnReload_;
+    Gtk::ToggleButton btnAnalyzeMode_;
+    bool suppressAnalyzeModeSignal_ = false;
 
     Gtk::Label labelDepth_;
     Gtk::Label labelNodes_;

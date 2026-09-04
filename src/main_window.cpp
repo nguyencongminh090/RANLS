@@ -138,6 +138,7 @@ MainWindow::MainWindow()
     gameState_.setViewConfig(saved.view);
     gameState_.setMatchConfig(saved.match);
     syncEnginePlaysMenu();
+    syncAnalyzeModeMenu();  // ANLZ-01: reflect persisted analyzeMode onto both toggle surfaces
 
     // STATE-04: restore the last-selected rule (global preference) and the
     // persisted new-game board size. The board is empty at startup so the
@@ -229,6 +230,20 @@ void MainWindow::buildMenuBar()
         });
     add_action(enginePlaysAction_);
 
+    // ANLZ-01: "Analyze Mode" — a checkable (boolean) action. Seeds its state
+    // from persisted ViewConfig via syncAnalyzeModeMenu(), called after
+    // SettingsStorage::load() in the constructor (like engine-plays above).
+    analyzeModeAction_ = Gio::SimpleAction::create_bool("analyze-mode", false);
+    analyzeModeAction_->signal_change_state().connect(
+        [this](const Glib::VariantBase &param) {
+            bool active = Glib::VariantBase::cast_dynamic<Glib::Variant<bool>>(param).get();
+            // set_state (not change_state) — change_state re-emits this very
+            // signal and would recurse. syncAnalyzeModeMenu() also uses set_state.
+            analyzeModeAction_->set_state(Glib::Variant<bool>::create(active));
+            onToggleAnalyzeMode(active);
+        });
+    add_action(analyzeModeAction_);
+
     // ── Build menu model ────────────────────────────────────────────────────
     auto menuModel = Gio::Menu::create();
 
@@ -259,6 +274,11 @@ void MainWindow::buildMenuBar()
     enginePlaysMenu->append("Black", "win.engine-plays::black");
     enginePlaysMenu->append("White", "win.engine-plays::white");
     enginePlaysMenu->append("Off",   "win.engine-plays::off");
+
+    // ANLZ-01: Analyze Mode checkbox lives in its own section of the same menu.
+    auto analyzeModeSection = Gio::Menu::create();
+    analyzeModeSection->append("Analyze Mode", "win.analyze-mode");
+    enginePlaysMenu->append_section("", analyzeModeSection);
 
     // Help menu.
     auto helpMenu = Gio::Menu::create();
@@ -463,6 +483,10 @@ void MainWindow::connectSignals()
         // UI-06: a position change may hand the turn to the side the engine
         // plays — check if an auto-move is now due.
         maybeStartAutoMove();
+
+        // ANLZ-01: a position change means the current analysis (if any) is now
+        // stale — restart it on the new position so the WinGraph gains a point.
+        scheduleAnalyzeModeRestart();
     });
 
     // UI-03: rule changed → refresh the persistent rule indicator and
@@ -557,6 +581,11 @@ void MainWindow::connectSignals()
         // state-only update (Gio::SimpleAction::change_state); it does NOT fire
         // signal_activate, so onSetEnginePlays does not re-enter / re-persist.
         syncEnginePlaysMenu();
+
+        // ANLZ-01: keep the Analyze Mode checkbox / button in sync with
+        // ViewConfig for any change that didn't route through onToggleAnalyzeMode
+        // (state-only, no re-persist — same rationale as syncEnginePlaysMenu).
+        syncAnalyzeModeMenu();
     });
 
     // Analysis state changes → toggle UI interaction.
@@ -591,8 +620,13 @@ void MainWindow::connectSignals()
     // UI-06: when the engine transitions to Idle (just started, or a search
     // finished) it may already be its turn under "Engine plays <side>".
     controller_.signal_state_changed.connect([this](EngineController::EngineState state) {
-        if (state == EngineController::EngineState::Idle)
+        if (state == EngineController::EngineState::Idle) {
             maybeStartAutoMove();
+            // ANLZ-01: engine just became Idle (started, or a one-shot / prior
+            // analyze-mode search finished) — resume pondering the current
+            // position if Analyze Mode is on.
+            scheduleAnalyzeModeRestart();
+        }
     });
 
     // Start/Stop/Reload buttons in EngineStatusView.
@@ -614,6 +648,10 @@ void MainWindow::connectSignals()
     analysisPanel_.engineStatus().signal_reload.connect([this]() {
         controller_.reloadEngine();
     });
+
+    // ANLZ-01: analysis-panel "∞" toggle — same handler as the menu checkbox.
+    analysisPanel_.engineStatus().signal_analyze_mode_toggled.connect(
+        [this](bool active) { onToggleAnalyzeMode(active); });
 }
 
 // ── Actions ──────────────────────────────────────────────────────────────────
@@ -969,6 +1007,71 @@ void MainWindow::maybeStartAutoMove()
         // After the engine's move lands, side-to-move flips to the other
         // colour, so this check fails next time — no infinite loop.
         controller_.requestEngineMove();
+    });
+}
+
+// ── ANLZ-01: Analyze Mode (continuous background analysis) ────────────────────
+void MainWindow::onToggleAnalyzeMode(bool active)
+{
+    ViewConfig vc = gameState_.viewConfig();
+    if (vc.analyzeMode != active) {
+        vc.analyzeMode = active;
+        gameState_.setViewConfig(vc);
+        // STATE-02: save() rewrites the whole file — pass every config block,
+        // exactly like onSetEnginePlays(). persistGameSetup() already does this.
+        persistGameSetup();
+    }
+
+    // Keep both toggle surfaces (menu checkbox + panel button) consistent.
+    syncAnalyzeModeMenu();
+
+    if (active) {
+        // Turning it on kicks an immediate restart on the current position
+        // (the idle-coalesced check re-verifies engine running / Idle / turn).
+        scheduleAnalyzeModeRestart();
+    } else {
+        // Q7: stop the current search, leave the process running. Orthogonal to
+        // ENG-02 — deliberately NO revertEnginePlaysToOff() here.
+        controller_.stopAnalysis();
+    }
+}
+
+void MainWindow::syncAnalyzeModeMenu()
+{
+    const bool on = gameState_.viewConfig().analyzeMode;
+    if (analyzeModeAction_)
+        analyzeModeAction_->set_state(Glib::Variant<bool>::create(on));  // no re-emit
+    analysisPanel_.engineStatus().setAnalyzeModeActive(on);
+}
+
+void MainWindow::scheduleAnalyzeModeRestart()
+{
+    if (analyzeModeScheduled_) return;
+    if (!gameState_.viewConfig().analyzeMode) return;
+
+    // Defer to a single idle callback — same rationale as maybeStartAutoMove():
+    // signal_board_changed can fire many times in one synchronous batch (a game
+    // load replays every move; undoAll/redoAll step ply by ply), and the engine
+    // must analyse only the final settled position, once.
+    analyzeModeScheduled_ = true;
+    Glib::signal_idle().connect_once([this]() {
+        analyzeModeScheduled_ = false;
+
+        if (!gameState_.viewConfig().analyzeMode) return;
+        if (!engine_.isRunning()) return;
+        if (controller_.engineState() != EngineController::EngineState::Idle) return;
+
+        // On the engine's turn under "Engine plays <side>", the auto-move path
+        // owns this position — bail and let maybeStartAutoMove() play it. The
+        // resulting signal_board_changed reschedules us for the new position.
+        if (isEnginesTurn(gameState_.matchConfig().enginePlays,
+                          gameState_.board().sideToMove()))
+            return;
+
+        // Restart order matters: analyze() early-returns unless state == Idle,
+        // so stopAnalysis() (Idle + RT-01 flush) must precede it.
+        controller_.stopAnalysis();
+        controller_.analyze();
     });
 }
 

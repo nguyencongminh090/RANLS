@@ -139,6 +139,34 @@ TEST_CASE("SettingsStorage: theme / coordinates / winGraphMode round-trip") {
     std::remove(SettingsStorage::settingsFilePath().string().c_str());
 }
 
+// ANLZ-01: ViewConfig::analyzeMode (continuous background analysis toggle) must
+// round-trip through save()/load(), default off, and not corrupt other blocks.
+TEST_CASE("SettingsStorage: ViewConfig::analyzeMode round-trips and defaults off") {
+    std::remove(SettingsStorage::settingsFilePath().string().c_str());
+
+    CHECK(ViewConfig{}.analyzeMode == false);
+    CHECK(SettingsStorage::load().view.analyzeMode == false);
+
+    EngineConfig engine;
+    ViewConfig   view;
+    view.analyzeMode = true;
+    view.theme       = AppTheme::Light;  // an unrelated view field
+    MatchConfig  match;
+    match.enginePlays = EnginePlaysSide::Black;
+
+    REQUIRE(SettingsStorage::save(engine, view, match));
+    SettingsStorage::SettingsBundle loaded = SettingsStorage::load();
+    CHECK(loaded.view.analyzeMode == true);
+    CHECK(loaded.view.theme == AppTheme::Light);
+    CHECK(loaded.match.enginePlays == EnginePlaysSide::Black);
+
+    // A save with the default ViewConfig reads back as off.
+    REQUIRE(SettingsStorage::save(engine, ViewConfig{}, match));
+    CHECK(SettingsStorage::load().view.analyzeMode == false);
+
+    std::remove(SettingsStorage::settingsFilePath().string().c_str());
+}
+
 // STATE-04: GameSetupConfig (selected rule + board size) must round-trip
 // through save()/load(), fall back to the struct defaults on out-of-range
 // values, and never corrupt the other config blocks.
