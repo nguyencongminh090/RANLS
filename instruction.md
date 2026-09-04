@@ -101,6 +101,15 @@ defaults accepted). Pure
 ENG-02; leave UI-13 candidate A alone. `stopAnalysis()` before `analyze()` or the restart no-ops.
 [detail](docs/instruction/ANLZ-01-continuous-analyze-mode.md)
 
+## ANLZ-04 — wingraph-bridge-nan-gaps
+
+Pure `WinGraphView::onDraw` rendering change — faint dashed connector across NaN runs, no model
+or config change. Two-pass draw so `set_dash` never toggles mid-path; bridge style must sit clearly
+below both the solid Black line and the UI-09 dashed White line. Keep the no-dot / "(no eval)"
+behaviour for gap plies. Consider factoring a pure `computeGapBridges()` helper for testability.
+Needs a `docs/audit/` entry for the UI-01 "disjoint segments" refinement.
+[detail](docs/instruction/ANLZ-04-wingraph-bridge-nan-gaps.md)
+
 ---
 
 _Items without an entry here (RT-02/03/04, STATE-02/03, PROTO-02, NAV-01, UI-01/02/03, UX-01…04,

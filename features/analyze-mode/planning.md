@@ -32,9 +32,17 @@ No changes. ANLZ-01 is therefore sprint-ready and was pulled into Sprint 10 Acti
 5. Regression tests (see instruction file).
 6. Manual smoke against the original repro screenshot.
 
-## Follow-ups already carved out
+## Follow-ups
 
-- **ANLZ-02** — "Analyze entire game" one-shot sweep.
-- **ANLZ-03** — persist per-node win% into the save-game format.
+- **ANLZ-04** (Backlog) — WinGraph draws a faint dashed bridge across residual NaN
+  gaps instead of breaking the line. Always on, no gap cap (settled 2026-09-04).
+  This is what covers the "turn-by-turn engine can't ponder like Lizzie" gap.
+- **ANLZ-03** (Backlog) — persist per-node win% into the save-game format.
+- **ANLZ-02 — DROPPED 2026-09-04.** Was "Analyze entire game" one-shot sweep; a
+  "Toggle Ponder" (continuous analyse loop emulating ponder) was also considered
+  and rejected. Rationale: Rapfi is a CPU alpha-beta engine — keeping it searching
+  every position continuously is far more expensive than Lizzie's GPU KataGo
+  ponder, and ANLZ-01 + ANLZ-04 together already remove the visible discontinuity.
+  `ANLZ-02` is a retired code, not to be reused.
 - Prior `GRAPH-xx` idea from `docs/fix-log/2026-09-03-wingraph-*.md` ("evaluate the
-  whole played line") is **superseded** by ANLZ-01 + ANLZ-02.
+  whole played line") is **superseded** by ANLZ-01 + ANLZ-04.

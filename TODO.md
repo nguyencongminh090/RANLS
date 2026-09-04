@@ -67,10 +67,10 @@ Sprint 9 (opened 2026-09-03, goal "WinGraph coverage + app-wide RANLS rename") �
 Sprint 10 (opened 2026-09-04, goal "Analyze Mode — continuous background analysis for full WinGraph coverage") — pulled from Backlog:
 
 - ✅ **ANLZ-01.** Analyze Mode — continuous background analysis so WinGraph fills a real point for every position the user visits (the "Lizzie way"); no formula backfill on the plotted line. Orthogonal to "Engine plays". Design resolved — `features/analyze-mode/planning.md` Q1–Q8 accepted 2026-09-04. Supersedes the `GRAPH-xx` "evaluate the whole played line" idea. [Model: Sonnet 5] — shipped 2026-09-04 (PR #9, squash `0ae2b8a`); build clean, ctest 3/3, +`test_anlz01_analyze_mode_coverage.cpp` / `test_anlz01_analyze_mode_action.cpp` / +1 settings case; manual live-engine smoke still needs a human — [detail](docs/todo/ANLZ-01-continuous-analyze-mode.md) · [instruction](docs/instruction/ANLZ-01-continuous-analyze-mode.md) · [fix-log](docs/fix-log/2026-09-04-analyze-mode.md) · design `features/analyze-mode/`
+- 🔲 **ANLZ-04.** WinGraph: draw a faint dashed "bridge" segment connecting the two nearest evaluated plies across a NaN run, instead of breaking the line into disjoint segments. Always on, no gap-length cap; gap plies still get no dot and hover still reads "(no eval)". Deliberate refinement of UI-01's "disjoint segments" rule — needs a `docs/audit/` entry. [Model: Sonnet 5] — pulled from Backlog into Sprint 10 Active 2026-09-04 (mid-sprint, after ANLZ-01 shipped) — [detail](docs/todo/ANLZ-04-wingraph-bridge-nan-gaps.md) · [instruction](docs/instruction/ANLZ-04-wingraph-bridge-nan-gaps.md)
 
 ## Backlog
 
-- 🔲 **ANLZ-02.** "Analyze entire game" — one-shot sweep of every played node with a fixed per-move budget (Lizzie "Auto analyze" / KaTrain "analyse all"). Follows ANLZ-01. — _detail TBD_
 - 🔲 **ANLZ-03.** Persist per-node win% into the save-game file so re-opening a game keeps the WinGraph (Sabaki/SGF `SBKV`). Follows ANLZ-01. — _detail TBD_
 
 Filed 2026-09-04 from the WinGraph-coverage discussion (`docs/notes/2026-09-04-wingraph-analyze-mode-and-backfill.md`)
@@ -78,7 +78,14 @@ after web/GitHub research into how Lizzie/LizzieYZY, Sabaki, KaTrain and En Croi
 user chose the continuous-analysis ("Lizzie way") approach. ANLZ-01's
 `features/analyze-mode/planning.md` Q1–Q8 were resolved with the user 2026-09-04 (all 8 proposed
 defaults accepted verbatim) — **ANLZ-01 pulled into Sprint 10 Active 2026-09-04** (see
-`docs/sprint/current.md`). ANLZ-02/03 stay in Backlog (`_detail TBD_`, follow ANLZ-01).
+`docs/sprint/current.md`).
+
+The old **ANLZ-02** ("Analyze entire game" one-shot sweep) and the briefly-considered
+"Toggle Ponder" idea were both **dropped 2026-09-04** — a CPU alpha-beta engine (Rapfi) is too
+expensive to keep pondering the way Lizzie can with GPU KataGo, and ANLZ-04's connected graph
+covers the discontinuity that motivated them. `ANLZ-02` is a retired code, not reused. ANLZ-04 was
+filed to Backlog then **pulled into Sprint 10 Active 2026-09-04** (mid-sprint, after ANLZ-01 shipped —
+see `docs/sprint/current.md`); ANLZ-03 stays in Backlog, follows ANLZ-01.
 
 Filed 2026-08-21 from a full read of `src/` (UI/UX + codebase review). Prefixes: `RT` realtime
 pipeline · `STATE` state lifetime · `PROTO` engine protocol · `ENG` engine lifecycle ·

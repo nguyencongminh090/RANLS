@@ -150,4 +150,16 @@ Formalized:
 - `ANLZ-01` còn gated trên `features/analyze-mode/planning.md` Q1–Q8 trước khi vào sprint.
 - Ý tưởng `GRAPH-xx` cũ ("evaluate the whole played line") trong
   `docs/fix-log/2026-09-03-wingraph-record-eval-regardless-of-side.md` bị
-  **superseded** bởi ANLZ-01 + ANLZ-02.
+  **superseded** bởi ANLZ-01 + ANLZ-04.
+
+### Cập nhật 2026-09-04 (sau khi ANLZ-01 ship)
+
+- ANLZ-01 đã ship (PR #9). Nhưng engine turn-by-turn (Rapfi CPU alpha-beta)
+  **không ponder liên tục** như Lizzie (KataGo GPU rẻ) → vẫn còn ply NaN khi engine
+  chưa chạy / Analyze Mode tắt lúc đó / lượt engine / search bị cắt.
+- **`ANLZ-02` DROPPED** — cả "Analyze entire game" lẫn "Toggle Ponder" đều bỏ:
+  giữ engine CPU search mọi vị trí liên tục quá đắt. `ANLZ-02` là code đã nghỉ hưu.
+- **`ANLZ-04` (mới)** — WinGraph vẽ **nét đứt mờ nối** qua khoảng NaN thay vì gãy
+  đường. Luôn bật, không cap độ dài gap. Đây là cách xử lý "discontinuity" thay cho
+  Ponder. Cần entry `docs/audit/` vì tinh chỉnh lại quyết định UI-01.
+- **`ANLZ-03`** giữ nguyên (persist win% vào file save).

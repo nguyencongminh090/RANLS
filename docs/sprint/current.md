@@ -7,10 +7,28 @@ auto-re-analyses every position the user walks or plays into, so the WinGraph fi
 (measured, non-NaN) point for every visited position without a manual per-position "Analyze". No
 formula-derived value is ever plotted. Orthogonal to "Engine plays".
 
+ANLZ-04 was pulled into Active mid-sprint 2026-09-04 (after ANLZ-01 shipped): where a residual NaN
+ply still remains (engine not running, Analyze Mode off at the time, an interrupted search, the
+engine's own turn), the WinGraph renders a faint dashed bridge across the gap instead of fragmenting
+into disjoint segments — the rendering-side complement to ANLZ-01's data-side coverage.
+
 **Dates:** 2026-09-04 to — (open — no fixed end date set yet)
 
 **Dependency graph:**
-- **ANLZ-01** — sole item this sprint. Pure `MainWindow` orchestration on top of existing engine
+- **ANLZ-04** — pulled into Active mid-sprint 2026-09-04 (after ANLZ-01 shipped). Pure
+  `WinGraphView::onDraw` rendering change in `src/ui/win_graph_view.cpp` — a faint dashed connector
+  drawn across residual NaN runs so the trace reads as one continuous line. **No** model/series/config
+  change: `buildWinGraphSeries`, the `evalHistory` NaN sentinel, eval→win% maths, UI-01 attribution,
+  UI-09 series colour/weight, RT-01 cadence, and the axes/labels/50 %-line/hover-box layout are all
+  off-limits. Two-pass draw so `set_dash` never toggles mid-path; the bridge style must sit clearly
+  below both the solid Black line and the UI-09 dashed White line (different dash pitch + lower alpha
+  + thinner). Gap plies keep no dot and hover keeps "(no eval)". No `systematic-debugging` needed
+  (rendering refinement, not a bug). Design settled with the user 2026-09-04: always on, no gap-length
+  cap, no `ViewConfig` toggle. Requires a `docs/audit/` entry recording the UI-01 "disjoint segments,
+  never interpolate through NaN" refinement, and a bridge-behaviour test (consider factoring a pure
+  `computeGapBridges()` helper). See `docs/todo/ANLZ-04-wingraph-bridge-nan-gaps.md` +
+  `docs/instruction/ANLZ-04-wingraph-bridge-nan-gaps.md`.
+- **ANLZ-01** — original sole item this sprint (✅ shipped 2026-09-04). Pure `MainWindow` orchestration on top of existing engine
   primitives; touches `src/model/config.h` (`ViewConfig::analyzeMode` flag),
   `src/model/settings_storage.cpp` (persist it — STATE-02 "save() rewrites the whole file" hazard:
   pass every config block), `src/main_window.{h,cpp}` (`signal_board_changed` wiring, new
@@ -29,6 +47,7 @@ formula-derived value is ever plotted. Orthogonal to "Engine plays".
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
 | ANLZ-01 | Analyze Mode — continuous background re-analysis so the WinGraph fills a measured point for every visited position (the "Lizzie way") | — (builds on UI-06 patterns, orthogonal to ENG-02, leaves UI-13 candidate A intact) | — | ✅ Done — shipped 2026-09-04 (PR #9, squash `0ae2b8a`); build clean, ctest 3/3, +2 test files; manual live-engine smoke needs a human |
+| ANLZ-04 | WinGraph: faint dashed "bridge" across residual NaN runs instead of breaking the line into disjoint segments (always on, no gap cap; still no dot / "(no eval)" for gap plies) | relates to UI-01 (refines its "disjoint segments" rule — audit entry required), UI-09, UX-06; follows ANLZ-01 | — | 🔲 Not started — pulled from Backlog into Active 2026-09-04 |
 
 Points not yet estimated (consistent with Sprints 3–9).
 
