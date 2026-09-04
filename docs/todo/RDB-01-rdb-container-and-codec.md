@@ -1,6 +1,36 @@
 # RDB-01 — `.rdb` container framing + compression interface + `GameGraph` DTO + CBOR payload
 
-**Status:** 🔲 OPEN (Active — Sprint 11) [Model: Sonnet 5]
+**Status:** ✅ DONE (Active — Sprint 11) [Model: Sonnet 5]
+
+Implemented in `src/model/rdb/`: `compressor.{h,cpp}` (`ICompressor` + `RawCodec` id 0 +
+`DeflateCodec` id 2 over zlib level 7; `makeCompressor` rejects reserved id 1 and unknown ids),
+`rdb_container.{h,cpp}` (`"RDB1"` magic + explicit little-endian header, crc32 via zlib always
+written, atomic `<path>.tmp` → fflush → fsync → `std::filesystem::rename`; `readContainer`
+validates magic / `container_version` / codec / packed-size-vs-file-length / crc32 before
+decompressing — every failure returns an empty `std::optional` + non-empty error, never throws),
+`game_graph.h` (stdlib-only DTO), `game_graph_cbor.{h,cpp}` (hand-rolled RFC 8949 subset: major
+types 0–5, `0xF4/0xF5/0xF6`, `0xFB` write / `0xFA` read; every decode step bounds-checks before
+reading; unknown map keys recursively skipped; `winrate` outside `[0,1]` decoded as absent;
+recursion depth-capped), `game_graph_convert.{h,cpp}` (only unit including `variation_tree.h`:
+`toGameGraph` flat DFS pre-order + parent indices + root sentinel, no analysis block for NaN
+eval; `applyGameGraph` rejects forward/self/out-of-range parent refs and schema/board/rule out of
+range, restores only `move`/`eval`/`nodes`/`depth`/`comment`).
+
+Build wiring: `find_package(ZLIB REQUIRED)` + `ZLIB::ZLIB` on `ranls-gui`, `ranls-gui-tests`,
+`ranls-gui-ui-tests`; the four new `.cpp` added to `GUI_SOURCES` and both test targets.
+
+**Verification:** `./build.sh` clean (no new warnings; the 3 pre-existing `-Wunused-function`
+warnings in `gomocup_protocol.cpp` only surface on a from-scratch compile of that unchanged file).
+`ctest --test-dir build_cmd` 3/3 green — `ranls-gui-tests`, `rel02-version-single-source`,
+`ranls-gui-ui-tests`. New `ranls-gui-tests` files `test_rdb01_container.cpp` +
+`test_rdb01_game_graph.cpp` add 15 cases / 984 assertions covering: Raw+Deflate container
+round-trip, Deflate < Raw for a 200-node blob, bad-magic / bad-version / bad-codec /
+packed-size-mismatch / truncated-header / bad-crc / trailing-garbage / missing-file all ⇒ empty
+optional + error, 400 random container truncations + 500 random CBOR truncations never crash,
+CBOR round-trip with analysed + NaN nodes + 3 branches + unicode comment, unknown-key blob
+decodes, `winrate` 1.4 ⇒ absent, `toGameGraph`∘`applyGameGraph` reproduces structure + sibling
+order + per-node eval (NaN stays NaN), forward/self/missing-parent + board/schema out-of-range
+rejected with a clean error.
 **Area:** new `src/model/rdb/` — `rdb_container.{h,cpp}` (magic/header framing, atomic write,
 truncation detection), `compressor.{h,cpp}` (`ICompressor` + `RawCodec` + `DeflateCodec` over the
 already-present `zlib`), `game_graph.h` (serialisation DTO), `game_graph_cbor.{h,cpp}`
