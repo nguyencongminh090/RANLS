@@ -13,6 +13,25 @@ internal tracking files for traceability.
 
 _Nothing yet._
 
+## [0.2.0] - 2026-09-04
+
+Sprint 10 — Analyze Mode: the engine can now keep the win-rate graph filled in as you review a game.
+
+### Added
+
+- **Analyze Mode**: a new toggle (in the "Engine plays" menu and as an "∞" button in the engine
+  status bar) that keeps the engine re-analysing each position as you navigate or play into it, so
+  the win-rate graph gets a real, measured point for every position you visit — without pressing
+  Analyze on each one. Off by default, remembered between sessions, and independent of "Engine
+  plays" (the two can both be on). Positions you never analyse still show as gaps — no guessed
+  values are ever plotted (ANLZ-01).
+
+### Changed
+
+- Win-rate graph: a stretch of un-analysed moves no longer breaks the line into disconnected
+  pieces. The gap is now spanned by a faint dashed bridge so the trace reads as one continuous
+  line, while those moves still get no dot and still read "(no eval)" on hover (ANLZ-04).
+
 ## [0.1.2] - 2026-09-04
 
 Sprint 9 — a win-rate-graph coverage fix plus completion of the app rename.
@@ -112,7 +131,8 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/nguyencongminh090/RANLS/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/nguyencongminh090/RANLS/releases/tag/v0.1.0
