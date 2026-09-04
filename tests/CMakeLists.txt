@@ -44,6 +44,7 @@ add_executable(ranls-gui-tests
     test_rdb01_container.cpp
     test_rdb01_game_graph.cpp
     test_rdb02_archive.cpp
+    test_rdb03_node_analysis.cpp
 
     # Sources under test (model/engine only — no UI, no gtkmm).
     ${CMAKE_SOURCE_DIR}/src/model/move_history.cpp
@@ -121,6 +122,7 @@ add_executable(ranls-gui-ui-tests
     test_name01_window_title.cpp
     test_anlz01_analyze_mode_action.cpp
     test_rdb02_save_open.cpp
+    test_rdb03_ui_node_analysis.cpp
 
     # UI sources under test.
     ${CMAKE_SOURCE_DIR}/src/main_window.cpp
