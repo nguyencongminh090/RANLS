@@ -19,6 +19,20 @@ No changes. ANLZ-01 is therefore sprint-ready and was pulled into Sprint 10 Acti
 | Q7 | Does turning Analyze Mode off stop the engine or just stop restarting? | Stop the current search (`stopAnalysis()`), leave the process running. |
 | Q8 | Interaction with ENG-02 revert? | Analyze Mode is orthogonal — it must NOT call `revertEnginePlaysToOff()`, and Stop/one-shot-Analyze keep their existing ENG-02 behaviour. Toggling Analyze Mode off does not touch `enginePlays`. |
 
+## Revision 2026-09-04 — Q6 reversed by ANLZ-05
+
+After ANLZ-01 shipped, the user reported that with Analyze Mode **and** "Engine plays &lt;side&gt;"
+both on, the engine kept auto-playing while they were trying to study the position, and that a
+board click during the background search was silently swallowed. Resolution:
+
+- **Q6 is reversed for Analyze Mode.** While Analyze Mode is on the engine **never** auto-moves —
+  it analyses every position including its own assigned turn. Stop / toggling Analyze Mode off
+  just stops the search. (With Analyze Mode *off*, Q6 / auto-move / ENG-02 are unchanged.)
+- **New:** a board click during an in-flight Analyze-Mode search stops the search, applies the
+  move, and lets `scheduleAnalyzeModeRestart()` re-analyse the new position.
+
+Tracked as **ANLZ-05** (`docs/todo/ANLZ-05-analyze-mode-no-automove-allow-mid-search-moves.md`).
+
 ## Implementation sequencing (Q1–Q8 resolved 2026-09-04)
 
 1. `ViewConfig::analyzeMode` + persistence (Q1) — model layer, unit-testable.

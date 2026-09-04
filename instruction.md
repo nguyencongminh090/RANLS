@@ -110,6 +110,16 @@ behaviour for gap plies. Consider factoring a pure `computeGapBridges()` helper 
 Needs a `docs/audit/` entry for the UI-01 "disjoint segments" refinement.
 [detail](docs/instruction/ANLZ-04-wingraph-bridge-nan-gaps.md)
 
+## ANLZ-05 — analyze-mode-no-automove-allow-mid-search-moves
+
+Refinement of ANLZ-01, `MainWindow`-layer only. Three edits: `maybeStartAutoMove()` bails when
+`viewConfig().analyzeMode`; `scheduleAnalyzeModeRestart()` drops its `isEnginesTurn` bail (analyse
+regardless of side); the `signal_move_clicked` handler calls `controller_.stopAnalysis()` before
+`makeMove()` when `isAnalyzing()`. Don't weaken `GameState::makeMove()`'s guard; don't touch
+ENG-02 / one-shot Analyze / auto-move-with-analyze-mode-off. Reverses planning Q6 — update the
+ANLZ-01 test assertions that pinned the old behaviour.
+[detail](docs/instruction/ANLZ-05-analyze-mode-no-automove-allow-mid-search-moves.md)
+
 ## ANLZ-03 — persist-winrate-in-save-file — ⛔ SUPERSEDED by RDB-01/02/03
 
 Original plan (extend `.yxgame` text schema) rejected by the user 2026-09-04. Replaced by the
@@ -144,6 +154,18 @@ persist depth/nodes" fallback; test fresh game *and* loaded game). **D2:** exten
 `std::optional<NodeAnalysis>` — evalText/pv/glyph/engineRef/analyzedUtc). Full round-trip +
 carried ANLZ-03 regression set + fresh-game-still-all-NaN test. Record D1/D2 in the fix-log.
 [detail](docs/instruction/RDB-03-persist-restore-node-analysis.md)
+
+## ENG-03 — orphaned-engine-on-crash-or-wm-close
+
+Builds on ENG-01; must not regress ENG-02. Two small independent changes: **(1)** wire
+`signal_close_request` in `MainWindow::connectSignals()` to the same graceful stop as `onQuit()`
+(factor a shared `requestGracefulClose()`), veto the first close and re-`close()` from
+`stopEngine()`'s callback, `closeInFlight_` flag for re-entrancy. **(2)** `PR_SET_PDEATHSIG(SIGKILL)`
+on the engine child via `Gio::SubprocessLauncher` + `g_subprocess_launcher_set_child_setup` (only
+async-signal-safe calls in the callback), `#ifdef __linux__` with the current
+`Gio::Subprocess::create` as the fallback. Do **not** touch the ENG-01 enum / `stop()` vs
+`stopAsync()` split / `~EngineController`; no crash-reporter; no `setsid`.
+[detail](docs/instruction/ENG-03-orphaned-engine-on-crash-or-wm-close.md)
 
 ---
 

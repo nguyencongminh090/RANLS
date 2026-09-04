@@ -78,6 +78,8 @@ Sprint 11 (opened 2026-09-04, goal "New `.rdb` binary save format — persist th
 
 ## Backlog
 
+- 🔲 **ANLZ-05.** Analyze Mode refinement (user report 2026-09-04 against shipped ANLZ-01): (1) while Analyze Mode is on the engine must **never** auto-move — not even on its own turn under "Engine plays &lt;side&gt;" — it only analyses; Stop just stops the search. **Reverses `features/analyze-mode/planning.md` Q6.** (2) A board click during an in-flight Analyze-Mode search stops the search, places the stone, and restarts analysis (today `makeMove()`'s `analyzing_` guard silently swallows it). `MainWindow`-layer only, orthogonal to ENG-02; one-shot Analyze / "Engine plays" with Analyze Mode off unchanged. — [detail](docs/todo/ANLZ-05-analyze-mode-no-automove-allow-mid-search-moves.md) · [instruction](docs/instruction/ANLZ-05-analyze-mode-no-automove-allow-mid-search-moves.md)
+- 🔲 **ENG-03.** Engine subprocess can be orphaned when the window is closed via the WM close button ("X") or when the GUI crashes: `signal_close_request` is unwired (only the Quit menu/hotkey stops the engine), the heap `MainWindow` is never `delete`d, and there is no `PR_SET_PDEATHSIG`. Relies on the engine self-exiting on stdin EOF — a mid-search engine lingers, a non-compliant one leaks. Wire close-request → graceful stop + add PDEATHSIG. Builds on ENG-01, must not regress ENG-02. [Model: Sonnet 5] — [detail](docs/todo/ENG-03-orphaned-engine-on-crash-or-wm-close.md) · [instruction](docs/instruction/ENG-03-orphaned-engine-on-crash-or-wm-close.md)
 - 🔲 **TOOL-02.** `check-task-structure.js` regexes (`BULLET_START_RE` / `TODO_LINE_RE`) only recognise `✅` or no marker — a `🔲` open-marker line is silently skipped, so an open Backlog/Active item with a detail file is falsely reported as an orphan. Add `🔲` (and `🚧`) to the marker alternation. [Model: Haiku 4.5] — _detail TBD_
 
 Filed 2026-09-04 from the WinGraph-coverage discussion (`docs/notes/2026-09-04-wingraph-analyze-mode-and-backfill.md`)
@@ -103,6 +105,16 @@ single-game — reasoning in `features/rdb-save-format/planning.md`). ANLZ-03 �
 work re-split into `RDB-01` (container/codec/DTO), `RDB-02` (Save/Open wiring, `.yxgame`
 import-only), `RDB-03` (per-node analysis persistence — closes ANLZ-03's goal). Sprint 11 re-planned
 around `RDB-01..03` on integration branch `feat/rdb-save-format`.
+
+Filed 2026-09-04 (ANLZ-05) from a user report against the shipped ANLZ-01: in Analyze Mode the
+engine should never auto-move and a click should be accepted mid-search. Reverses planning Q6
+(see `features/analyze-mode/planning.md` "Revision 2026-09-04"). Not yet pulled into a sprint.
+
+Filed 2026-09-04 (ENG-03) from a user safety question — "if the program crashes / the user closes
+normally or while analyzing, does the engine subprocess terminate correctly?" — plus a trace of the
+engine lifecycle: only the Quit menu/hotkey and the C++ destructors guarantee a kill; the WM close
+button is unwired and a GUI crash skips both, leaving termination to rely on the engine self-exiting
+on stdin EOF. Not yet pulled into a sprint.
 
 Filed 2026-09-04 (TOOL-02) — surfaced while scaffolding ANLZ-03: `check-task-structure.js` doesn't
 recognise the `🔲` open-marker, so an open item with a detail file trips its orphan check. Not a
