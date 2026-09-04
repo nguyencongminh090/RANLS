@@ -31,6 +31,7 @@ add_executable(ranls-gui-tests
     test_ui01_winrate_attribution.cpp
     test_ui13_wingraph_eval_coverage.cpp
     test_anlz01_analyze_mode_coverage.cpp
+    test_anlz05_stop_then_move.cpp
     test_ui02_tree_row_highlight.cpp
     test_ui03_renju_forbidden.cpp
     test_ui03_standard_overline.cpp
@@ -121,6 +122,7 @@ add_executable(ranls-gui-ui-tests
     test_ui11_about_dialog.cpp
     test_name01_window_title.cpp
     test_anlz01_analyze_mode_action.cpp
+    test_anlz05_no_automove_action.cpp
     test_rdb02_save_open.cpp
     test_rdb03_ui_node_analysis.cpp
 
