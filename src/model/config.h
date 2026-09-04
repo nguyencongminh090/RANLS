@@ -29,6 +29,13 @@ struct ViewConfig {
     bool     showDatabase    = true;
     WinGraphMode winGraphMode = WinGraphMode::BothSide;
 
+    /// ANLZ-01: continuous background analysis. When true, MainWindow restarts
+    /// the engine's analysis on the new current position after every position
+    /// change (move / undo / redo / jump) so the WinGraph gains a real point
+    /// for every visited ply. Persisted like the other UI toggles; on launch
+    /// the engine only actually ponders once it is running.
+    bool     analyzeMode     = false;
+
     // Hotkeys.
     std::string hotkeyAnalyze  = "F5";
     std::string hotkeyStop     = "Escape";
