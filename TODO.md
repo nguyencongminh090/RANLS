@@ -71,7 +71,8 @@ Sprint 10 (opened 2026-09-04, goal "Analyze Mode — continuous background analy
 
 ## Backlog
 
-- 🔲 **ANLZ-03.** Persist per-node win% into the save-game file so re-opening a game keeps the WinGraph (Sabaki/SGF `SBKV`). Follows ANLZ-01. — _detail TBD_
+- 🔲 **ANLZ-03.** Persist per-node win% into the save-game file so re-opening a game keeps the WinGraph (Sabaki/SGF `SBKV` precedent); additive backward-compatible `.yxgame` field, bumps `kFormatVersion` only. Follows ANLZ-01. [Model: Sonnet 5] — [detail](docs/todo/ANLZ-03-persist-winrate-in-save-file.md) · [instruction](docs/instruction/ANLZ-03-persist-winrate-in-save-file.md)
+- 🔲 **TOOL-02.** `check-task-structure.js` regexes (`BULLET_START_RE` / `TODO_LINE_RE`) only recognise `✅` or no marker — a `🔲` open-marker line is silently skipped, so an open Backlog/Active item with a detail file is falsely reported as an orphan. Add `🔲` (and `🚧`) to the marker alternation. [Model: Haiku 4.5] — _detail TBD_
 
 Filed 2026-09-04 from the WinGraph-coverage discussion (`docs/notes/2026-09-04-wingraph-analyze-mode-and-backfill.md`)
 after web/GitHub research into how Lizzie/LizzieYZY, Sabaki, KaTrain and En Croissant handle it —
@@ -85,7 +86,13 @@ The old **ANLZ-02** ("Analyze entire game" one-shot sweep) and the briefly-consi
 expensive to keep pondering the way Lizzie can with GPU KataGo, and ANLZ-04's connected graph
 covers the discontinuity that motivated them. `ANLZ-02` is a retired code, not reused. ANLZ-04 was
 filed to Backlog then **pulled into Sprint 10 Active 2026-09-04** (mid-sprint, after ANLZ-01 shipped —
-see `docs/sprint/current.md`); ANLZ-03 stays in Backlog, follows ANLZ-01.
+see `docs/sprint/current.md`); ANLZ-03 stays in Backlog, follows ANLZ-01 — its
+`docs/todo/ANLZ-03-persist-winrate-in-save-file.md` + `docs/instruction/` detail files were
+scaffolded 2026-09-04 ahead of a sprint pull.
+
+Filed 2026-09-04 (TOOL-02) — surfaced while scaffolding ANLZ-03: `check-task-structure.js` doesn't
+recognise the `🔲` open-marker, so an open item with a detail file trips its orphan check. Not a
+blocker for `check-tracking-sync.js` (the sprint-command gate), which passes.
 
 Filed 2026-08-21 from a full read of `src/` (UI/UX + codebase review). Prefixes: `RT` realtime
 pipeline · `STATE` state lifetime · `PROTO` engine protocol · `ENG` engine lifecycle ·

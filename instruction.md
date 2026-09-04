@@ -110,6 +110,14 @@ behaviour for gap plies. Consider factoring a pure `computeGapBridges()` helper 
 Needs a `docs/audit/` entry for the UI-01 "disjoint segments" refinement.
 [detail](docs/instruction/ANLZ-04-wingraph-bridge-nan-gaps.md)
 
+## ANLZ-03 — persist-winrate-in-save-file
+
+Additive backward-compatible per-move win% on the `.yxgame` plain-text schema. Persists the
+per-node evals ANLZ-01 already produces; no new analysis on load. NaN round-trips as *absence*
+(never a written `0.5` — UI-01). Bump `kFormatVersion` only — **not** `APP_VERSION` (REL-02).
+Old file + new binary and new file + old binary must both load.
+[detail](docs/instruction/ANLZ-03-persist-winrate-in-save-file.md)
+
 ---
 
 _Items without an entry here (RT-02/03/04, STATE-02/03, PROTO-02, NAV-01, UI-01/02/03, UX-01…04,
