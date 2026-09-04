@@ -1,7 +1,7 @@
 # ANLZ-07 — Analyze Mode: Stop/restart busy-loops instead of settling once a search converges
 
-**Status:** 🔲 OPEN (Sprint 12 Active) — filed 2026-09-04, pulled into Active 2026-09-04.
-Implementation is blocked on the open design question below being resolved with the user.
+**Status:** 🔲 OPEN (Sprint 12 Active) — filed 2026-09-04, pulled into Active 2026-09-04, design
+resolved with the user 2026-09-04 (see "Scope" below) — ready for `/implement-task ANLZ-07`.
 
 Regression surfaced against the just-shipped **ANLZ-06**. ANLZ-06 correctly stopped an
 analysis-intent search's terminal coordinate from being played (Stop no longer drops a stone) —
@@ -78,17 +78,22 @@ stop re-arming" check, and no user-visible way to tell the difference between "s
 
 ## Scope
 
-To resolve with the user before implementing (open questions — do not implement without picking
-one, see `docs/instruction/ANLZ-07-*.md` for how `/implement-task` should surface this):
+**Resolved with the user 2026-09-04: skip-restart-if-unchanged only, no minimum-interval
+backstop.** Full rationale in `docs/instruction/ANLZ-07-*.md`. In order:
 
-1. Should a restart be skipped when the just-completed analysis-intent search's result (best line +
-   eval, or an explicit mate/solved marker if the protocol exposes one) is unchanged from the
-   previous completed search *on the same position*? This directly addresses "on winning" but also
-   the general "converged and stable" case.
-2. Should there be a minimum wall-clock interval between successive restarts of the *same* position
-   (a debounce/backoff), independent of (1), as a blanket protection against any fast-converging
-   search?
-3. Do (1) and (2) compose (both), or is one sufficient?
+1. Give `EngineController` a way to expose "the result of the last completed analysis-intent
+   search" (best move + eval text — already available via `EngineStatus`/`PVLine`) keyed to the
+   position it ran on (`currentPath()`), without any new engine query.
+2. In `MainWindow::scheduleAnalyzeModeRestart()` (or the `signal_state_changed`→`Idle` handler that
+   triggers it), before re-arming: compare the just-completed result to the previous completed
+   result *for the same position*. Identical → skip the restart, stay Idle. Different (including
+   "no previous result yet" — first analysis of a newly-visited position) → restart as today.
+3. A genuine position change (`signal_board_changed`) always restarts regardless of any cached
+   result — never let the "same position" comparison suppress analysis of an actually-new position.
+4. Deliberately no minimum-interval/backoff timer. If a search's result keeps changing between runs
+   on the same position, treat that as still-converging (real signal) and keep restarting — do not
+   mask it with a timer. A future report of a rapid loop *despite* changing results would be a
+   separate, new investigation, not scope creep here.
 
 ## Scope boundary
 

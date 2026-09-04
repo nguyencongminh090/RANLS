@@ -3,26 +3,21 @@
 Read `docs/todo/ANLZ-07-analyze-mode-restart-busy-loop.md` in full first — this file assumes its
 root-cause trace.
 
-## Before writing any code
+## Design decision — RESOLVED 2026-09-04
 
-The three open questions in the todo file's "Scope" section are **not yet resolved with the user**.
-`/implement-task ANLZ-07` (or whoever picks this up) must resolve them first — this is a design
-decision (how Analyze Mode decides "this position is done, stop re-searching it"), not a bug with
-one obvious fix. Do not guess a default silently; ask, or if working non-interactively, propose the
-combination below as the recommended default and get explicit sign-off before implementing:
+Resolved with the user: **skip-restart-if-unchanged only** — no minimum-interval backstop.
 
-**Recommended default (for the asking, not to implement unprompted):** both (1) and (2) from the
-todo file, composed:
 - Track, per `EngineController` analysis-intent search, the previous completed result on the
   *same* `currentPath()` (best move + eval text, e.g. what `EngineStatus`/`PVLine` already carry —
   no new engine query needed). If the new result is identical to the previous one for the same
   position, don't re-arm `scheduleAnalyzeModeRestart()` — treat the position as converged and stay
   Idle until `signal_board_changed` fires again (a real position change) or the user forces a
   restart (toggling Analyze Mode off/on).
-- As a blanket backstop independent of the above (protects against results that keep changing by a
-  hair — e.g. node-count jitter — without ever truly stabilizing), also enforce a minimum interval
-  (a few hundred ms) between successive restarts of the same position, so even a
-  never-quite-converging search can't out-pace the UI.
+- Deliberately **no** time-based backstop. If a search's reported result keeps changing between
+  runs on the same position (e.g. genuine deepening progress, not mere jitter), it is *not*
+  converged yet and re-arming is correct — a minimum interval would only mask that case, not fix
+  it. Should a never-quite-converging search cause a rapid loop in practice, that would be a
+  distinct, separate report — do not add the backstop speculatively.
 
 ## Why this shape
 
@@ -41,9 +36,10 @@ Per `CLAUDE.md`'s bug-fix workflow, this needs a failing-first regression test b
 `MainWindow`-level: reuse the `test_anlz05_no_automove_action.cpp` / `test_anlz06_search_intent_gate.cpp`
 pattern (real `MainWindow` + a wire spy on the engine's stdin, or a fake `EngineProcess`) — feed two
 identical completed analysis results for the same position in a row, assert only **one** `YXBOARD`
-request round-trip is sent, not two. Also a timing-independent case for the interval backstop (fake
-clock / injectable time source — don't rely on real `g_usleep`/sleep in the test, per ENG-01's
-established "no blocking waits" convention).
+request round-trip is sent, not two. Also cover: a *changed* result on the same position still
+restarts (deepening/new-info case must keep working), and a real position change
+(`signal_board_changed`) always restarts regardless of the previous result (never gate on
+`currentPath()` alone without also comparing the result).
 
 ## Scope discipline
 
