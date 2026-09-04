@@ -124,6 +124,7 @@ add_executable(ranls-gui-ui-tests
     test_name01_window_title.cpp
     test_anlz01_analyze_mode_action.cpp
     test_anlz05_no_automove_action.cpp
+    test_anlz07_analyze_restart_convergence.cpp
     test_rdb02_save_open.cpp
     test_rdb03_ui_node_analysis.cpp
 
