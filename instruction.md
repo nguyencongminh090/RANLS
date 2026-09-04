@@ -92,6 +92,14 @@ from its open-questions list). Reproduce the NaN gaps, then pick candidate fix A
 Don't touch UI-01 attribution, UI-09 SingleSide, or the eval→win% maths.
 [detail](docs/instruction/UI-13-wingraph-record-eval-regardless-of-side.md)
 
+## ANLZ-01 — continuous-analyze-mode
+
+Feature (the "Lizzie way"). Resolve `features/analyze-mode/planning.md` Q1–Q8 first. Pure
+`MainWindow` orchestration: copy `maybeStartAutoMove()`'s idle-coalescing; reuse
+`EngineController::analyze()`/`stopAnalysis()` unchanged; stay orthogonal to "Engine plays" /
+ENG-02; leave UI-13 candidate A alone. `stopAnalysis()` before `analyze()` or the restart no-ops.
+[detail](docs/instruction/ANLZ-01-continuous-analyze-mode.md)
+
 ---
 
 _Items without an entry here (RT-02/03/04, STATE-02/03, PROTO-02, NAV-01, UI-01/02/03, UX-01…04,

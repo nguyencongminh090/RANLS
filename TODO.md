@@ -66,7 +66,14 @@ Sprint 9 (opened 2026-09-03, goal "WinGraph coverage + app-wide RANLS rename") �
 
 ## Backlog
 
-_Empty — all filed items are committed to Sprint 9._
+- 🔲 **ANLZ-01.** Analyze Mode — continuous background analysis so WinGraph fills a real point for every position the user visits (the "Lizzie way"); no formula backfill on the plotted line. Orthogonal to "Engine plays". **Gated on `features/analyze-mode/planning.md` Q1–Q8.** Supersedes the `GRAPH-xx` "evaluate the whole played line" idea. [Model: Sonnet 5] — [detail](docs/todo/ANLZ-01-continuous-analyze-mode.md) · [instruction](docs/instruction/ANLZ-01-continuous-analyze-mode.md) · design `features/analyze-mode/`
+- 🔲 **ANLZ-02.** "Analyze entire game" — one-shot sweep of every played node with a fixed per-move budget (Lizzie "Auto analyze" / KaTrain "analyse all"). Follows ANLZ-01. — _detail TBD_
+- 🔲 **ANLZ-03.** Persist per-node win% into the save-game file so re-opening a game keeps the WinGraph (Sabaki/SGF `SBKV`). Follows ANLZ-01. — _detail TBD_
+
+Filed 2026-09-04 from the WinGraph-coverage discussion (`docs/notes/2026-09-04-wingraph-analyze-mode-and-backfill.md`)
+after web/GitHub research into how Lizzie/LizzieYZY, Sabaki, KaTrain and En Croissant handle it —
+user chose the continuous-analysis ("Lizzie way") approach. ANLZ-01 still needs its
+`features/analyze-mode/planning.md` open questions resolved before sprint commitment.
 
 Filed 2026-08-21 from a full read of `src/` (UI/UX + codebase review). Prefixes: `RT` realtime
 pipeline · `STATE` state lifetime · `PROTO` engine protocol · `ENG` engine lifecycle ·
