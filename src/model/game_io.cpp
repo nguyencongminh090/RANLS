@@ -56,33 +56,6 @@ bool parseCoord(const std::string &s, Coord &out)
 
 namespace GameIO {
 
-bool saveGame(const std::filesystem::path &path,
-              int                           boardSize,
-              GameRule                      rule,
-              const std::vector<Coord>     &moves,
-              std::string                  *error)
-{
-    std::ofstream out(path, std::ios::trunc);
-    if (!out.is_open()) {
-        setError(error, "Cannot open file for writing: " + path.string());
-        return false;
-    }
-
-    out << "# YixinBoard saved game\n";
-    out << "yxgame_version=" << kFormatVersion << "\n";
-    out << "board_size=" << boardSize << "\n";
-    out << "rule=" << static_cast<int>(rule) << "\n";
-    for (const auto &mv : moves)
-        out << "move=" << mv.x << "," << mv.y << "\n";
-
-    out.flush();
-    if (!out.good()) {
-        setError(error, "Write failed: " + path.string());
-        return false;
-    }
-    return true;
-}
-
 std::optional<LoadedGame> loadGame(const std::filesystem::path &path,
                                    std::string                 *error)
 {

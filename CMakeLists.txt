@@ -39,6 +39,7 @@ set(GUI_SOURCES
     src/model/rdb/rdb_container.cpp
     src/model/rdb/game_graph_cbor.cpp
     src/model/rdb/game_graph_convert.cpp
+    src/model/rdb/game_archive.cpp
 
     # Engine
     src/engine/engine_process.cpp

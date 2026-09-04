@@ -1,11 +1,13 @@
 #include "main_window.h"
-#include "model/game_io.h"
+#include "model/rdb/game_archive.h"
+#include "model/rdb/game_graph_convert.h"
 #include "model/settings_storage.h"
 #include "ui/about_dialog.h"
 #include "ui/settings_dialog.h"
 
 #include <algorithm>
 #include <cctype>
+#include <filesystem>
 
 // UX-03: icon-only glyph buttons need both a hover tooltip (sighted users)
 // and an accessible name (screen readers). set_tooltip_text() alone does
@@ -712,17 +714,41 @@ void MainWindow::showErrorDialog(const Glib::ustring &primary, const Glib::ustri
     dialog->set_visible(true);
 }
 
-// IO-01: Load Game. If the current game is non-empty, route through the same
+// RDB-02: Load Game. If the current game is non-empty, route through the same
 // discard confirmation New Game uses. Inside the confirmed callback: pick a
-// file, parse it (gtkmm-free GameIO::loadGame), and on success rebuild the
-// model the same way onNewGame does (newGame -> setRule -> replay moves ->
-// sendConfig to resync the engine). Parse failure shows a visible error and
-// leaves the current game untouched.
+// file, choose a reader by extension (`.rdb` -> RdbArchive, `.yxgame` ->
+// legacy YxgameReader), decode it to a GameGraph and apply that to the model
+// via rdb::applyGameGraphToState (newGame -> setRule -> rebuild the full
+// variation tree -> replay mainline), then sendConfig() to resync the engine.
+// Any parse/apply failure shows a visible error and leaves the current game
+// untouched.
 void MainWindow::onLoadGame()
 {
+    // Analyze Mode / an in-flight search would make newGame()/makeMove()
+    // early-return; stop it first (mirrors onStopAnalysis()'s manual-stop).
+    if (gameState_.isAnalyzing())
+        onStopAnalysis();
+
     confirmDiscardGame("Loading a game", [this]() {
         auto dialog = Gtk::FileDialog::create();
         dialog->set_title("Load Game");
+
+        auto rdbFilter = Gtk::FileFilter::create();
+        rdbFilter->set_name("RANLS game (*.rdb)");
+        rdbFilter->add_pattern("*.rdb");
+        auto yxFilter = Gtk::FileFilter::create();
+        yxFilter->set_name("Legacy game (*.yxgame)");
+        yxFilter->add_pattern("*.yxgame");
+        auto allFilter = Gtk::FileFilter::create();
+        allFilter->set_name("All files");
+        allFilter->add_pattern("*");
+        auto filters = Gio::ListStore<Gtk::FileFilter>::create();
+        filters->append(rdbFilter);
+        filters->append(yxFilter);
+        filters->append(allFilter);
+        dialog->set_filters(filters);
+        dialog->set_default_filter(rdbFilter);
+
         dialog->open(*this, [this, dialog](Glib::RefPtr<Gio::AsyncResult> &result) {
             std::string path;
             try {
@@ -733,29 +759,40 @@ void MainWindow::onLoadGame()
                 return; // user cancelled
             }
 
+            auto        reader = rdb::archiveReaderFor(path);
             std::string err;
-            auto loaded = GameIO::loadGame(path, &err);
-            if (!loaded) {
+            auto        graph = reader->load(path, &err);
+            if (!graph) {
                 showErrorDialog("Could not load game", err);
                 return;
             }
-
-            gameState_.newGame(loaded->boardSize);
-            gameState_.setRule(loaded->rule);
-            for (const auto &mv : loaded->moves)
-                gameState_.makeMove(mv);
+            if (!rdb::applyGameGraphToState(gameState_, *graph, &err)) {
+                showErrorDialog("Could not load game", err);
+                return;
+            }
             controller_.sendConfig();
         });
     });
 }
 
-// IO-01: Save Game. Writes the current game line (moves + rule + board size)
-// to a user-chosen path; a write failure shows a visible error dialog.
+// RDB-02: Save Game. Serialises the whole variation tree (not just the played
+// line) to a user-chosen `.rdb` path via rdb::toGameGraph + an RdbArchive
+// writer. A write failure — or a non-`.rdb` target, for which there is no
+// writer — shows a visible error dialog.
 void MainWindow::onSaveGame()
 {
     auto dialog = Gtk::FileDialog::create();
     dialog->set_title("Save Game");
-    dialog->set_initial_name("game.yxg");
+    dialog->set_initial_name("game.rdb");
+
+    auto rdbFilter = Gtk::FileFilter::create();
+    rdbFilter->set_name("RANLS game (*.rdb)");
+    rdbFilter->add_pattern("*.rdb");
+    auto filters = Gio::ListStore<Gtk::FileFilter>::create();
+    filters->append(rdbFilter);
+    dialog->set_filters(filters);
+    dialog->set_default_filter(rdbFilter);
+
     dialog->save(*this, [this, dialog](Glib::RefPtr<Gio::AsyncResult> &result) {
         std::string path;
         try {
@@ -766,11 +803,27 @@ void MainWindow::onSaveGame()
             return; // user cancelled
         }
 
-        std::string err;
-        if (!GameIO::saveGame(path, gameState_.boardSize(), gameState_.rule(),
-                              gameState_.history().moves(), &err)) {
-            showErrorDialog("Could not save game", err);
+        // A path with no extension defaults to `.rdb`.
+        std::filesystem::path fsPath(path);
+        if (fsPath.extension().empty())
+            fsPath.replace_extension(".rdb");
+
+        auto writer = rdb::archiveWriterFor(fsPath);
+        if (!writer) {
+            showErrorDialog("Could not save game",
+                            "RANLS only saves games in the .rdb format.");
+            return;
         }
+
+        rdb::GraphMeta meta;
+        meta.generator = kAppDisplayName;
+        const auto graph = rdb::toGameGraph(gameState_.tree(),
+                                            gameState_.boardSize(),
+                                            gameState_.rule(), meta);
+
+        std::string err;
+        if (!writer->save(fsPath, graph, &err))
+            showErrorDialog("Could not save game", err);
     });
 }
 
