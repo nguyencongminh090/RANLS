@@ -14,6 +14,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTKMM REQUIRED IMPORTED_TARGET gtkmm-4.0)
 
+# ── zlib (RDB-01: .rdb container crc32 + deflate payload codec) ──────────────
+find_package(ZLIB REQUIRED)
+
 # ── Source files ─────────────────────────────────────────────────────────────
 set(GUI_SOURCES
     # Entry point
@@ -30,6 +33,12 @@ set(GUI_SOURCES
     src/model/renju_rule.cpp
     src/model/settings_storage.cpp
     src/model/game_io.cpp
+
+    # RDB-01: .rdb binary save format — container, codec, DTO, CBOR, convert
+    src/model/rdb/compressor.cpp
+    src/model/rdb/rdb_container.cpp
+    src/model/rdb/game_graph_cbor.cpp
+    src/model/rdb/game_graph_convert.cpp
 
     # Engine
     src/engine/engine_process.cpp
@@ -93,6 +102,7 @@ target_include_directories(ranls-gui PRIVATE
 
 target_link_libraries(ranls-gui PRIVATE
     PkgConfig::GTKMM
+    ZLIB::ZLIB
 )
 
 target_compile_options(ranls-gui PRIVATE
