@@ -11,7 +11,12 @@ internal tracking files for traceability.
 
 ## [Unreleased]
 
-_Nothing yet._
+### Changed
+
+- Games now save as `.rdb` (a compact binary format that preserves the full variation tree — every
+  branch and comment, not just the moves you played). Older `.yxgame` files still open, and can be
+  re-saved as `.rdb`; there is no `.yxgame` save any more (RDB-02).
+- Re-opening a saved game restores its win-rate graph without re-running analysis (RDB-03).
 
 ## [0.2.0] - 2026-09-04
 

@@ -1,7 +1,12 @@
-// Regression test for IO-01: GameIO::saveGame / GameIO::loadGame must
-// round-trip the current game line (board size, rule, move sequence) and must
+// Regression test for IO-01 (+ RDB-02): GameIO::loadGame must parse a
+// hand-written legacy `.yxgame` file (board size, rule, move sequence) and must
 // reject corrupt / truncated / garbage input with a failure result rather than
 // crashing or silently succeeding.
+//
+// RDB-02 retired GameIO::saveGame (the app now writes binary `.rdb` only — see
+// src/model/rdb/game_archive.*); `.yxgame` is import-only and this file now
+// guards rdb::YxgameReader's parser dependency. The load cases below therefore
+// write the on-disk text directly rather than round-tripping through a writer.
 //
 // GameIO is deliberately gtkmm-free (see src/model/game_io.h) so it is exercised
 // directly here; the MainWindow wiring is UI code out of this binary's reach.
@@ -29,11 +34,15 @@ void writeText(const std::filesystem::path &p, const std::string &contents)
 
 } // namespace
 
-TEST_CASE("GameIO: save then load round-trips board size, rule and moves") {
-    auto path = tmpFile("roundtrip.yxg");
+TEST_CASE("GameIO: loadGame parses a hand-written legacy file (board size, rule, moves)") {
+    auto path = tmpFile("roundtrip.yxgame");
     std::vector<Coord> moves = {{7, 7}, {8, 8}, {7, 8}, {6, 9}};
-
-    REQUIRE(GameIO::saveGame(path, 19, GameRule::Renju, moves));
+    writeText(path,
+              "# YixinBoard saved game\n"
+              "yxgame_version=1\n"
+              "board_size=19\n"
+              "rule=2\n"
+              "move=7,7\nmove=8,8\nmove=7,8\nmove=6,9\n");
 
     std::string err;
     auto loaded = GameIO::loadGame(path, &err);
@@ -49,9 +58,9 @@ TEST_CASE("GameIO: save then load round-trips board size, rule and moves") {
     std::remove(path.string().c_str());
 }
 
-TEST_CASE("GameIO: empty game (no moves) round-trips") {
-    auto path = tmpFile("empty.yxg");
-    REQUIRE(GameIO::saveGame(path, 15, GameRule::Freestyle, {}));
+TEST_CASE("GameIO: loadGame parses an empty game (no moves)") {
+    auto path = tmpFile("empty.yxgame");
+    writeText(path, "yxgame_version=1\nboard_size=15\nrule=0\n");
 
     auto loaded = GameIO::loadGame(path);
     REQUIRE(loaded.has_value());

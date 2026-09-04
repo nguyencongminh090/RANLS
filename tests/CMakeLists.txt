@@ -41,6 +41,10 @@ add_executable(ranls-gui-tests
     test_ui10_sticky_scroll.cpp
     test_ux06_wingraph_series.cpp
     test_anlz04_wingraph_bridge.cpp
+    test_rdb01_container.cpp
+    test_rdb01_game_graph.cpp
+    test_rdb02_archive.cpp
+    test_rdb03_node_analysis.cpp
 
     # Sources under test (model/engine only — no UI, no gtkmm).
     ${CMAKE_SOURCE_DIR}/src/model/move_history.cpp
@@ -50,6 +54,11 @@ add_executable(ranls-gui-tests
     ${CMAKE_SOURCE_DIR}/src/model/settings_storage.cpp
     ${CMAKE_SOURCE_DIR}/src/model/game_io.cpp
     ${CMAKE_SOURCE_DIR}/src/model/renju_rule.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/rdb/compressor.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/rdb/rdb_container.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/rdb/game_graph_cbor.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/rdb/game_graph_convert.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/rdb/game_archive.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/gomocup_protocol.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_process.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_controller.cpp
@@ -63,6 +72,7 @@ target_include_directories(ranls-gui-tests PRIVATE
 target_link_libraries(ranls-gui-tests PRIVATE
     PkgConfig::SIGCXX
     PkgConfig::GIOMM
+    ZLIB::ZLIB
 )
 
 target_compile_features(ranls-gui-tests PRIVATE cxx_std_20)
@@ -111,6 +121,8 @@ add_executable(ranls-gui-ui-tests
     test_ui11_about_dialog.cpp
     test_name01_window_title.cpp
     test_anlz01_analyze_mode_action.cpp
+    test_rdb02_save_open.cpp
+    test_rdb03_ui_node_analysis.cpp
 
     # UI sources under test.
     ${CMAKE_SOURCE_DIR}/src/main_window.cpp
@@ -138,6 +150,11 @@ add_executable(ranls-gui-ui-tests
     ${CMAKE_SOURCE_DIR}/src/model/board_view_model.cpp
     ${CMAKE_SOURCE_DIR}/src/model/settings_storage.cpp
     ${CMAKE_SOURCE_DIR}/src/model/game_io.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/rdb/compressor.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/rdb/rdb_container.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/rdb/game_graph_cbor.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/rdb/game_graph_convert.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/rdb/game_archive.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/gomocup_protocol.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_process.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_controller.cpp
@@ -153,6 +170,7 @@ target_link_libraries(ranls-gui-ui-tests PRIVATE
     PkgConfig::GTKMM
     PkgConfig::SIGCXX
     PkgConfig::GIOMM
+    ZLIB::ZLIB
 )
 
 target_compile_features(ranls-gui-ui-tests PRIVATE cxx_std_20)

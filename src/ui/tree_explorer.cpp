@@ -3,6 +3,7 @@
 #include "model/tree_row_highlight.h"
 
 #include <algorithm>
+#include <cmath>
 #include <iomanip>
 #include <sstream>
 
@@ -116,9 +117,13 @@ void TreeExplorer::update(const MoveHistory &history, const VariationTree &tree,
         std::string depthStr = "-";
 
         if (node) {
-            std::ostringstream evStr;
-            evStr << std::fixed << std::setprecision(2) << node->eval;
-            evalStr = evStr.str();
+            // RDB-03: TreeNode::eval now defaults to NaN for an unanalysed node
+            // (was 0.0). Keep the dash for those instead of printing "nan".
+            if (!std::isnan(node->eval)) {
+                std::ostringstream evStr;
+                evStr << std::fixed << std::setprecision(2) << node->eval;
+                evalStr = evStr.str();
+            }
 
             if (node->nodes > 0)
                 nodesStr = formatNodes(node->nodes);
