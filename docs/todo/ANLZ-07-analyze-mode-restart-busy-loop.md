@@ -1,6 +1,7 @@
 # ANLZ-07 — Analyze Mode: Stop/restart busy-loops instead of settling once a search converges
 
-**Status:** 🔲 OPEN (Sprint 12 Active) — filed 2026-09-04
+**Status:** 🔲 OPEN (Sprint 12 Active) — filed 2026-09-04, pulled into Active 2026-09-04.
+Implementation is blocked on the open design question below being resolved with the user.
 
 Regression surfaced against the just-shipped **ANLZ-06**. ANLZ-06 correctly stopped an
 analysis-intent search's terminal coordinate from being played (Stop no longer drops a stone) —

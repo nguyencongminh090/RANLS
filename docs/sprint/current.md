@@ -32,12 +32,24 @@
   and interact with the ENG-02 auto-play-revert path — whichever lands second rebases and re-runs
   the ENG-02 regression cases. ANLZ-06 is downstream of ANLZ-05 (fixes a gap it left) and touches
   `EngineController`, not `MainWindow` — independent of ENG-03.
+- **ANLZ-07** — downstream of ANLZ-06 (same user transcript, next symptom): once the ANLZ-06 fix
+  correctly discards the analysis-intent coordinate, `scheduleAnalyzeModeRestart()`
+  (`main_window.cpp:1129`) re-arms unconditionally on every Idle transition with no check that the
+  position/result changed, so a fast-converging search (a forced mate in the report) busy-loops
+  `STOP`→redump→search→discard forever. **Blocked on a design decision with the user** before
+  `/implement-task` can start: skip-restart-if-unchanged vs. a minimum restart interval vs. both
+  (recommended default in `docs/instruction/ANLZ-07-*.md`). `MainWindow`/`EngineController` only,
+  no protocol change; must not regress ANLZ-01's "every visited position gets a WinGraph point"
+  guarantee or ENG-02/UI-06 (`requestEngineMove()` doesn't self-restart, so it's already
+  unaffected — verify that stays true). `/systematic-debugging` Phase 1–2 already done (in the todo
+  file) — no further debugging gate once the design question is answered.
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
 | ANLZ-05 | Analyze Mode never auto-moves; a board click mid-search stops the search, places the stone, restarts analysis | ANLZ-01 (shipped) | — | ✅ Done — PR #15 squash-merged to `main` (`f3bad66`) 2026-09-04 |
 | ENG-03 | Engine subprocess no longer orphaned on WM-close ("X") or GUI crash: `signal_close_request` → graceful stop + `PR_SET_PDEATHSIG` | ENG-01 (shipped) | — | 🔲 Not started |
 | ANLZ-06 | Analyze-Mode search's best move must not be auto-played (Stop drops a stone; mid-search click double-moves) — `EngineController` search-intent gate | ANLZ-05 (merged) | — | ✅ Done — PR #16 squash-merged to `main` (`576b25a`) 2026-09-04 |
+| ANLZ-07 | Analyze-Mode restart busy-loops (STOP/redump/search/discard forever) once a search converges quickly | ANLZ-06 (merged) | — | 🔲 Blocked — design decision needed with the user before implementation |
 
 Points not yet estimated (consistent with Sprints 3–11).
 
