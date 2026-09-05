@@ -11,6 +11,13 @@ internal tracking files for traceability.
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.3.1] - 2026-09-05
+
+Sprint 12 — Analyze Mode refinements plus a safety net so the engine subprocess never outlives the
+window.
+
 ### Changed
 
 - **Analyze Mode** is now a pure study mode: while it is on the engine only ever analyses the
@@ -20,6 +27,22 @@ internal tracking files for traceability.
 - Clicking the board **during** an Analyze-Mode search now places the stone: the search stops, the
   move is applied, and analysis restarts on the new position (previously the click was silently
   ignored) (ANLZ-05).
+
+### Fixed
+
+- Analyze Mode no longer auto-plays a search's best move onto the board: pressing Stop mid-search
+  no longer drops a stone, and a board click mid-search no longer produces a double move (ANLZ-06).
+- Analyze Mode no longer busy-loops (stop/redump/search/discard forever at native CPU speed) once a
+  search converges quickly, such as a forced mate (ANLZ-07).
+- Closing the window with the titlebar "X" now stops the engine the same way Quit does, instead of
+  leaving it running; if the app crashes or is force-killed, the engine process is now guaranteed to
+  be killed as well instead of possibly lingering (ENG-03).
+- Sending a database/analysis request immediately after Stop no longer occasionally causes an
+  "Unknown command" engine error — outgoing commands now wait for the aborted search's trailing
+  response before the next one is sent (PROTO-04).
+- The Engine Log could stop following new lines partway through a large burst of engine output,
+  requiring a manual scroll to see new lines again; it now reliably stays pinned to the bottom
+  during active analysis (UI-14).
 
 ## [0.3.0] - 2026-09-04
 
@@ -155,7 +178,8 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/nguyencongminh090/RANLS/releases/tag/v0.3.0
 [0.2.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/nguyencongminh090/RANLS/compare/v0.1.1...v0.1.2

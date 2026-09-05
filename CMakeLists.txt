@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18.2)
 project(ranls-gui
-    VERSION     0.3.0
+    VERSION     0.3.1
     LANGUAGES   CXX
     DESCRIPTION "RANLS — Renju/Gomoku Analysis GUI"
 )
