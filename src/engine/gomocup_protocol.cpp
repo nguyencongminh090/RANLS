@@ -326,6 +326,12 @@ std::string GomocupProtocol::generateQuit() {
 }
 
 std::vector<std::string> GomocupProtocol::generateDatabaseQuery(const std::vector<Coord>& path) {
+    // PROTO-03 (reverted, see docs/fix-log/2026-09-05-proto-03-database-query-missing-color.md's
+    // correction note): this bare "y,x" shape, no color field, is correct as
+    // written — a captured transcript with 12 back-to-back yxquerydatabaseallt
+    // calls in exactly this format, zero errors, confirmed it. Do not add a
+    // color suffix here; the actual bug was PROTO-04 (a send/receive race in
+    // EngineController), not this format.
     std::vector<std::string> cmds;
     cmds.push_back("yxquerydatabaseallt");
     for (const auto& c : path) {

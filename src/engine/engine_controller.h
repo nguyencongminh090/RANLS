@@ -126,6 +126,20 @@ private:
     /// True if commands may be sent to the process right now.
     bool isUsable() const;
 
+    /// PROTO-04: routes a command through the pending-stop-flush gate instead
+    /// of sending it immediately. stopAnalysis() sets state_ back to Idle
+    /// synchronously the instant STOP is written, but the real subprocess's
+    /// aborted YXNBEST search is still asynchronously winding down and has
+    /// not actually consumed/replied to STOP yet — sending the next protocol
+    /// block (position resync, database query, a fresh analyze() request...)
+    /// immediately races that in-flight teardown on the wire. When
+    /// pendingStopFlush_ is armed, `action` is queued instead of run, and the
+    /// whole queue is flushed, in order, once the stopped search's trailing
+    /// coordinate line confirms the engine has actually settled (see the
+    /// signal_move handler in connectProtocolSignals()). When nothing is
+    /// pending, `action` runs synchronously, same as before this existed.
+    void sendOrDefer(std::function<void()> action);
+
     /// ANLZ-06: discriminates why the current/most-recent search was
     /// started, so the protocol's signal_move handler can tell a real
     /// requested move apart from an analysis search's completion coordinate.
@@ -134,6 +148,18 @@ private:
     /// distinguish them.
     enum class SearchIntent { None, Analysis, Move };
     SearchIntent searchIntent_ = SearchIntent::None;
+
+    /// PROTO-04: true while waiting for a just-stopped Analysis-intent
+    /// (YXNBEST) search's trailing coordinate line to confirm the engine has
+    /// settled — see sendOrDefer(). Only Analysis-intent searches are waited
+    /// on: per docs/protocol.md's STOP entry a Move-intent (BOARD) search's
+    /// reply is genuinely suppressed by STOP, so there is nothing to wait
+    /// for there (and waiting would hang the queue forever).
+    bool pendingStopFlush_ = false;
+    /// Commands deferred by sendOrDefer() while pendingStopFlush_ is set,
+    /// in call order. Flushed in order once the wire is confirmed idle, or
+    /// dropped (never run) if the engine stops/dies before that happens.
+    std::vector<std::function<void()>> pendingActions_;
 
     /// ANLZ-07: the result (best move + eval text) of the most recently
     /// completed analysis-intent search, keyed to the position it ran on.
