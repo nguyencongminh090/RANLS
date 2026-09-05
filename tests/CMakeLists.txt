@@ -28,6 +28,7 @@ add_executable(ranls-gui-tests
     test_settings_storage.cpp
     test_eng01_engine_state.cpp
     test_eng02_revert_predicate.cpp
+    test_eng03_pdeathsig.cpp
     test_ui01_winrate_attribution.cpp
     test_ui13_wingraph_eval_coverage.cpp
     test_anlz01_analyze_mode_coverage.cpp
