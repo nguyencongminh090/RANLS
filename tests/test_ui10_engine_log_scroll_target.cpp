@@ -168,3 +168,62 @@ TEST_CASE("UI-10: a user who scrolled up is not yanked back down by new lines")
 
     window->set_visible(false);
 }
+
+TEST_CASE("UI-14: a SEND burst immediately followed by a RECV burst still ends pinned to the bottom")
+{
+    if (!gtkReady()) return;
+
+    // Reproduces the real "send protocol lines, engine replies within
+    // milliseconds" pattern (sendConfig()/EngineController) rather than one
+    // long single-directional stream. The first burst's flush schedules an
+    // auto-scroll (scrollEngineLogToBottom, UI-10) whose deferred idle
+    // re-issue and value_changed settle haven't necessarily landed yet when
+    // the second burst's flush tick runs a mere ~50ms later — if the first
+    // burst's scroll hasn't converged, `stickToBottom_` must still read true
+    // for the second flush to auto-scroll.
+    auto window = Gtk::make_managed<Gtk::Window>();
+    auto panel  = Gtk::make_managed<BottomPanel>();
+    window->set_child(*panel);
+    window->set_default_size(720, 260);
+    window->set_visible(true);
+    // The Engine Log tab must actually be the visible Notebook page — a
+    // hidden page is never allocated real size, so its vadjustment page_size
+    // stays 0 and every "at bottom" check (value+page>=upper) passes
+    // vacuously regardless of the real scroll position. Only the visible
+    // page gets a genuine, non-zero page_size and thus a real geometry to
+    // race against.
+    panel->set_current_page(1);
+    pump(200);  // realize + first allocation
+
+    GtkWidget *sw = engineLogScroller(GTK_WIDGET(panel->gobj()));
+    REQUIRE(sw != nullptr);
+    GtkAdjustment *vadj =
+        gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
+    REQUIRE(vadj != nullptr);
+
+    // Burst 1: outgoing protocol lines (SEND), enough to overflow the view.
+    for (int i = 0; i < 60; ++i)
+        panel->appendSend(Glib::ustring::compose("PROTOCOL_LINE %1 arg1 arg2 arg3", i));
+
+    // Only long enough for ONE flush tick (kFlushIntervalMs=50) to run and
+    // queue its auto-scroll — deliberately shorter than the "let everything
+    // settle" pumps the other cases use, so burst 2 lands while burst 1's
+    // scroll is still in flight.
+    pump(60);
+
+    // Burst 2: the engine's reply (RECV), arriving right on burst 1's heels.
+    for (int i = 0; i < 30; ++i)
+        panel->appendRecv("Message", Glib::ustring::compose("reply line %1", i));
+
+    pump(600);  // let everything fully settle
+
+    const double value    = gtk_adjustment_get_value(vadj);
+    const double page     = gtk_adjustment_get_page_size(vadj);
+    const double upper    = gtk_adjustment_get_upper(vadj);
+    const double maxValue = upper - page;
+
+    REQUIRE(maxValue > 10.0);        // content really does overflow
+    CHECK(value >= maxValue - 4.0);  // burst 2's lines must be visible
+
+    window->set_visible(false);
+}

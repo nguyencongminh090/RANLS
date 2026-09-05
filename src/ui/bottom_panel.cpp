@@ -268,6 +268,24 @@ void BottomPanel::scrollEngineLogToBottom()
     // Scroll now (handles the case where layout is already current)…
     engineLogView_.scroll_to(engineLogEndMark_, 0.0, 0.0, 1.0);
 
+    // GtkScrolledWindow answers `scroll_to` with a kinetic animation of the
+    // vadjustment lasting several frame-clock ticks (tens to ~150ms for a
+    // large jump), not an instant set. `programmaticScroll_` is cleared below
+    // on the very next idle — ms after this call, long before that animation
+    // settles — so the animation's own intermediate frames fire
+    // `value_changed` with the guard already down and get mistaken for the
+    // user scrolling away, latching `stickToBottom_` off before the view
+    // actually reaches bottom (a burst followed within ~50ms by another
+    // burst, e.g. a protocol SEND immediately answered by the engine, lands
+    // squarely inside that window). Snapping the adjustment's value directly
+    // makes the jump immediate and skips the animation (and its transient
+    // mid-flight reads) entirely.
+    if (auto vadj = scrolledEngineLog_.get_vadjustment()) {
+        const double maxValue = vadj->get_upper() - vadj->get_page_size();
+        if (maxValue > vadj->get_value())
+            vadj->set_value(maxValue);
+    }
+
     // …and once more on the next idle, after GTK has processed the relayout
     // triggered by this tick's insert. During a fast stream the immediate
     // scroll above runs against a stale TextView height and lands short; the
@@ -280,6 +298,11 @@ void BottomPanel::scrollEngineLogToBottom()
             scrollIdlePending_ = false;
             if (engineLogEndMark_)
                 engineLogView_.scroll_to(engineLogEndMark_, 0.0, 0.0, 1.0);
+            if (auto vadj = scrolledEngineLog_.get_vadjustment()) {
+                const double maxValue = vadj->get_upper() - vadj->get_page_size();
+                if (maxValue > vadj->get_value())
+                    vadj->set_value(maxValue);
+            }
             // This tick's programmatic scrolling is done — value_changed may
             // now be trusted as a real user action again.
             programmaticScroll_ = false;
