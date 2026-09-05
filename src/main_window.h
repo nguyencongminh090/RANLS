@@ -35,6 +35,10 @@ private:
     // regression test needs to drive scheduleAnalyzeModeRestart()'s `force`
     // parameter and inspect controller_ directly.
     friend struct RanlsAnlz07Probe;
+    // ENG-03: the close-request regression test needs to drive
+    // requestGracefulClose()/the signal_close_request handler and observe
+    // closeInFlight_ + controller_ state without a live WM to click the X.
+    friend struct RanlsEng03Probe;
 
     void buildMenuBar();
     void buildToolbar();
@@ -83,6 +87,13 @@ private:
     void onLoadGame();
     void onSaveGame();
     void onQuit();
+    // ENG-03: shared body of onQuit() and the signal_close_request handler —
+    // both must route through the same graceful controller_.stopEngine(...)
+    // shutdown rather than closing (or exiting) immediately. Idempotent aside
+    // from closeInFlight_ bookkeeping; the caller decides whether to veto the
+    // current close attempt (close-request handler) or not (menu Quit, which
+    // isn't itself a close attempt GTK is waiting on an answer to).
+    void requestGracefulClose();
     void onSetRule(GameRule rule);
     void onBoardSize();
 
@@ -157,6 +168,16 @@ private:
     /// the active rule stays visible in the header bar (persistent, not
     /// hidden inside the Game > Rule menu) regardless of how it was changed.
     void updateRuleLabel();
+
+    // ENG-03: set on the first signal_close_request (WM "X" / titlebar close)
+    // to veto that close and kick off requestGracefulClose(); the completion
+    // callback's close() re-triggers signal_close_request, and this flag
+    // makes that second pass return false so GTK actually closes. Not used
+    // by the menu-Quit path (onQuit() isn't answering a pending close
+    // request, so there's nothing to veto/re-issue there) — stopEngine()'s
+    // own Stopping-state completion chaining (see EngineController::
+    // stopEngine) already covers "Quit already in flight, then X clicked".
+    bool closeInFlight_ = false;
 
     // ── Data ────────────────────────────────────────────────────────────────
     GameState          gameState_;

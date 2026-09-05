@@ -666,6 +666,22 @@ void MainWindow::connectSignals()
     // ANLZ-01: analysis-panel "∞" toggle — same handler as the menu checkbox.
     analysisPanel_.engineStatus().signal_analyze_mode_toggled.connect(
         [this](bool active) { onToggleAnalyzeMode(active); });
+
+    // ENG-03: WM close button ("X") / titlebar close. Without this,
+    // signal_close_request is unhandled, GTK's default close runs, main()
+    // returns, and the heap-allocated MainWindow (application.cpp) is never
+    // deleted — ~MainWindow/~EngineController/~EngineProcess never run, so
+    // the engine subprocess never gets END or force_exit(). Route through
+    // the same graceful shutdown as menu-Quit instead: veto this close,
+    // start the async stop, and let its completion callback re-issue
+    // close() (which re-triggers this handler — closeInFlight_ makes that
+    // second pass fall through to GTK's real close).
+    signal_close_request().connect([this]() -> bool {
+        if (closeInFlight_) return false; // second pass: let GTK close now.
+        closeInFlight_ = true;
+        requestGracefulClose();
+        return true; // veto this close; the stopEngine() completion re-issues it.
+    }, false);
 }
 
 // ── Actions ──────────────────────────────────────────────────────────────────
@@ -855,11 +871,25 @@ void MainWindow::onSaveGame()
 
 void MainWindow::onQuit()
 {
+    requestGracefulClose();
+}
+
+void MainWindow::requestGracefulClose()
+{
     // ENG-01: stopEngine() is now asynchronous. Closing the window
     // immediately (as before) could destroy EngineController/EngineProcess
     // mid-shutdown, dangling the pending async completion. Wait for the
     // (non-blocking) stop to actually finish — or complete synchronously if
     // there was nothing to stop — before closing.
+    //
+    // ENG-03: shared by both the menu-Quit action and the signal_close_request
+    // handler (WM "X" / titlebar close). The callback calls close(), never
+    // onStopAnalysis() — a normal shutdown must not trip ENG-02's
+    // auto-play-interrupt-reverts-to-manual behavior. If a shutdown is
+    // already in flight (menu-Quit, or a prior close-request pass),
+    // stopEngine() chains this completion onto it instead of firing early
+    // (EngineController::stopEngine, state_ == Stopping) — so calling this
+    // twice is safe and never double-sends END.
     controller_.stopEngine([this]() { close(); });
 }
 
