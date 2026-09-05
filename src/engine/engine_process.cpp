@@ -3,12 +3,38 @@
 #include <iostream>
 #include <memory>
 
+#ifdef __linux__
+#include <sys/prctl.h>
+#include <unistd.h>
+#endif
+
 EngineProcess::EngineProcess() = default;
 
 EngineProcess::~EngineProcess()
 {
     stop();
 }
+
+#ifdef __linux__
+namespace {
+// ENG-03: runs in the forked child, between fork() and exec(), before any
+// engine code executes. Async-signal-safe only — prctl/getppid/_exit are;
+// std::cerr, logging, and anything allocating are NOT, and must never be
+// added here. Sets PR_SET_PDEATHSIG so the kernel SIGKILLs this child the
+// moment the GUI process dies for any reason (crash, kill -9, WM-forced
+// termination) with no destructor / EOF-on-stdin round trip required. The
+// getppid() check is a best-effort race guard for the (rare) case where the
+// parent already died between fork() and this callback running — on most
+// systems the child gets reparented to PID 1, but under a subreaper the
+// reparent target can differ (see docs/instruction/ENG-03-...), so this is
+// belt-and-braces on top of PDEATHSIG, not the primary guarantee.
+void engineChildSetup(gpointer)
+{
+    ::prctl(PR_SET_PDEATHSIG, SIGKILL);
+    if (::getppid() == 1) ::_exit(1);
+}
+} // namespace
+#endif
 
 bool EngineProcess::start(const std::string &enginePath)
 {
@@ -19,7 +45,21 @@ bool EngineProcess::start(const std::string &enginePath)
                    | Gio::Subprocess::Flags::STDOUT_PIPE
                    | Gio::Subprocess::Flags::STDERR_PIPE;
 
+#ifdef __linux__
+        // ENG-03: gtkmm does not wrap g_subprocess_launcher_set_child_setup,
+        // so drop to the C API on the launcher's underlying GObject. Every
+        // downstream accessor (get_stdin_pipe/get_stdout_pipe/wait_async/
+        // force_exit) works identically on the Glib::RefPtr<Gio::Subprocess>
+        // a launcher's spawn() returns as on one from Subprocess::create().
+        auto launcher = Gio::SubprocessLauncher::create(flags);
+        g_subprocess_launcher_set_child_setup(
+            launcher->gobj(), &engineChildSetup, nullptr, nullptr);
+        process_ = launcher->spawn({enginePath});
+#else
+        // Windows/macOS: no PDEATHSIG equivalent wired up here (known gap,
+        // see docs/fix-log — this task targets Linux/GTK4 per project scope).
         process_ = Gio::Subprocess::create({enginePath}, flags);
+#endif
 
         // Wrap the output streams for line-based reading.
         auto stdoutBase = process_->get_stdout_pipe();

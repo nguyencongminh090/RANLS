@@ -1,6 +1,26 @@
 # ENG-03 — Engine subprocess can be orphaned on WM-close and on GUI crash
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** ✅ FIXED — 2026-09-05. `signal_close_request` now routes through the same
+`requestGracefulClose()` helper as menu-Quit (vetoes the first close, calls
+`controller_.stopEngine()`, `close()` again from the completion callback; `closeInFlight_` guards
+re-entrancy). `EngineProcess::start()` now spawns via `Gio::SubprocessLauncher` with a
+`g_subprocess_launcher_set_child_setup` callback that arms `PR_SET_PDEATHSIG(SIGKILL)` on Linux
+(`#ifdef __linux__`, falls back to the previous `Gio::Subprocess::create` path elsewhere).
+Verification: clean build (`./build.sh build_cmd`); `ctest` — `ranls-gui-tests` fully green
+(195 assertions, includes the new PDEATHSIG test) and `rel02-version-single-source` green;
+`ranls-gui-ui-tests` 25/26 test cases pass (174/175 assertions) — the one failure
+(`test_anlz05_no_automove_action.cpp:135`) reproduces identically on unmodified `main` (confirmed
+via `git stash`), so it is a pre-existing, unrelated flake, not a regression from this change. New
+tests: `tests/test_eng03_close_request.cpp` (widget-level, drives the real close-request handler via
+`g_signal_emit_by_name`, asserts real `EngineController` Stopping→NotStarted transitions and that
+`MatchConfig::enginePlays` is untouched — ENG-02 non-regression) and
+`tests/test_eng03_pdeathsig.cpp` (forks a harness that spawns a stdin-ignoring long-lived script via
+a real `EngineProcess`, SIGKILLs the harness, asserts the child is gone/zombie within ~1.5s;
+cross-checked by temporarily disabling the `prctl()` call and confirming the test then fails).
+Manual/live-engine smoke tier (WM "X" during real analysis + `kill -9` of the GUI PID against a real
+engine + display) was **not run** — no real engine binary/display available in this environment; see
+fix-log detail for the explicit skip note. Known gap: Windows/macOS have no PDEATHSIG equivalent
+wired up (documented limitation, out of scope per the instruction file).
 **Area:** `src/engine/engine_process.{h,cpp}`, `src/main_window.cpp` (`connectSignals`, `onQuit`), possibly `src/application.cpp`
 **Priority:** P2
 **Source:** User safety question 2026-09-04 ("if the program crashes / the user closes normally or while analyzing, does the engine subprocess terminate correctly?") + code-base trace of the engine lifecycle.

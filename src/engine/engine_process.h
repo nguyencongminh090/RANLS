@@ -38,6 +38,12 @@ public:
     /// Is the engine running?
     bool isRunning() const { return running_; }
 
+    /// The OS process ID of the spawned engine, or empty if not running.
+    /// ENG-03: exposed for the PDEATHSIG regression test (confirming the
+    /// real child PID is gone after the parent is killed) — not used by
+    /// any production code path.
+    std::string pid() const { return process_ ? std::string(process_->get_identifier()) : std::string(); }
+
     /// Signal emitted when a line is received from the engine's stdout.
     sigc::signal<void(const std::string&)> signal_line_received;
 
