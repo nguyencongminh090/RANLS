@@ -22,6 +22,11 @@ EngineController::EngineController(GameState &gameState, EngineProcess &engine)
         // for whatever search was in flight — inert it so a stray line from
         // a half-flushed pipe buffer can't be misread as a real move.
         searchIntent_ = SearchIntent::None;
+        // PROTO-04: a dead process will never deliver the trailing coordinate
+        // sendOrDefer() is waiting on either — drop whatever was queued
+        // rather than holding it (and blocking every future command) forever.
+        pendingStopFlush_ = false;
+        pendingActions_.clear();
         setState(EngineState::Crashed);
     });
 }
@@ -117,6 +122,21 @@ void EngineController::connectProtocolSignals() {
 
         if (wasSearching)
             setState(EngineState::Idle);
+
+        // PROTO-04: any coordinate line arriving while pendingStopFlush_ is
+        // set IS the trailing reply sendOrDefer() is waiting on — nothing
+        // else could produce one, since everything queued behind it is held
+        // unsent until this fires. The wire is confirmed idle now; flush
+        // whatever queued up in order. Swap the queue out to a local first:
+        // an action can itself call sendOrDefer() again (e.g. analyze()),
+        // which must see an empty queue and send immediately, not re-append
+        // to the batch already being flushed.
+        if (pendingStopFlush_) {
+            pendingStopFlush_ = false;
+            auto actions = std::move(pendingActions_);
+            pendingActions_.clear();
+            for (auto &action : actions) action();
+        }
     });
 
     protocol_->signal_analysis.connect([this](const std::vector<PVLine>& pvs, const EngineStatus& status) {
@@ -218,6 +238,11 @@ void EngineController::stopEngine(std::function<void()> onComplete)
     // ANLZ-06: same reasoning as stopAnalysis() — a shutdown must also inert
     // any trailing coordinate line an in-flight search still emits.
     searchIntent_ = SearchIntent::None;
+    // PROTO-04: shutting down regardless — nothing queued behind
+    // sendOrDefer() will ever get a wire to send on, so drop it now instead
+    // of leaking it (or, worse, having it fire mid/after teardown).
+    pendingStopFlush_ = false;
+    pendingActions_.clear();
     setState(EngineState::Stopping);
 
     // Non-blocking: no g_usleep, no g_main_context_iteration (ENG-01). The UI
@@ -259,19 +284,22 @@ void EngineController::sendConfig()
 
     if (!isUsable()) return;
 
-    for (const auto& cmd : startCmds) {
-        engine_.sendLine(cmd);
-    }
-
     const auto &cfg = gameState_.engineConfig();
+    auto configCmds = protocol_->generateConfig(cfg);
+    auto ruleCmds   = protocol_->generateRule(gameState_.rule());
 
-    for (const auto& cmd : protocol_->generateConfig(cfg)) {
-        engine_.sendLine(cmd);
-    }
-
-    for (const auto& cmd : protocol_->generateRule(gameState_.rule())) {
-        engine_.sendLine(cmd);
-    }
+    // PROTO-04: a New Game / rule / board-size change routinely follows
+    // stopAnalysis() (see onNewGame()/onSetRule()) — defer behind any
+    // still-settling aborted search exactly like the other command methods,
+    // so a fresh START can't land on the wire ahead of the old search's
+    // trailing coordinate.
+    sendOrDefer([this, startCmds = std::move(startCmds),
+                 configCmds = std::move(configCmds),
+                 ruleCmds = std::move(ruleCmds)]() {
+        for (const auto& cmd : startCmds)  engine_.sendLine(cmd);
+        for (const auto& cmd : configCmds) engine_.sendLine(cmd);
+        for (const auto& cmd : ruleCmds)   engine_.sendLine(cmd);
+    });
 }
 
 // ─── Analysis ────────────────────────────────────────────────────────────────
@@ -282,15 +310,22 @@ void EngineController::analyze()
     auto path = gameState_.currentPath();
     const auto &cfg = gameState_.engineConfig();
 
-    for (const auto& cmd : protocol_->generateAnalyzeRequest(path, cfg.multiPV)) {
-        engine_.sendLine(cmd);
-    }
-
-    // ANLZ-06: this search's terminal coordinate line (YXNBEST still emits
-    // one) must be discarded, not played — see the signal_move handler.
-    searchIntent_ = SearchIntent::Analysis;
-    gameState_.setAnalyzing(true);
-    setState(EngineState::Analyzing);
+    // PROTO-04: defer both the wire commands AND the intent/state bookkeeping
+    // until they can actually run — flipping searchIntent_/state_ to
+    // Analyzing now, while the previous search's trailing coordinate is
+    // still in flight, would make the signal_move handler misattribute that
+    // stale coordinate to *this* not-yet-sent search.
+    sendOrDefer([this, path, multiPV = cfg.multiPV]() {
+        for (const auto& cmd : protocol_->generateAnalyzeRequest(path, multiPV)) {
+            engine_.sendLine(cmd);
+        }
+        // ANLZ-06: this search's terminal coordinate line (YXNBEST still
+        // emits one) must be discarded, not played — see the signal_move
+        // handler.
+        searchIntent_ = SearchIntent::Analysis;
+        gameState_.setAnalyzing(true);
+        setState(EngineState::Analyzing);
+    });
 }
 
 void EngineController::requestEngineMove()
@@ -299,19 +334,21 @@ void EngineController::requestEngineMove()
 
     auto path = gameState_.currentPath();
 
-    for (const auto& cmd : protocol_->generateMoveRequest(path)) {
-        engine_.sendLine(cmd);
-    }
-
-    // Same state bookkeeping as analyze(): the engine is now searching, and
-    // position mutations must be blocked until its move arrives. protocol_->
-    // signal_move (wired in connectProtocolSignals) flips us back to Idle and
-    // emits signal_engine_move when the reply comes in.
-    // ANLZ-06: this search's terminal coordinate is a real requested move —
-    // signal_move must play it, unlike an analyze()-driven search.
-    searchIntent_ = SearchIntent::Move;
-    gameState_.setAnalyzing(true);
-    setState(EngineState::Analyzing);
+    // PROTO-04: same deferral as analyze(), same reasoning.
+    sendOrDefer([this, path]() {
+        for (const auto& cmd : protocol_->generateMoveRequest(path)) {
+            engine_.sendLine(cmd);
+        }
+        // Same state bookkeeping as analyze(): the engine is now searching,
+        // and position mutations must be blocked until its move arrives.
+        // protocol_->signal_move (wired in connectProtocolSignals) flips us
+        // back to Idle and emits signal_engine_move when the reply comes in.
+        // ANLZ-06: this search's terminal coordinate is a real requested
+        // move — signal_move must play it, unlike an analyze()-driven search.
+        searchIntent_ = SearchIntent::Move;
+        gameState_.setAnalyzing(true);
+        setState(EngineState::Analyzing);
+    });
 }
 
 void EngineController::stopAnalysis()
@@ -320,6 +357,16 @@ void EngineController::stopAnalysis()
     if (!isUsable()) return;
 
     engine_.sendLine(protocol_->generateStop());
+
+    // PROTO-04: only an aborted Analysis-intent (YXNBEST) search still
+    // emits a trailing coordinate line after STOP — the ANLZ-06 comment
+    // above ("YXNBEST still emits one") is exactly this observed exception.
+    // A Move-intent (BOARD) search's reply is genuinely suppressed by STOP
+    // per docs/protocol.md's STOP entry, so there is nothing to wait for
+    // there — arming pendingStopFlush_ for it would hang every future
+    // command behind a coordinate that is never coming.
+    const bool willEmitTrailingCoord =
+        state_ == EngineState::Analyzing && searchIntent_ == SearchIntent::Analysis;
 
     // ANLZ-06: unconditional, regardless of state_ — inert any trailing
     // coordinate line the aborted search still emits after STOP. state_
@@ -330,6 +377,12 @@ void EngineController::stopAnalysis()
     searchIntent_ = SearchIntent::None;
 
     if (state_ == EngineState::Analyzing) {
+        // PROTO-04: from here on, every sendOrDefer() caller (queryDatabase(),
+        // the next analyze(), sendConfig(), ...) queues instead of sending,
+        // until the flush below runs — closing the race this fixes: state_
+        // says Idle immediately (below), but the real subprocess's aborted
+        // search has not actually settled yet.
+        pendingStopFlush_ = willEmitTrailingCoord;
         gameState_.setAnalyzing(false);
         setState(EngineState::Idle);
         // RT-01: analysis-stopped must emit immediately, not wait for the
@@ -341,9 +394,22 @@ void EngineController::stopAnalysis()
 void EngineController::queryDatabase() {
     if (!isUsable()) return;
     auto cmds = protocol_->generateDatabaseQuery(gameState_.currentPath());
-    for (const auto& cmd : cmds) {
-        engine_.sendLine(cmd);
+    // PROTO-04: this is the call site that surfaced the race — see the
+    // sendOrDefer() doc comment and docs/fix-log/<date>-proto-04-*.md.
+    sendOrDefer([this, cmds = std::move(cmds)]() {
+        for (const auto& cmd : cmds) {
+            engine_.sendLine(cmd);
+        }
+    });
+}
+
+void EngineController::sendOrDefer(std::function<void()> action)
+{
+    if (pendingStopFlush_) {
+        pendingActions_.push_back(std::move(action));
+        return;
     }
+    action();
 }
 
 void EngineController::sendRawCommand(const std::string &command)

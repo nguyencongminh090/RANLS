@@ -303,6 +303,32 @@ TEST_CASE("GomocupProtocol: generateMoveRequest on the empty board uses BEGIN") 
     CHECK(cmds.front() == "BEGIN");
 }
 
+// ── PROTO-03 (reverted): generateDatabaseQuery's bare "y,x" shape is correct ──
+//
+// A captured transcript with 12 back-to-back yxquerydatabaseallt calls in
+// exactly this format (no color field) came back with zero errors — pinning
+// this shape as a regression guard against re-adding an unneeded color
+// suffix. See docs/fix-log/2026-09-05-proto-03-database-query-missing-color.md's
+// correction note and PROTO-04 for the actual bug (a send/receive race).
+
+TEST_CASE("GomocupProtocol: generateDatabaseQuery emits a plain y,x position block") {
+    GomocupProtocol proto(15);
+    auto cmds = proto.generateDatabaseQuery({Coord{7, 7}, Coord{7, 8}});
+    REQUIRE(cmds.size() == 4);
+    CHECK(cmds.front() == "yxquerydatabaseallt");
+    CHECK(cmds[1] == "7,7");
+    CHECK(cmds[2] == "8,7");
+    CHECK(cmds.back() == "DONE");
+}
+
+TEST_CASE("GomocupProtocol: generateDatabaseQuery on the empty board is just the bare block") {
+    GomocupProtocol proto(15);
+    auto cmds = proto.generateDatabaseQuery({});
+    REQUIRE(cmds.size() == 2);
+    CHECK(cmds.front() == "yxquerydatabaseallt");
+    CHECK(cmds.back() == "DONE");
+}
+
 // ── PROTO-02: A1-notation coordinates must use the real board size ─────────
 //
 // parseEngineCoord() used to hardcode `15 - rowNumber` when decoding A1-style
