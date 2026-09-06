@@ -1,15 +1,34 @@
 #include "settings_dialog.h"
 
+#include <algorithm>
+#include <cctype>
 #include <filesystem>
 #include <memory>
+#include <string>
+
+#if !defined(_WIN32)
 #include <unistd.h>
+#endif
+
+namespace settings_dialog_detail {
+
+bool hasExecutableExtension(const std::string &path)
+{
+    std::string ext = std::filesystem::path(path).extension().string();
+    std::transform(ext.begin(), ext.end(), ext.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    return ext == ".exe" || ext == ".bat" || ext == ".cmd" || ext == ".com";
+}
+
+} // namespace settings_dialog_detail
 
 namespace {
 
 /// Checks whether `path` is usable as an engine executable: exists, is a
-/// regular file (not a directory/socket/etc.), and has execute permission
-/// for the current user. Returns false with a human-readable `reason` set
-/// on the first failing check.
+/// regular file (not a directory/socket/etc.), and — on POSIX — has execute
+/// permission for the current user, or — on Windows — carries an executable
+/// extension. Returns false with a human-readable `reason` set on the first
+/// failing check.
 bool isValidEnginePath(const std::string &path, std::string &reason)
 {
     if (path.empty()) {
@@ -25,10 +44,19 @@ bool isValidEnginePath(const std::string &path, std::string &reason)
         reason = "Not a regular file";
         return false;
     }
+#if defined(_WIN32)
+    // MSVC/Windows CRT has no X_OK; the execute bit is meaningless. Fall back to
+    // an executable-extension check (existence + is_regular_file already passed).
+    if (!settings_dialog_detail::hasExecutableExtension(path)) {
+        reason = "Not an executable (.exe / .bat / .cmd / .com)";
+        return false;
+    }
+#else
     if (access(path.c_str(), X_OK) != 0) {
         reason = "Not executable";
         return false;
     }
+#endif
     return true;
 }
 

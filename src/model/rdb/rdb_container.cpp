@@ -139,6 +139,17 @@ bool writeContainer(const std::filesystem::path &path, uint8_t codecId,
             return false;
         }
 #endif
+#if defined(_WIN32)
+        // PORT-01: Windows equivalent of fsync — force the file's buffers to
+        // physical storage before the rename so a crash/power-loss can't leave a
+        // torn or zero-length .rdb. Same 0-success / -1-failure contract.
+        if (::_commit(::_fileno(f)) != 0) {
+            std::fclose(f);
+            std::filesystem::remove(tmp, ec);
+            setError(error, "writeContainer: _commit failed");
+            return false;
+        }
+#endif
         std::fclose(f);
     }
 

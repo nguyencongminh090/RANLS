@@ -1,6 +1,38 @@
 # PORT-01 — Tier-1 Windows fixes (guarded, isolated, ~30 lines)
 
-**Status:** 🔲 OPEN (Active — Sprint 14)
+**Status:** ✅ DONE (Active — Sprint 14; branch `port-01/cross-platform-build-and-runtime`)
+
+**Summary (2026-09-06):** Three isolated `#ifdef` guards landed, no shared platform layer:
+- `settings_dialog.cpp` — `<unistd.h>` now `#if !defined(_WIN32)`; `isValidEnginePath` keeps
+  `access(path, X_OK)` on POSIX (byte-identical) and under `#if defined(_WIN32)` calls a new
+  pure-string helper `settings_dialog_detail::hasExecutableExtension` (`.exe`/`.bat`/`.cmd`/`.com`,
+  case-insensitive) declared in `settings_dialog.h`. The existing `exists` / `is_regular_file`
+  checks are unchanged.
+- `rdb_container.cpp` — added a `#if defined(_WIN32)` branch calling `::_commit(::_fileno(f))`
+  with the exact same 0/-1 error handling as the POSIX `::fsync(::fileno(f))` branch (which is
+  untouched).
+- `settings_storage.cpp` — `executableDir()` gains `#elif defined(_WIN32)` (GetModuleFileNameW
+  with a buffer-grow loop + `ERROR_INSUFFICIENT_BUFFER` truncation check, `<windows.h>`,
+  `parent_path()`) and `#elif defined(__APPLE__)` (`_NSGetExecutablePath` two-call sizing,
+  `<mach-o/dyld.h>`, `parent_path()`). The `__linux__` `/proc/self/exe` branch and the
+  `current_path()` fallback are unchanged. Portable-app model kept — no `g_get_user_config_dir()`.
+
+**Verification (Linux build host):**
+- Clean `cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release` + full build: no new warnings
+  (touched TUs recompiled with `-Wall -Wextra -Wpedantic` clean).
+- `ctest`: `ranls-gui-tests` 209/209 cases (2466 assertions); `rel02-version-single-source` pass;
+  `ranls-gui-ui-tests` 28/29 cases — the single failure `test_anlz05_no_automove_action`
+  reproduces identically on a clean `main` (`c90b0fd`) build (25/26 there → 28/29 here, delta is
+  the 3 new PORT-01 cases), so the Linux result is unchanged. Pre-existing environmental flake,
+  not a regression.
+- New regression test `tests/test_port01_engine_path_check.cpp` (3 cases / 20 assertions, in
+  `ranls-gui-ui-tests`) pins `hasExecutableExtension`: the four accepted extensions,
+  case-insensitivity, and rejection of no-extension / look-alike / trailing-dot / POSIX-named
+  binaries.
+- The `_WIN32` / `__APPLE__` branches **cannot** be compiled on this Linux host — per-guard
+  manual correctness reasoning is in `docs/fix-log/2026-09-06-port-01-tier1-windows-fixes.md`.
+  The MSYS2 MINGW64 build + launch + save-`.rdb` + pick-engine-path smoke remains a required
+  human step before this ships.
 **Area:** `src/ui/settings_dialog.cpp`, `src/model/rdb/rdb_container.cpp`, `src/model/settings_storage.cpp`
 **Priority:** P2 — small, self-contained, closes a real data-durability gap + the one hard MSVC compile blocker
 **Source:** Platform-dependency audit 2026-09-06 (`/systematic-debugging` + cross-check against a Gemini report) — see [docs/audit/2026-09-06-platform-dependency-audit.md](../audit/2026-09-06-platform-dependency-audit.md). Product decision 2026-09-06: keep the portable-app model (settings next to the binary, not `%APPDATA%`); do the Tier-1 quick fixes now; defer GResource bundling (PORT-02) and MSVC/CI harness work (PORT-03).
