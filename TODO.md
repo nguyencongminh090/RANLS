@@ -90,7 +90,7 @@ Sprint 13 (opened 2026-09-06, goal "Open Protocol Extension (.ptc runtime comman
 
 Sprint 14 (opened 2026-09-06, goal "Backlog tooling fix + Tier-1 Windows portability") — pulled from Backlog:
 
-- 🔲 **TOOL-03.** `check-task-structure.js` still exits 1 on the `⛔`-marked, non-canonically-formatted ANLZ-03 index lines (`⛔` not in the marker alternation; ` SUPERSEDED` inside the `**…**` span). Split out of TOOL-02 (which was scoped to `🔲`/`🚧` only) 2026-09-06. Needs a small decision first — teach the script the `⛔`/SUPERSEDED shape, or normalise the ANLZ-03 lines. [Model: Haiku 4.5] — [detail](docs/todo/TOOL-03-superseded-marker-lines.md)
+- ✅ **TOOL-03.** `check-task-structure.js` still exits 1 on the `⛔`-marked, non-canonically-formatted ANLZ-03 index lines (`⛔` not in the marker alternation; ` SUPERSEDED` inside the `**…**` span). Split out of TOOL-02 (which was scoped to `🔲`/`🚧` only) 2026-09-06. Needs a small decision first — teach the script the `⛔`/SUPERSEDED shape, or normalise the ANLZ-03 lines. [Model: Haiku 4.5] — [detail](docs/todo/TOOL-03-superseded-marker-lines.md)
 - 🔲 **PORT-01.** Tier-1 Windows fixes (guarded, isolated, ~30 lines): `#if !defined(_WIN32)` around `<unistd.h>` + a Windows executable-extension check in place of `access(X_OK)` (`settings_dialog.cpp`); `_commit()` alongside `fsync()` so `.rdb` saves are crash-durable on Windows (`rdb_container.cpp`); `GetModuleFileNameW` / `_NSGetExecutablePath` branches in `executableDir()` so settings sit next to the binary, not the launch CWD (`settings_storage.cpp`). No Linux behaviour change. [Model: Sonnet 5] — [detail](docs/todo/PORT-01-cross-platform-build-and-runtime.md)
 
 ## Backlog
