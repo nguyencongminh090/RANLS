@@ -90,6 +90,9 @@ Sprint 13 (opened 2026-09-06, goal "Open Protocol Extension (.ptc runtime comman
 
 ## Backlog
 
+- 🔲 **PORT-01.** Tier-1 Windows fixes (guarded, isolated, ~30 lines): `#if !defined(_WIN32)` around `<unistd.h>` + a Windows executable-extension check in place of `access(X_OK)` (`settings_dialog.cpp`); `_commit()` alongside `fsync()` so `.rdb` saves are crash-durable on Windows (`rdb_container.cpp`); `GetModuleFileNameW` / `_NSGetExecutablePath` branches in `executableDir()` so settings sit next to the binary, not the launch CWD (`settings_storage.cpp`). No Linux behaviour change. [Model: Sonnet 5] — [detail](docs/todo/PORT-01-cross-platform-build-and-runtime.md)
+- 🔲 **PORT-02.** Bundle `style.css` into the binary via GResource (`load_from_resource`), dropping the `__FILE__`-path fallback in `application.cpp` that currently bakes a build-host absolute path into the executable and loses all styling on any non-CWD launch. [Model: Sonnet 5] — [detail](docs/todo/PORT-02-bundle-style-css-via-gresource.md)
+- 🔲 **PORT-03.** Native MSVC build support + portable test harness: `if(MSVC)` compiler-flag branch + `WIN32` subsystem in `CMakeLists.txt`; a CMake-built `mock_engine` target to replace the hardcoded `/bin/cat` / `/bin/true` stand-ins across 7 test suites; Win32 Job Object so the engine subprocess dies with the GUI on Windows. Needs a decision on whether native MSVC / Windows CI is actually a goal before it leaves Backlog. [Model: Sonnet 5] — [detail](docs/todo/PORT-03-msvc-build-and-portable-test-harness.md)
 - 🔲 **TOOL-03.** `check-task-structure.js` still exits 1 on the `⛔`-marked, non-canonically-formatted ANLZ-03 index lines (`⛔` not in the marker alternation; ` SUPERSEDED` inside the `**…**` span). Split out of TOOL-02 (which was scoped to `🔲`/`🚧` only) 2026-09-06. Needs a small decision first — teach the script the `⛔`/SUPERSEDED shape, or normalise the ANLZ-03 lines. [Model: Haiku 4.5] — [detail](docs/todo/TOOL-03-superseded-marker-lines.md)
 
 Filed 2026-09-04 from the WinGraph-coverage discussion (`docs/notes/2026-09-04-wingraph-analyze-mode-and-backfill.md`)
@@ -151,10 +154,20 @@ TOOL-02 shipped 2026-09-06 (PR #21, squash `7ceeeed`) — regex widened to `🔲
 SUPERSEDED-line case was outside its written scope and is split to **TOOL-03** (Backlog, filed
 2026-09-06).
 
+Filed 2026-09-06 (PORT-01/02/03) from a user question ("does the source compile cross-platform or
+Linux-only?") that turned into a `/systematic-debugging` platform-dependency audit, cross-checked
+against a parallel Gemini report. Findings recorded in
+`docs/audit/2026-09-06-platform-dependency-audit.md`; no code changed. Product decision 2026-09-06
+(after a Gemini advisory pass): keep the portable-app model (settings next to the binary), do the
+Tier-1 guarded fixes now (**PORT-01**, pulled into Sprint 14 Active 2026-09-06), and defer GResource
+asset bundling (**PORT-02**, Backlog) and the MSVC / Windows-CI harness (**PORT-03**, Backlog —
+gated on whether native MSVC is ever a goal). MSYS2/MinGW already builds and runs.
+
 Filed 2026-08-21 from a full read of `src/` (UI/UX + codebase review). Prefixes: `RT` realtime
 pipeline · `STATE` state lifetime · `PROTO` engine protocol · `ENG` engine lifecycle ·
 `NAV` navigation · `UI` display logic · `UX` usability · `TEST` harness · `CLEAN` hygiene ·
-`IO` game persistence · `DOC` documentation · `TOOL` repo tooling · `REL` release/versioning.
+`IO` game persistence · `DOC` documentation · `TOOL` repo tooling · `REL` release/versioning ·
+`PORT` cross-platform portability.
 
 Filed 2026-08-30 from a follow-up UI review request and from `features/versioning-and-changelog/`
 (UI-08, ENG-02, UI-09, REL-01, REL-02) — all shipped in Sprint 7 (archived
