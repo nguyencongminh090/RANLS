@@ -1,6 +1,44 @@
 # CONS-01 — Engine Log command entry: AutoComplete (command suggestion)
 
-**Status:** 🔲 OPEN (Active — Sprint 16, pulled 2026-09-07) — filed 2026-09-07.
+**Status:** ✅ DONE (2026-09-07, branch `cons-01/console-command-autocomplete` — not merged;
+orchestrator drives the PR). Filed 2026-09-07, pulled into Sprint 16 the same day.
+
+**Summary:** `CommandDispatcher::registeredNames()` + `commandUsage(name)` added as read-only
+accessors over the existing `specs_` (no change to `executeLine()` routing, `handlers_`, the
+dangerous-raw-command block, or pos-session). New GTK-free header `src/command/command_completer.h`
+(header-only, mirroring `src/ui/engine_log_model.h` per the instruction — no `.cpp`): `matches()`
+(case-insensitive, sorted, de-duped), `longestCommonPrefix()`, `shouldSuggest(text, caret)`
+(trimmed text starts with `!`/`！` and caret within the first token), `currentPrefix()`. UI glue is
+confined to `src/ui/bottom_panel.cpp`: a custom `Gtk::Popover` (`set_autohide(false)` so key events
+keep reaching the entry, `≤ 8` `!name   usage` rows, `Gtk::ListBox` selection) anchored under
+`commandEntry_`, plus an inline dim ghost-text `Gtk::Label` in a `Gtk::Overlay` over the entry.
+Refresh runs on `notify::text` (`property_text().signal_changed()`), guarded by `suppressSuggest_`
+against re-entry from our own `set_text`. The registry is re-queried through a
+`std::function` provider on every refresh — never cached (HC4). The existing `EventControllerKey`
+lambda is extended (not duplicated): `suggestOpen_ && handleSuggestionKey(keyval)` at the top —
+popover open → Tab (complete-to-LCP then cycle) / Up / Down / Enter (accept into entry, no submit) /
+Esc (hide, text unchanged) consume the key and return `true`; popover closed → falls through to the
+unchanged `commandHistory_` logic byte-for-byte. `MainWindow` wires the two providers to the
+dispatcher. No argument-level completion (Q6), no AutoCorrect (CONS-02), no `Gtk::EntryCompletion`,
+no libadwaita, `builtinCommandNames()` in `protocol_extension.cpp` untouched (R1).
+
+**Verification (2026-09-07):**
+- `./build.sh` — clean, no new warnings.
+- `ctest` (build_cmd) — 4/4 green: `ranls-gui-tests`, `ranls-gui-ui-tests`,
+  `rel02-version-single-source`, `port02-style-css-bundled`.
+- `tests/test_cons01_command_completer.cpp` (pure, no GTK, in `ranls-gui-tests`) — pins `matches`
+  (`"an"` → `{"analyze"}`, sort, case-insensitivity), `longestCommonPrefix` real output, the
+  `shouldSuggest` truth table (`!an`@3 → true; `an` → false; `!analyze foo`@10 → false; `  !a` → true;
+  raw `YXBOARD` → false; fullwidth `！`), and `currentPrefix`.
+- `tests/test_cons01_command_autocomplete.cpp` (in `ranls-gui-ui-tests`, self-skips headless) —
+  `registeredNames()` contains every `protoext::builtinCommandNames()` entry and is sorted;
+  `commandUsage` exact strings; `syncExtensionCommands()` with no engine is a quiet no-op (R5);
+  after `startEngine()` with a stub `.ptc` on disk, `registeredNames()` grows to include the
+  extension command. BottomPanel driven against a real widget: `!an` opens the popover with model
+  `{"analyze"}`, Tab rewrites the entry to `!analyze `; a raw line opens nothing and the key
+  handler is inert; Esc leaves `!an` in place; Enter accepts into the entry without emitting
+  `signal_command_sent`.
+
 
 Feature A of `features/console-autocomplete/` (design draft + open questions resolved
 2026-09-07 — see [planning.md](../../features/console-autocomplete/planning.md) Resolution table).
