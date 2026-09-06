@@ -1,6 +1,6 @@
 # PORT-02 — Bundle style.css into the binary via GResource
 
-**Status:** 🔲 OPEN (Active — Sprint 15)
+**Status:** ✅ DONE (Sprint 15) — style.css bundled as GResource `/org/ranls/style.css`; `application.cpp` loads via `load_from_resource` (no more `__FILE__` / `<filesystem>` fallback); `CMakeLists.txt` compiles the bundle with `glib-compile-resources` into `build/generated/ranls_gresource.c` and links it; POST_BUILD copy + `install(FILES style.css)` removed. Verify (Linux, 2026-09-06): clean `cmake -S . -B build` + `cmake --build build -j2` succeed; `ctest` 3/4 suites pass — `ranls-gui-ui-tests` fails only on the pre-existing `test_anlz05_no_automove_action` engine-timing flake (identical on `main`), new `port02-style-css-bundled` guard passes; `strings build/ranls-gui | grep /run/media` empty; `strings build/ranls-gui | grep -c org/ranls/style.css` = 1; generated `.c` (25 KB) present in build tree and linked. GUI launch-from-arbitrary-dir not run (no display server on host) — verified structurally.
 **Area:** `src/application.cpp`, `CMakeLists.txt`, new `src/resources/ranls.gresource.xml`
 **Priority:** P3 — cosmetic-only failure mode, but the current fallback bakes a developer path into the binary
 **Source:** Platform-dependency audit 2026-09-06 — see [docs/audit/2026-09-06-platform-dependency-audit.md](../audit/2026-09-06-platform-dependency-audit.md). Split from PORT-01 (Tier 2) per the 2026-09-06 tiering decision.
