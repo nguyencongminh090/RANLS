@@ -1,13 +1,30 @@
 #pragma once
 
 #include "i_engine_protocol.h"
+#include "i_custom_command_source.h"
+#include "protocol_extension.h"
 #include <array>
+#include <memory>
 
-/// Implements the Gomocup and Yixin Extended protocols.
-class GomocupProtocol : public IEngineProtocol {
+/// Implements the Gomocup and Yixin Extended protocols. PROTO-03: also acts as
+/// the ICustomCommandSource once a `.ptc` extension table is loaded.
+class GomocupProtocol : public IEngineProtocol, public ICustomCommandSource {
 public:
     GomocupProtocol(int boardSize);
     ~GomocupProtocol() override = default;
+
+    // ── PROTO-03: optional `.ptc` extension table ───────────────────────────
+    /// Install (or clear, with nullptr) the loaded extension table. Load-once
+    /// per engine start/reload — no hot reload (Q6).
+    void setExtension(std::shared_ptr<protoext::ExtensionTable> table);
+    bool hasExtension() const { return ext_ != nullptr; }
+
+    std::vector<std::string> customCommandNames() const override;
+    std::string customCommandGroup(const std::string &name) const override;
+    std::vector<std::string> generateCustom(
+        const std::string              &name,
+        const std::vector<std::string> &args,
+        const std::vector<Coord>       &path) override;
 
     std::vector<std::string> generateStart(int boardSize) override;
     std::vector<std::string> generateRule(GameRule rule) override;
@@ -28,6 +45,9 @@ private:
     void resetCurrentPVState();
     void parseDatabase(const std::string &dbLine);
     void onPVDone();
+    void tryExtensionReply(const std::string &line);
+
+    std::shared_ptr<protoext::ExtensionTable> ext_;
 
     int boardSize_ = 15;
 

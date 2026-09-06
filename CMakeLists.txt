@@ -45,6 +45,7 @@ set(GUI_SOURCES
     src/engine/engine_process.cpp
     src/engine/engine_controller.cpp
     src/engine/gomocup_protocol.cpp
+    src/engine/protocol_extension.cpp
 
     # Command console (in-app CLI)
     src/command/command.cpp

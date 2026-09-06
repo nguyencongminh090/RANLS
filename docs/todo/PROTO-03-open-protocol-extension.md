@@ -1,7 +1,43 @@
 # PROTO-03 — Open Protocol Extension: user-defined `.ptc` commands for Gomocup-family engines
 
-**Status:** 🔲 BACKLOG — not started. Design resolved with the user 2026-09-05/2026-09-06
-(`features/protocol-extension/planning.md` Q1–Q9 all accepted). Not yet pulled into a sprint.
+**Status:** ✅ DONE (2026-09-06, branch `proto-03/open-protocol-extension`). Design resolved with the
+user 2026-09-05/2026-09-06 (`features/protocol-extension/planning.md` Q1–Q9 all accepted); Sprint 13.
+
+**Implementation summary:**
+- New standalone `src/engine/protocol_extension.{h,cpp}` — hand-rolled strict TOML-subset parser
+  (chosen over vendoring toml++: the schema is narrow — top-level scalars, `[[command]]` /
+  `[[command.on_reply]]` arrays-of-tables, string + string-array values, `"""` blocks — and a
+  ~120-line strict parser keeps the trust boundary minimal and is fully covered by the
+  malformed-input tests; no `third_party/` dir added). Fail-closed validation: Q3 collision against
+  the full built-in registry (`protoext::builtinCommandNames()`, mirrors
+  `CommandDispatcher::registerBuiltins` — 18 names), Q5 limits (if-depth ≤ 4, sink calls/action ≤ 16,
+  commands/file ≤ 32, args/command ≤ 8, file ≤ 64 KB), `group` restricted to the 6 non-`analysis`
+  kinds, `ptc_version = 1` / `extends = "gomocup"`.
+- Mini-DSL: recursive-descent parser for exactly the Q2 grammar (`if/elif/else … end`, comparisons +
+  `and`/`or`/`not`, no arithmetic/loops/free variables), 3 whitelisted sinks
+  (`set_status_field`/`toast`/`log`) via a `map<string, fn>` dispatch table, bounded interpreter.
+- `GomocupProtocol` now also implements the new minimal `ICustomCommandSource` (NOT a method on
+  `IEngineProtocol`); `parseLine()` runs built-in parsing first and unchanged, extension `on_reply`
+  patterns only on no match (PROTO-01 hardening untouched). Type-mismatched reply lines are skipped
+  with a Debug log, never UB.
+- `EngineController::loadExtensionTable()` (load-once at start/reload, Q6), `sendCustomCommand()`,
+  `signal_custom_action`; `customSource_` stays null on a `.ptc`-less run.
+- `CommandDispatcher::syncExtensionCommands()` registers each command into the same `!` registry as
+  built-ins (Q7), `[extension]` help group; declared `group` is informational only (Q9).
+- UI: `set_status_field` → new dynamic name→`Gtk::Label` container in `EngineStatusView` (6 fixed
+  members untouched); `toast` → crash-banner widget (`AnalysisPanel::showInfoBanner`, no libadwaita);
+  `log` → `EngineLogModel`. No `BoardRenderer` / `BoardViewModel` change.
+- `EngineConfig::protocolExtensionPath` persisted via `SettingsStorage`; `*.ptc` file-chooser row in
+  `SettingsDialog` (`onApply` merges from base config, STATE-02-safe).
+
+**Verification:** `./build.sh` clean (no new warnings in touched files). `ctest`: `ranls-gui-tests`
+209/209 cases (2466 assertions), including 14 new `test_proto03_*` cases covering valid load + command
+registered, name-collision rejection, each Q5 limit individually, single-line + block `send`
+(`repeat()` arg and `$currentPath`, `i.color` alternation), on_reply sink firing, and
+type-mismatch-skip. The `rel02-version` script test passes. `ranls-gui-ui-tests` has one **pre-existing**
+failure (`test_anlz05_no_automove_action`, needs a real/fake engine's timing — fails identically on
+the branch base `8b010ed`); all other 25 UI cases pass. The live-engine + display "Manual smoke"
+tier (instruction §"Manual smoke") still needs a human — no engine binary / display server on this host.
 
 **Summary (design, 2026-09-06):** let an engine developer declare new console-triggered commands
 in a `.ptc` (TOML) file, loaded by `GomocupProtocol` at runtime — no new `IEngineProtocol`

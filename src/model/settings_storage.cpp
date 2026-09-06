@@ -138,6 +138,8 @@ SettingsBundle load()
     };
 
     if (!get("engine_path").empty()) out.engine.enginePath = get("engine_path");
+    // PROTO-03: optional .ptc protocol-extension file path (empty = none).
+    out.engine.protocolExtensionPath = get("protocol_extension_path");
     out.engine.timeoutTurn = parseNumber<int64_t>(get("timeout_turn"), out.engine.timeoutTurn);
     out.engine.timeoutMatch = parseNumber<int64_t>(get("timeout_match"), out.engine.timeoutMatch);
     out.engine.increment = parseNumber<int>(get("increment"), out.engine.increment);
@@ -220,6 +222,7 @@ bool save(const EngineConfig &engine, const ViewConfig &view, const MatchConfig 
     out << "threads=" << engine.threads << "\n";
     out << "hash_size_mb=" << engine.hashSizeMB << "\n";
     out << "multipv=" << engine.multiPV << "\n";
+    out << "protocol_extension_path=" << escapeValue(engine.protocolExtensionPath) << "\n";
     for (const auto &[key, value] : engine.customParams)
         out << "custom_param." << key << "=" << escapeValue(value) << "\n";
     out << "theme=" << static_cast<int>(view.theme) << "\n";

@@ -112,6 +112,31 @@ EngineStatusView::EngineStatusView()
     addPair(labelTime_,  valueTime_,  "T:");
     addPair(labelEval_,  valueEval_,  "Eval:");
     addPair(labelBest_,  valueBest_,  "Best:");
+
+    // PROTO-03: container for dynamic set_status_field() rows (starts empty).
+    dynFieldsBox_.add_css_class("engine-status-dynamic");
+    append(dynFieldsBox_);
+}
+
+void EngineStatusView::setStatusField(const std::string &name, const std::string &value)
+{
+    auto it = dynValues_.find(name);
+    if (it != dynValues_.end()) {
+        it->second->set_text(value);
+        return;
+    }
+
+    auto *key = Gtk::make_managed<Gtk::Label>(name + ":");
+    key->add_css_class("label-key");
+    auto *val = Gtk::make_managed<Gtk::Label>(value);
+    val->add_css_class("label-value");
+
+    auto *box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 4);
+    box->append(*key);
+    box->append(*val);
+    dynFieldsBox_.append(*box);
+
+    dynValues_.emplace(name, val);
 }
 
 void EngineStatusView::setAnalyzeModeActive(bool active)

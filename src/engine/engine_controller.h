@@ -2,6 +2,8 @@
 
 #include "engine_process.h"
 #include "i_engine_protocol.h"
+#include "i_custom_command_source.h"
+#include "protocol_extension.h"
 #include "model/game_state.h"
 
 #include <functional>
@@ -68,6 +70,19 @@ public:
     /// Send a raw command line to the engine.
     void sendRawCommand(const std::string &command);
 
+    /// PROTO-03: run a loaded `.ptc` extension command by name. No-op if the
+    /// engine is not usable or no `.ptc` command table is loaded.
+    void sendCustomCommand(const std::string &name, const std::vector<std::string> &args);
+
+    /// PROTO-03: names of every loaded extension command (empty without a
+    /// `.ptc`). Used by CommandDispatcher to register `!<name>` handlers.
+    std::vector<std::string> customCommandNames() const;
+    /// The declared help group of one extension command (classification only).
+    std::string customCommandGroup(const std::string &name) const;
+
+    /// PROTO-03: emitted when a matched `on_reply` action fires a sink.
+    sigc::signal<void(const protoext::SinkAction &)> signal_custom_action;
+
     /// Signal for raw engine output (for logging). First string is group ("Message", "Coord", "Output", "Error").
     sigc::signal<void(std::string, std::string)> signal_engine_output;
 
@@ -122,6 +137,11 @@ public:
 private:
     void onEngineLine(const std::string &line);
     void connectProtocolSignals();
+    /// PROTO-03: (re)load the `.ptc` file named by EngineConfig on engine
+    /// start/reload. Clears any prior table first. On any load failure the
+    /// engine keeps running with only built-in behaviour; `customSource_`
+    /// stays null so nothing extension-related is registered or invoked.
+    void loadExtensionTable();
     void setState(EngineState next);
     /// True if commands may be sent to the process right now.
     bool isUsable() const;
@@ -184,6 +204,12 @@ private:
     GameState     &gameState_;
     EngineProcess &engine_;
     std::unique_ptr<IEngineProtocol> protocol_;
+
+    /// PROTO-03: non-null ONLY after a `.ptc` file has been successfully
+    /// loaded for the current engine session. Null on every `.ptc`-less run —
+    /// that null keeps such runs byte-identical to before this feature.
+    ICustomCommandSource *customSource_ = nullptr;
+    std::shared_ptr<protoext::ExtensionTable> extensionTable_;
 
     EngineState state_ = EngineState::NotStarted;
 
