@@ -191,6 +191,18 @@ async-signal-safe calls in the callback), `#ifdef __linux__` with the current
 `stopAsync()` split / `~EngineController`; no crash-reporter; no `setsid`.
 [detail](docs/instruction/ENG-03-orphaned-engine-on-crash-or-wm-close.md)
 
+## PROTO-03 — open-protocol-extension
+
+Feature. `features/protocol-extension/planning.md` Q1–Q9 resolved 2026-09-06. Build order: schema
+loader → DSL interpreter → `GomocupProtocol` integration → `ICustomCommandSource` (new, minimal —
+not a method on `IEngineProtocol`) → `CommandDispatcher` wiring (same `!` namespace as built-ins,
+not a separate `!ext` prefix) → UI wiring (3 sinks only: `set_status_field`/`toast`/`log`, no
+board-drawing) → `EngineConfig`/`SettingsDialog` → tests. **v1 has no `group = "analysis"`
+support** — every extension command is instant, regardless of declared `group`; do not wire it to
+`EngineState`/Stop. Do not add a method to `IEngineProtocol`, do not weaken PROTO-01's parsing
+order, do not extend the DSL with arithmetic/loops.
+[detail](docs/instruction/PROTO-03-open-protocol-extension.md)
+
 ---
 
 _Items without an entry here (RT-02/03/04, STATE-02/03, PROTO-02, NAV-01, UI-01/02/03, UX-01…04,
