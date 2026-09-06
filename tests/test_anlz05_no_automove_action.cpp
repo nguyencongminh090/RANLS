@@ -68,10 +68,10 @@ bool sent(const std::vector<std::string> &v, const std::string &needle)
     return false;
 }
 
-// Stand-in "engine": /bin/cat stays alive reading stdin. The board is kept empty
+// Stand-in "engine": PORT-03 mock_engine (portable /bin/cat analogue) stays alive reading stdin. The board is kept empty
 // throughout, so the only lines that ever go out are keyword commands (never
 // coordinate-shaped) — cat echoes them back harmlessly, none parse as a move.
-constexpr const char *kFakeEngine = "/bin/cat";
+constexpr const char *kFakeEngine = MOCK_ENGINE_PATH; // PORT-03: portable cat-like stand-in
 
 }  // namespace
 

@@ -69,8 +69,8 @@ bool pumpUntil(const std::function<bool()> &done, int timeoutMs = 3000)
     return true;
 }
 
-// Stand-in "engine": /bin/cat stays alive reading stdin until EOF/killed.
-constexpr const char *kFakeEngine = "/bin/cat";
+// Stand-in "engine": mock_engine stays alive reading stdin until EOF/"END".
+constexpr const char *kFakeEngine = MOCK_ENGINE_PATH; // PORT-03: portable cat-like stand-in
 
 }  // namespace
 

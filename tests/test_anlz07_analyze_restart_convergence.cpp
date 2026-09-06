@@ -86,11 +86,11 @@ int countPrefix(const std::vector<std::string> &v, const std::string &needle)
     return n;
 }
 
-// Stand-in "engine": /bin/cat stays alive reading stdin as long as its pipe is
+// Stand-in "engine": PORT-03 mock_engine (portable /bin/cat analogue) stays alive reading stdin as long as its pipe is
 // open. Real analysis-completion traffic is simulated separately by emitting
 // directly on EngineProcess::signal_line_received; cat itself never produces
 // a MESSAGE or coordinate-shaped line, so nothing it echoes back interferes.
-constexpr const char *kFakeEngine = "/bin/cat";
+constexpr const char *kFakeEngine = MOCK_ENGINE_PATH; // PORT-03: portable cat-like stand-in
 
 // Feeds one completed analysis-intent search's result: a MESSAGE line that
 // sets EngineStatus::bestMove (parsed while the search is still in flight,

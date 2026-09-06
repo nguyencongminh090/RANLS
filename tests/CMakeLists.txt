@@ -17,6 +17,10 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(SIGCXX REQUIRED IMPORTED_TARGET sigc++-3.0)
 pkg_check_modules(GIOMM REQUIRED IMPORTED_TARGET giomm-2.68)
 
+# PORT-03: portable stand-in engines (replace the /bin/cat + /bin/true
+# POSIX hardcodes). Paths handed to the test targets as compile defs below.
+add_subdirectory(mock_engine)
+
 add_executable(ranls-gui-tests
     test_main.cpp
     test_move_history.cpp
@@ -82,6 +86,12 @@ target_link_libraries(ranls-gui-tests PRIVATE
 )
 
 target_compile_features(ranls-gui-tests PRIVATE cxx_std_20)
+
+# PORT-03: on-disk paths of the portable stand-in engines (see mock_engine/).
+target_compile_definitions(ranls-gui-tests PRIVATE
+    MOCK_ENGINE_PATH="$<TARGET_FILE:mock_engine>"
+    MOCK_ENGINE_QUIT_PATH="$<TARGET_FILE:mock_engine_quit>"
+)
 
 include(CTest)
 
@@ -185,5 +195,11 @@ target_link_libraries(ranls-gui-ui-tests PRIVATE
 )
 
 target_compile_features(ranls-gui-ui-tests PRIVATE cxx_std_20)
+
+# PORT-03: on-disk paths of the portable stand-in engines (see mock_engine/).
+target_compile_definitions(ranls-gui-ui-tests PRIVATE
+    MOCK_ENGINE_PATH="$<TARGET_FILE:mock_engine>"
+    MOCK_ENGINE_QUIT_PATH="$<TARGET_FILE:mock_engine_quit>"
+)
 
 add_test(NAME ranls-gui-ui-tests COMMAND ranls-gui-ui-tests)

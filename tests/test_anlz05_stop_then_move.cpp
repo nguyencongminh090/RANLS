@@ -38,14 +38,14 @@ bool pumpUntil(const std::function<bool()> &done, int timeoutMs = 3000)
     return true;
 }
 
-// Stand-in "engine": /bin/cat stays alive reading stdin as long as its pipe is
+// Stand-in "engine": PORT-03 mock_engine (portable /bin/cat analogue) stays alive reading stdin as long as its pipe is
 // open. EngineController::startEngine() is optimistic (→ Idle, see ENG-01), and
 // analyze()/stopAnalysis() only need a running, Idle/Analyzing process for their
 // state bookkeeping. The board is kept empty in the process-backed case so the
 // only lines sent are keyword commands (YXBOARD/DONE/YXNBEST/STOP) — cat echoes
 // them straight back but none are coordinate-shaped, so nothing is parsed as an
 // engine move.
-constexpr const char *kFakeEngine = "/bin/cat";
+constexpr const char *kFakeEngine = MOCK_ENGINE_PATH; // PORT-03: portable cat-like stand-in
 
 } // namespace
 
