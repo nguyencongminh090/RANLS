@@ -13,6 +13,19 @@ internal tracking files for traceability.
 
 _Nothing yet._
 
+## [0.4.2] - 2026-09-07
+
+Sprint 15 — Windows portability groundwork (bundled assets + native-MSVC build harness). No new
+user-visible feature on Linux.
+
+### Fixed
+
+- Styling is now bundled inside the application binary, so the app looks correct no matter which
+  directory it is launched from; previously a launch from anywhere other than the build directory
+  could come up completely unstyled (PORT-02).
+- The Move Log now reliably ends on the newest move after a fast burst of moves (a game replay or a
+  pasted line) instead of occasionally stopping a few pixels short (UI-15).
+
 ## [0.4.1] - 2026-09-06
 
 Sprint 14 — Windows/macOS portability groundwork. No change to behaviour on Linux.
@@ -205,7 +218,8 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/nguyencongminh090/RANLS/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.3.0...v0.3.1
