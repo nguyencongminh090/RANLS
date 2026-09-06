@@ -83,9 +83,14 @@ Sprint 12 (opened 2026-09-04, goal "Post-ANLZ-01 Analyze Mode fixes plus engine-
 - ✅ **ANLZ-06.** Regression against shipped ANLZ-05 (user report 2026-09-04): in Analyze Mode an analysis search's best move is auto-played on the board — (1) pressing Stop drops a stone; (2) a board click mid-search produces a double move (user's stone **and** the engine's for the same turn, e.g. `a1 a2 a3` + user `a4` → `a1 a2 a3 a4 b1`). Root cause (`/systematic-debugging` Phase 1–2 done): `analyze()`'s `YXNBEST` request culminates in the engine emitting a bestmove coordinate line, and `EngineController` relays **every** coordinate line to `signal_engine_move` unconditionally (`engine_controller.cpp:68`) — no analysis-vs-move-intent discriminator. Fix in `EngineController` only: a `SearchIntent` flag set by `analyze()` / `requestEngineMove()`, gate `signal_engine_move`, reset on every stop path. `YXNBEST` request unchanged; ENG-02 / UI-06 / one-shot Analyze unchanged. [Model: Sonnet 5] — [detail](docs/todo/ANLZ-06-analyze-mode-search-plays-stray-move.md) · [instruction](docs/instruction/ANLZ-06-analyze-mode-search-plays-stray-move.md)
 - ✅ **ANLZ-07.** Regression against shipped ANLZ-06 (user report 2026-09-04, same transcript): once ANLZ-06 correctly stops playing the discarded coordinate, Analyze Mode never settles — `scheduleAnalyzeModeRestart()` re-arms unconditionally on every Idle transition with no check that the position or result changed, so once a search converges quickly (a forced mate in the report, but any fast-converging position) it busy-loops `STOP`→full board redump→`YXNBEST`→discard→`STOP`→… at native CPU speed, forever. Fixed: `EngineController::analysisConverged()` (skip-restart-if-unchanged, no backstop timer, per the resolved design). [Model: Sonnet 5] — [detail](docs/todo/ANLZ-07-analyze-mode-restart-busy-loop.md) · [instruction](docs/instruction/ANLZ-07-analyze-mode-restart-busy-loop.md)
 
+Sprint 13 (opened 2026-09-06, goal "Open Protocol Extension (.ptc runtime commands) plus tracking-tool marker fix") — pulled from Backlog:
+
+- 🔲 **TOOL-02.** `check-task-structure.js` regexes (`BULLET_START_RE` / `TODO_LINE_RE`) only recognise `✅` or no marker — a `🔲` open-marker line is silently skipped, so an open Backlog/Active item with a detail file is falsely reported as an orphan. Add `🔲` (and `🚧`) to the marker alternation. [Model: Haiku 4.5] — [detail](docs/todo/TOOL-02-check-task-structure-markers.md)
+- 🔲 **PROTO-03.** Open Protocol Extension: let an engine developer declare new console-triggered commands via a `.ptc` (TOML) file, loaded by `GomocupProtocol` at runtime — no C++ change, no YixinBoard rebuild. `group` classification (6 instant kinds; real-search `analysis` kind deferred), typed `args`, single-line or open/repeat/close `send` (mirrors `YXBOARD`/`BOARD...DONE`, can use live `$currentPath`), single-line `on_reply` with a bounded `if/elif/else` DSL calling 3 whitelisted sinks. Design resolved 2026-09-05/06, `features/protocol-extension/planning.md` Q1–Q9 accepted — [detail](docs/todo/PROTO-03-open-protocol-extension.md) · design `features/protocol-extension/`
+
 ## Backlog
 
-- 🔲 **TOOL-02.** `check-task-structure.js` regexes (`BULLET_START_RE` / `TODO_LINE_RE`) only recognise `✅` or no marker — a `🔲` open-marker line is silently skipped, so an open Backlog/Active item with a detail file is falsely reported as an orphan. Add `🔲` (and `🚧`) to the marker alternation. [Model: Haiku 4.5] — _detail TBD_
+_Empty — TOOL-02 and PROTO-03 pulled into Sprint 13 Active 2026-09-06._
 
 Filed 2026-09-04 from the WinGraph-coverage discussion (`docs/notes/2026-09-04-wingraph-analyze-mode-and-backfill.md`)
 after web/GitHub research into how Lizzie/LizzieYZY, Sabaki, KaTrain and En Croissant handle it —
@@ -140,7 +145,8 @@ on stdin EOF. **Pulled into Sprint 12 Active 2026-09-04** (see `docs/sprint/curr
 
 Filed 2026-09-04 (TOOL-02) — surfaced while scaffolding ANLZ-03: `check-task-structure.js` doesn't
 recognise the `🔲` open-marker, so an open item with a detail file trips its orphan check. Not a
-blocker for `check-tracking-sync.js` (the sprint-command gate), which passes.
+blocker for `check-tracking-sync.js` (the sprint-command gate), which passes. Detail file scaffolded
+and **pulled from Backlog into Sprint 13 Active 2026-09-06** (see `docs/sprint/current.md`).
 
 Filed 2026-08-21 from a full read of `src/` (UI/UX + codebase review). Prefixes: `RT` realtime
 pipeline · `STATE` state lifetime · `PROTO` engine protocol · `ENG` engine lifecycle ·
@@ -160,6 +166,13 @@ Active 2026-09-03**, alongside NAME-01 (see above and `docs/sprint/current.md`).
 Filed 2026-08-31 from UI-10's second pass (the Engine Log fix surfaced the same latent no-op in
 the Move Log): UI-12 — **pulled from Backlog into Sprint 8 Active 2026-08-31** (see
 `docs/sprint/current.md`).
+
+Filed 2026-09-05/06 (PROTO-03) from a multi-session design discussion ("open environment for open
+protocol" — let engine developers add commands without a rebuild). Design fully worked through
+`features/protocol-extension/` (`user_story.md`, `diagram/flow.md`, `planning.md` Q1–Q9, plus a
+worked `.ptc` example) before filing. planning.md header + the stale `$currentPath` follow-up bullet
+synced to the resolved Q9 state 2026-09-06. **Pulled from Backlog into Sprint 13 Active 2026-09-06**
+(see `docs/sprint/current.md`).
 
 Earlier: IO-01/DOC-01/TOOL-01/CLEAN-02 (filed 2026-08-30, leftover-task sweep) shipped in Sprint 5.
 UI-04/UI-05/UX-06/UI-06 (filed 2026-08-30, UI review session) were committed straight into Sprint

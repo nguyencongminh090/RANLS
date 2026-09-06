@@ -1,0 +1,72 @@
+# Worked example for features/protocol-extension — see ../user_story.md's Overview and
+# ../planning.md (Q1-Q9) for the schema this file exercises.
+#
+# This is an ILLUSTRATION, not a shipped/loadable file — the .ptc loader described in
+# planning.md's implementation sequencing does not exist yet.
+
+ptc_version = 1
+extends = "gomocup"
+
+# ── Command 1: analyze one user-chosen move ─────────────────────────────────
+# group = "info" (not "analysis" — Q9: v1 has no real-search integration, so this
+# command does not transition EngineState and Stop cannot cancel it).
+[[command]]
+name  = "yxAnalyzeOne"
+group = "info"
+args  = ["x:int", "y:int"]
+send  = "YXANALYZEONE {y},{x}"
+
+[[command.on_reply]]
+pattern = "MOVEEVAL {y:int},{x:int} {win:float}"
+action = """
+if win > 0.9 then
+    toast("Strong move found")
+elif win < 0.1 then
+    toast("Weak move warning")
+end
+set_status_field("yxAnalyzeOne.eval", win)
+log("yxAnalyzeOne done")
+"""
+
+# ── Command 2: resync the board then query the engine's database ───────────
+# Demonstrates the send.open/repeat/close block (mirrors the real YXBOARD/DONE
+# pattern) with $currentPath as the repeat source instead of a user-typed arg —
+# no console params needed, the current game position IS the input.
+[[command]]
+name  = "yxDbSync"
+group = "database"
+args  = []
+
+send.open          = "YXBOARD"
+send.repeat_source = "$currentPath"
+send.repeat        = "{i.y},{i.x},{i.color}"
+send.close         = "DONE"
+send.after         = "YXQUERYDB"
+
+[[command.on_reply]]
+pattern = "DBSTATS {count:int} {avgScore:float}"
+action = """
+set_status_field("yxDbSync.count", count)
+set_status_field("yxDbSync.avg", avgScore)
+log("yxDbSync: board resynced and database queried")
+"""
+
+# ── Command 3: coordinate-only query — {i.color} simply omitted ────────────
+# Same $currentPath repeat source as yxDbSync, but this wire command only
+# wants positions, not stone colors — the repeat template just leaves
+# {i.color} out. No separate "optional" flag needed anywhere in the schema.
+[[command]]
+name  = "yxShapeCheck"
+group = "board"
+args  = []
+
+send.open          = "YXSHAPECHECK"
+send.repeat_source = "$currentPath"
+send.repeat        = "{i.y},{i.x}"
+send.close         = "DONE"
+
+[[command.on_reply]]
+pattern = "SHAPERESULT {label:string}"
+action = """
+log(label)
+"""
