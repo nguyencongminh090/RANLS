@@ -244,11 +244,17 @@ void BottomPanel::scrollMoveLogToEnd()
     moveLogView_.scroll_to(moveLogEndMark_, 0.0, 0.0, 1.0);
     if (!moveLogScrollIdlePending_) {
         moveLogScrollIdlePending_ = true;
-        Glib::signal_idle().connect_once([this] {
+        // track_obj ties the idle slot to this widget's lifetime: if the
+        // BottomPanel is destroyed before the idle runs (window torn down
+        // mid-stream — routine in the test suite, possible on a real WM
+        // close), the slot is disconnected instead of dereferencing a freed
+        // `this` inside scroll_to (PORT-03: surfaced by the mock_engine
+        // harness; was the "ui12 scroll" intermittent crash).
+        Glib::signal_idle().connect_once(sigc::track_obj([this] {
             moveLogScrollIdlePending_ = false;
             if (moveLogEndMark_)
                 moveLogView_.scroll_to(moveLogEndMark_, 0.0, 0.0, 1.0);
-        });
+        }, *this));
     }
 }
 
@@ -294,7 +300,9 @@ void BottomPanel::scrollEngineLogToBottom()
     // already made by the caller before the insert.
     if (!scrollIdlePending_) {
         scrollIdlePending_ = true;
-        Glib::signal_idle().connect_once([this] {
+        // track_obj: disconnect (not crash) if BottomPanel dies before this
+        // idle fires — see the note in scrollMoveLogToEnd() (PORT-03).
+        Glib::signal_idle().connect_once(sigc::track_obj([this] {
             scrollIdlePending_ = false;
             if (engineLogEndMark_)
                 engineLogView_.scroll_to(engineLogEndMark_, 0.0, 0.0, 1.0);
@@ -306,7 +314,7 @@ void BottomPanel::scrollEngineLogToBottom()
             // This tick's programmatic scrolling is done — value_changed may
             // now be trusted as a real user action again.
             programmaticScroll_ = false;
-        });
+        }, *this));
     }
 }
 
@@ -366,7 +374,8 @@ bool BottomPanel::flushPending()
     } else {
         // Not scrolling this tick — just drop the suppression once the trim's
         // value_changed (if any) has drained.
-        Glib::signal_idle().connect_once([this] { programmaticScroll_ = false; });
+        Glib::signal_idle().connect_once(
+            sigc::track_obj([this] { programmaticScroll_ = false; }, *this)); // PORT-03
     }
 
     gutterArea_.queue_draw();
