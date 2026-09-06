@@ -100,7 +100,7 @@ Sprint 15 (opened 2026-09-06, goal "Tier-2 Windows portability: bundled assets +
 
 ## Backlog
 
-_Empty — PORT-02 and PORT-03 pulled into Sprint 15 Active 2026-09-06._
+- 🔲 **UI-15.** Move Log sticky-bottom races the GTK4 `GtkScrolledWindow` kinetic-scroll animation — `scrollMoveLogToEnd()` only calls `scroll_to(mark)`, never the direct `vadj->set_value(maxValue)` snap UI-14 added to the Engine Log path. Load-dependent flake in `test_ui12_move_log_scroll_target` (line 136); a real gap on fast game replay. PORT-03 fixed the related idle-UAF crash but not this. [Model: Sonnet 5] — [detail](docs/todo/UI-15-move-log-scroll-races-kinetic-animation.md)
 
 Filed 2026-09-04 from the WinGraph-coverage discussion (`docs/notes/2026-09-04-wingraph-analyze-mode-and-backfill.md`)
 after web/GitHub research into how Lizzie/LizzieYZY, Sabaki, KaTrain and En Croissant handle it —
