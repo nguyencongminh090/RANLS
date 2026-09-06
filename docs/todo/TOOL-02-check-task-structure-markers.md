@@ -37,11 +37,17 @@ marker has the same gap.
 
 ## Acceptance criteria
 
-- `node scripts/check-task-structure.js` exits 0 on the current `TODO.md` with `🔲`-marked open
-  items that have detail files (no false orphan report).
+- `🔲`-marked open items that have detail files (TOOL-02, PROTO-03) are no longer falsely reported
+  as orphans by `node scripts/check-task-structure.js`.
 - A genuinely orphaned detail file (no index line at all) is still reported.
 - A genuine duplicate CODE is still reported.
 - `node scripts/check-tracking-sync.js --full` still exits 0 (no regression to the other script).
+
+> **Amended 2026-09-06 during `/implement-task`:** the original wording "`check-task-structure.js`
+> exits 0 on the current `TODO.md`" is not met — the `⛔`-marked, non-canonically-formatted
+> ANLZ-03 lines (`- ⛔ **ANLZ-03. SUPERSEDED** …` in `TODO.md`; `## ANLZ-03 — … — ⛔ SUPERSEDED`
+> in `instruction.md`) still trip the script, and handling the `⛔` / SUPERSEDED shape is outside
+> TOOL-02's written scope (`🔲` / `🚧` only). Split out as follow-up **TOOL-03**.
 
 ## Scope boundary
 
