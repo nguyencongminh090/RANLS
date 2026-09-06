@@ -30,7 +30,7 @@
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
 | TOOL-02 | `check-task-structure.js` regexes skip `🔲`/`🚧` open items — false orphan reports | — | — | ✅ Done — PR #21, squash `7ceeeed` (2026-09-06). `⛔`/SUPERSEDED-line handling split to TOOL-03 (Backlog). |
-| PROTO-03 | Open Protocol Extension: user-defined `.ptc` runtime commands for Gomocup-family engines | — | — | ✅ Done — branch `proto-03/open-protocol-extension` (2026-09-06). All 8 build-order steps; `ranls-gui-tests` 209/209 (14 new PROTO-03 cases); live-engine smoke still pending a human. |
+| PROTO-03 | Open Protocol Extension: user-defined `.ptc` runtime commands for Gomocup-family engines | — | — | ✅ Done — PR #22, squash `75245d9` (2026-09-06). All 8 build-order steps; `ranls-gui-tests` 209/209 (14 new PROTO-03 cases); live-engine smoke still pending a human. |
 
 Points not yet estimated (consistent with Sprints 3–12).
 
