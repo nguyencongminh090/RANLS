@@ -8,8 +8,14 @@
 #include <type_traits>
 #include <unordered_map>
 
-#ifdef __linux__
+#if defined(__linux__)
 #include <unistd.h>
+#elif defined(_WIN32)
+#include <windows.h>
+#elif defined(__APPLE__)
+#include <cstdint>
+#include <cstring>
+#include <mach-o/dyld.h>
 #endif
 
 namespace {
@@ -97,10 +103,40 @@ namespace {
 
 std::filesystem::path executableDir()
 {
-#ifdef __linux__
+#if defined(__linux__)
     std::error_code ec;
     auto exe = std::filesystem::read_symlink("/proc/self/exe", ec);
     if (!ec) return exe.parent_path();
+#elif defined(_WIN32)
+    // PORT-01: resolve the real binary path so settings sit next to the
+    // executable, not the launch CWD (a shortcut/file-manager launch otherwise
+    // uses a different file). GetModuleFileNameW truncates and sets
+    // ERROR_INSUFFICIENT_BUFFER when the buffer is too small — grow and retry.
+    std::wstring buf(MAX_PATH, L'\0');
+    for (;;) {
+        SetLastError(ERROR_SUCCESS);
+        DWORD len = ::GetModuleFileNameW(nullptr, buf.data(), static_cast<DWORD>(buf.size()));
+        if (len == 0)
+            break; // hard failure — fall through to CWD
+        if (len < buf.size() && ::GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+            buf.resize(len);
+            return std::filesystem::path(buf).parent_path();
+        }
+        if (buf.size() >= 65536)
+            break; // implausibly long — give up
+        buf.resize(buf.size() * 2);
+    }
+#elif defined(__APPLE__)
+    // PORT-01: same intent via _NSGetExecutablePath. First call with a null
+    // buffer sets `size` to the required length (including the NUL terminator);
+    // the second call then fills a buffer of exactly that size.
+    std::uint32_t size = 0;
+    _NSGetExecutablePath(nullptr, &size);
+    std::string buf(size, '\0');
+    if (size > 0 && _NSGetExecutablePath(buf.data(), &size) == 0) {
+        buf.resize(std::strlen(buf.c_str()));
+        return std::filesystem::path(buf).parent_path();
+    }
 #endif
     return std::filesystem::current_path();
 }

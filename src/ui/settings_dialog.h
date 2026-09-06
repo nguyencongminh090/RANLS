@@ -4,6 +4,18 @@
 
 #include <gtkmm.h>
 
+namespace settings_dialog_detail {
+
+/// PORT-01: true if `path` ends in a Windows executable extension
+/// (`.exe` / `.bat` / `.cmd` / `.com`), matched case-insensitively. Used on
+/// `_WIN32` in place of the POSIX `access(path, X_OK)` execute-bit check, which
+/// the Windows CRT cannot express (`_access` has no `X_OK` mode and the execute
+/// bit is meaningless there). Pure string logic — identical on every platform,
+/// so it is unit-tested directly.
+bool hasExecutableExtension(const std::string &path);
+
+} // namespace settings_dialog_detail
+
 /// Settings dialog for engine configuration.
 class SettingsDialog : public Gtk::Window {
 public:
