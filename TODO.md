@@ -17,7 +17,7 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 `ENG` engine lifecycle · `NAV` navigation · `UI` display logic · `UX` usability · `TEST` harness ·
 `CLEAN` hygiene · `IO` game persistence · `DOC` documentation · `TOOL` repo tooling ·
 `REL` release/versioning · `PORT` cross-platform portability · `ANLZ` analyze mode ·
-`RDB` `.rdb` save format · `NAME` app naming.
+`RDB` `.rdb` save format · `NAME` app naming · `CONS` engine-log command console.
 
 ---
 
@@ -28,8 +28,11 @@ Backlog items.
 
 ## Backlog
 
-No open items — everything filed to date has shipped. New work enters here via
-`docs/notes/` → `features/<slug>/` → `docs/todo/<CODE>-<slug>.md` + a Backlog line.
+- 🔲 **CONS-01.** Engine Log command entry: AutoComplete (command suggestion — popover + ghost-text) — [detail](docs/todo/CONS-01-console-command-autocomplete.md)
+- 🔲 **CONS-02.** Engine Log command entry: AutoCorrect (missing `!`, wrong case, "did you mean") — depends on CONS-01 — [detail](docs/todo/CONS-02-console-syntax-autocorrect.md)
+
+Design: `features/console-autocomplete/` (Q1–Q11 resolved 2026-09-07). New work enters the
+Backlog via `docs/notes/` → `features/<slug>/` → `docs/todo/<CODE>-<slug>.md` + a Backlog line.
 
 ## Completed
 

@@ -203,6 +203,25 @@ support** — every extension command is instant, regardless of declared `group`
 order, do not extend the DSL with arithmetic/loops.
 [detail](docs/instruction/PROTO-03-open-protocol-extension.md)
 
+## CONS-01 — console-command-autocomplete
+
+Feature A of `features/console-autocomplete/` (Q1–Q11 resolved 2026-09-07). Carries the shared
+seams: read-only `CommandDispatcher::registeredNames()` + pure `src/command/command_completer.*`.
+GTK4 has no `Gtk::EntryCompletion` — custom `Gtk::Popover` + inline ghost-text. Extend the *one*
+existing `EventControllerKey`, branch on "popover visible?", keep history nav untouched when
+closed. Re-query the registry per popover-open (`.ptc` re-sync). No arg-level completion (Q6).
+[detail](docs/instruction/CONS-01-console-command-autocomplete.md)
+
+## CONS-02 — console-syntax-autocorrect
+
+Feature B, depends on CONS-01. Pure `normalizeCase`/`didYouMean`/`missingBangFix` + two read-only
+dispatcher helpers + a case-insensitive `handlers_` lookup. Pre-dispatch hook in the entry's
+`signal_activate`, visible rewrite (`begin/end_user_action` so Ctrl+Z restores) + one `corrected:`
+log line. B1 fires **only** on an exact case-insensitive first-token match — never fuzzy, or a
+raw command gets "corrected" into a desync. `！` fullwidth bang already handled in `executeLine()`
+— don't double-handle.
+[detail](docs/instruction/CONS-02-console-syntax-autocorrect.md)
+
 ---
 
 _Items without an entry here (RT-02/03/04, STATE-02/03, PROTO-02, NAV-01, UI-01/02/03, UX-01…04,
