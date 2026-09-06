@@ -88,13 +88,15 @@ Sprint 13 (opened 2026-09-06, goal "Open Protocol Extension (.ptc runtime comman
 - ✅ **TOOL-02.** `check-task-structure.js` regexes (`BULLET_START_RE` / `TODO_LINE_RE`) only recognise `✅` or no marker — a `🔲` open-marker line is silently skipped, so an open Backlog/Active item with a detail file is falsely reported as an orphan. Add `🔲` (and `🚧`) to the marker alternation. [Model: Haiku 4.5] — [detail](docs/todo/TOOL-02-check-task-structure-markers.md)
 - ✅ **PROTO-03.** Open Protocol Extension: let an engine developer declare new console-triggered commands via a `.ptc` (TOML) file, loaded by `GomocupProtocol` at runtime — no C++ change, no YixinBoard rebuild. `group` classification (6 instant kinds; real-search `analysis` kind deferred), typed `args`, single-line or open/repeat/close `send` (mirrors `YXBOARD`/`BOARD...DONE`, can use live `$currentPath`), single-line `on_reply` with a bounded `if/elif/else` DSL calling 3 whitelisted sinks. Design resolved 2026-09-05/06, `features/protocol-extension/planning.md` Q1–Q9 accepted — [detail](docs/todo/PROTO-03-open-protocol-extension.md) · design `features/protocol-extension/`
 
+Sprint 14 (opened 2026-09-06, goal "Backlog tooling fix + Tier-1 Windows portability") — pulled from Backlog:
+
+- 🔲 **TOOL-03.** `check-task-structure.js` still exits 1 on the `⛔`-marked, non-canonically-formatted ANLZ-03 index lines (`⛔` not in the marker alternation; ` SUPERSEDED` inside the `**…**` span). Split out of TOOL-02 (which was scoped to `🔲`/`🚧` only) 2026-09-06. Needs a small decision first — teach the script the `⛔`/SUPERSEDED shape, or normalise the ANLZ-03 lines. [Model: Haiku 4.5] — [detail](docs/todo/TOOL-03-superseded-marker-lines.md)
+- 🔲 **PORT-01.** Tier-1 Windows fixes (guarded, isolated, ~30 lines): `#if !defined(_WIN32)` around `<unistd.h>` + a Windows executable-extension check in place of `access(X_OK)` (`settings_dialog.cpp`); `_commit()` alongside `fsync()` so `.rdb` saves are crash-durable on Windows (`rdb_container.cpp`); `GetModuleFileNameW` / `_NSGetExecutablePath` branches in `executableDir()` so settings sit next to the binary, not the launch CWD (`settings_storage.cpp`). No Linux behaviour change. [Model: Sonnet 5] — [detail](docs/todo/PORT-01-cross-platform-build-and-runtime.md)
+
 ## Backlog
 
-- 🔲 **PORT-01.** Tier-1 Windows fixes (guarded, isolated, ~30 lines): `#if !defined(_WIN32)` around `<unistd.h>` + a Windows executable-extension check in place of `access(X_OK)` (`settings_dialog.cpp`); `_commit()` alongside `fsync()` so `.rdb` saves are crash-durable on Windows (`rdb_container.cpp`); `GetModuleFileNameW` / `_NSGetExecutablePath` branches in `executableDir()` so settings sit next to the binary, not the launch CWD (`settings_storage.cpp`). No Linux behaviour change. [Model: Sonnet 5] — [detail](docs/todo/PORT-01-cross-platform-build-and-runtime.md)
 - 🔲 **PORT-02.** Bundle `style.css` into the binary via GResource (`load_from_resource`), dropping the `__FILE__`-path fallback in `application.cpp` that currently bakes a build-host absolute path into the executable and loses all styling on any non-CWD launch. [Model: Sonnet 5] — [detail](docs/todo/PORT-02-bundle-style-css-via-gresource.md)
 - 🔲 **PORT-03.** Native MSVC build support + portable test harness: `if(MSVC)` compiler-flag branch + `WIN32` subsystem in `CMakeLists.txt`; a CMake-built `mock_engine` target to replace the hardcoded `/bin/cat` / `/bin/true` stand-ins across 7 test suites; Win32 Job Object so the engine subprocess dies with the GUI on Windows. Needs a decision on whether native MSVC / Windows CI is actually a goal before it leaves Backlog. [Model: Sonnet 5] — [detail](docs/todo/PORT-03-msvc-build-and-portable-test-harness.md)
-- 🔲 **TOOL-03.** `check-task-structure.js` still exits 1 on the `⛔`-marked, non-canonically-formatted ANLZ-03 index lines (`⛔` not in the marker alternation; ` SUPERSEDED` inside the `**…**` span). Split out of TOOL-02 (which was scoped to `🔲`/`🚧` only) 2026-09-06. Needs a small decision first — teach the script the `⛔`/SUPERSEDED shape, or normalise the ANLZ-03 lines. [Model: Haiku 4.5] — [detail](docs/todo/TOOL-03-superseded-marker-lines.md)
-
 Filed 2026-09-04 from the WinGraph-coverage discussion (`docs/notes/2026-09-04-wingraph-analyze-mode-and-backfill.md`)
 after web/GitHub research into how Lizzie/LizzieYZY, Sabaki, KaTrain and En Croissant handle it —
 user chose the continuous-analysis ("Lizzie way") approach. ANLZ-01's
@@ -151,8 +153,8 @@ recognise the `🔲` open-marker, so an open item with a detail file trips its o
 blocker for `check-tracking-sync.js` (the sprint-command gate), which passes. Detail file scaffolded
 and **pulled from Backlog into Sprint 13 Active 2026-09-06** (see `docs/sprint/current.md`).
 TOOL-02 shipped 2026-09-06 (PR #21, squash `7ceeeed`) — regex widened to `🔲`/`🚧`; the `⛔`
-SUPERSEDED-line case was outside its written scope and is split to **TOOL-03** (Backlog, filed
-2026-09-06).
+SUPERSEDED-line case was outside its written scope and is split to **TOOL-03** — **pulled from
+Backlog into Sprint 14 Active 2026-09-06** (see `docs/sprint/current.md`).
 
 Filed 2026-09-06 (PORT-01/02/03) from a user question ("does the source compile cross-platform or
 Linux-only?") that turned into a `/systematic-debugging` platform-dependency audit, cross-checked

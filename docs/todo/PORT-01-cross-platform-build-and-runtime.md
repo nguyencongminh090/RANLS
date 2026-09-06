@@ -1,6 +1,6 @@
 # PORT-01 — Tier-1 Windows fixes (guarded, isolated, ~30 lines)
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** 🔲 OPEN (Active — Sprint 14)
 **Area:** `src/ui/settings_dialog.cpp`, `src/model/rdb/rdb_container.cpp`, `src/model/settings_storage.cpp`
 **Priority:** P2 — small, self-contained, closes a real data-durability gap + the one hard MSVC compile blocker
 **Source:** Platform-dependency audit 2026-09-06 (`/systematic-debugging` + cross-check against a Gemini report) — see [docs/audit/2026-09-06-platform-dependency-audit.md](../audit/2026-09-06-platform-dependency-audit.md). Product decision 2026-09-06: keep the portable-app model (settings next to the binary, not `%APPDATA%`); do the Tier-1 quick fixes now; defer GResource bundling (PORT-02) and MSVC/CI harness work (PORT-03).

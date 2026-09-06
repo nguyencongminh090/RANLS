@@ -1,6 +1,6 @@
 # TOOL-03 — `check-task-structure.js` trips on `⛔` SUPERSEDED index lines
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** 🔲 OPEN (Active — Sprint 14)
 **Area:** `scripts/check-task-structure.js` (`BULLET_START_RE`, `TODO_LINE_RE`, `INSTRUCTION_HEADING_RE`) and/or the ANLZ-03 index lines in `TODO.md` + `instruction.md`
 **Priority:** P3
 **Source:** Split out of TOOL-02 during `/implement-task` 2026-09-06 — TOOL-02 widened the marker set to `🔲`/`🚧` but its scope explicitly excluded `⛔`. `node scripts/check-task-structure.js` still exits 1.
