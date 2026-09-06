@@ -1,6 +1,6 @@
 # TOOL-02 — `check-task-structure.js` marker regexes skip `🔲` open items
 
-**Status:** 🔲 OPEN (Active — Sprint 13)
+**Status:** ✅ FIXED — Widened both regexes to accept 🔲 and 🚧 markers; TOOL-02 and PROTO-03 now recognized; orphan detection unchanged; check-tracking-sync.js --full still passes (no regression)
 **Area:** `scripts/check-task-structure.js` (`BULLET_START_RE`, `TODO_LINE_RE`)
 **Priority:** P3
 **Source:** Surfaced 2026-09-04 while scaffolding ANLZ-03 — an open Backlog item with a detail file tripped the orphan check. Filed to Backlog same day; pulled into Sprint 13 Active 2026-09-06.
