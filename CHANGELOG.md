@@ -13,6 +13,20 @@ internal tracking files for traceability.
 
 _Nothing yet._
 
+## [0.4.0] - 2026-09-06
+
+Sprint 13 — Open Protocol Extension: engines can add their own console commands without a rebuild.
+
+### Added
+
+- **Open Protocol Extension.** Point Settings at a `.ptc` file (a small TOML config) and the
+  engine's own custom console commands become available in the in-app command console under the
+  `!` prefix — no new build of RANLS required. Each command can send a templated request to the
+  engine (including multi-line `BOARD…DONE`-style blocks using the live game position) and route
+  the engine's reply to a status field, a toast/banner, or the engine log via a small bounded
+  `if/elif/else` rule. Commands whose names collide with a built-in are rejected on load
+  (PROTO-03).
+
 ## [0.3.1] - 2026-09-05
 
 Sprint 12 — Analyze Mode refinements plus a safety net so the engine subprocess never outlives the
@@ -178,7 +192,8 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/nguyencongminh090/RANLS/releases/tag/v0.3.0
 [0.2.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.1.2...v0.2.0
