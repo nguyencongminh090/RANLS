@@ -1,6 +1,27 @@
 # UI-15 — Move Log sticky-bottom races the GTK4 kinetic-scroll animation (the recurring "ui12 scroll flake")
 
-**Status:** 🔲 OPEN (Active — Sprint 15) — filed 2026-09-06; pulled from Backlog into Sprint 15 Active mid-sprint 2026-09-06
+**Status:** ✅ FIXED — 2026-09-06 (branch `ui-15/move-log-scroll-races-kinetic-animation`; filed
+2026-09-06, pulled from Backlog into Sprint 15 Active mid-sprint 2026-09-06). `scrollMoveLogToEnd()`
+now mirrors `scrollEngineLogToBottom()`: after both the immediate `scroll_to(moveLogEndMark_, …)`
+and the `sigc::track_obj` idle re-issue it snaps the adjustment directly —
+`if (auto vadj = scrolledMoveLog_.get_vadjustment()) { const double maxValue = vadj->get_upper() - vadj->get_page_size(); if (maxValue > vadj->get_value()) vadj->set_value(maxValue); }` —
+so a fast burst append no longer lands short mid-animation. The persistent right-gravity mark and
+the `track_obj`-bound idle are unchanged. `tests/test_ui12_move_log_scroll_target.cpp`'s fixed
+`pump(300)` + `CHECK(value >= maxValue - 4.0)` replaced with a condition-based wait (pump in 10ms
+steps until `value >= maxValue - 4.0` or a 3000ms deadline, then assert on the settled state); the
+case is kept as the permanent regression guard. `programmaticScroll_`/`stickToBottom_`, the Engine
+Log path, the RT-02 buffer cap and the UI-05 gutter are untouched.
+
+**Verification:**
+- `./build.sh` clean from scratch — no new warnings; `src/ui/bottom_panel.cpp` recompiled alone, no warnings.
+- `test_ui12_move_log_scroll_target` ("appended moves keep the Move Log scrolled to the bottom"):
+  20/20 consecutive direct-binary runs while `$(nproc)` `yes` processes saturated every core; 5/5
+  `ctest -R ranls-gui-ui-tests` runs under the same load; passes under a plain `ctest`.
+- `ranls-gui-ui-tests` 30/30 cases (198 assertions) direct — `test_anlz05_no_automove_action`
+  passed this run too (no regression vs the known-flaky baseline).
+- `ranls-gui-tests` 209/209 cases (2466 assertions); `ctest` 4/4 (`port02-style-css-bundled`,
+  `ranls-gui-tests`, `rel02-version-single-source`, `ranls-gui-ui-tests` all pass).
+- `node scripts/check-task-structure.js` and `node scripts/check-tracking-sync.js` both pass.
 
 ## Source
 

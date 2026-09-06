@@ -125,7 +125,21 @@ TEST_CASE("UI-12: appended moves keep the Move Log scrolled to the bottom")
         if (i % 20 == 0)
             pump(10);
     }
-    pump(300);  // let layout + the deferred scroll pass settle
+    // Condition-based wait (systematic-debugging/condition-based-waiting.md):
+    // GTK4's GtkScrolledWindow answers `scroll_to` with a multi-frame kinetic
+    // animation, so how close `value` is to the bottom after any fixed delay is
+    // frame-clock- and load-dependent. Pump until the view has reached bottom
+    // (within epsilon) or a generous deadline elapses, then assert on the
+    // settled state — a fixed `pump(300)` was the recurring "ui12 scroll flake".
+    const double epsilon = 4.0;
+    auto atBottom = [&] {
+        const double value    = gtk_adjustment_get_value(vadj);
+        const double maxValue  = gtk_adjustment_get_upper(vadj)
+                               - gtk_adjustment_get_page_size(vadj);
+        return maxValue > 10.0 && value >= maxValue - epsilon;
+    };
+    for (int waited = 0; waited < 3000 && !atBottom(); waited += 10)
+        pump(10);
 
     const double value    = gtk_adjustment_get_value(vadj);
     const double page     = gtk_adjustment_get_page_size(vadj);
@@ -133,7 +147,7 @@ TEST_CASE("UI-12: appended moves keep the Move Log scrolled to the bottom")
     const double maxValue = upper - page;
 
     REQUIRE(maxValue > 10.0);              // content really does overflow now
-    CHECK(value >= maxValue - 4.0);        // …and we are pinned to its bottom
+    CHECK(value >= maxValue - epsilon);    // …and we are pinned to its bottom
 
     window->set_visible(false);
 }

@@ -100,7 +100,7 @@ Sprint 15 (opened 2026-09-06, goal "Tier-2 Windows portability: bundled assets +
 
 Sprint 15 — pulled from Backlog mid-sprint 2026-09-06:
 
-- 🔲 **UI-15.** Move Log sticky-bottom races the GTK4 `GtkScrolledWindow` kinetic-scroll animation — `scrollMoveLogToEnd()` only calls `scroll_to(mark)`, never the direct `vadj->set_value(maxValue)` snap UI-14 added to the Engine Log path. Load-dependent flake in `test_ui12_move_log_scroll_target` (line 136); a real gap on fast game replay. PORT-03 fixed the related idle-UAF crash but not this. [Model: Sonnet 5] — [detail](docs/todo/UI-15-move-log-scroll-races-kinetic-animation.md)
+- ✅ **UI-15.** Move Log sticky-bottom races the GTK4 `GtkScrolledWindow` kinetic-scroll animation — `scrollMoveLogToEnd()` only calls `scroll_to(mark)`, never the direct `vadj->set_value(maxValue)` snap UI-14 added to the Engine Log path. Load-dependent flake in `test_ui12_move_log_scroll_target` (line 136); a real gap on fast game replay. PORT-03 fixed the related idle-UAF crash but not this. [Model: Sonnet 5] — [detail](docs/todo/UI-15-move-log-scroll-races-kinetic-animation.md) — done 2026-09-06 (branch `ui-15/move-log-scroll-races-kinetic-animation`); `scrollMoveLogToEnd()` now mirrors `scrollEngineLogToBottom()`'s direct `scrolledMoveLog_` vadjustment snap on both the immediate call and the `track_obj` idle re-issue; `test_ui12_move_log_scroll_target` converted to a condition-based wait. Build clean (no new warnings); `test_ui12` 20/20 direct runs under `nproc`-wide CPU load + 5/5 under `ctest` load; `ranls-gui-ui-tests` 30/30, `ranls-gui-tests` 209/209, `port02`+`rel02` pass. See [fix-log](docs/fix-log/2026-09-06-ui-15-move-log-scroll-races-kinetic-animation.md).
 
 ## Backlog
 

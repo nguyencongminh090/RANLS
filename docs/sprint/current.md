@@ -53,7 +53,7 @@ Sprint 14 closed 2026-09-06 (archived: `docs/sprint/archive/sprint-14.md`, relea
 |---|---|---|---|---|
 | PORT-02 | Bundle `style.css` via GResource; drop the `__FILE__` build-host-path fallback | — | — | ✅ Done (PR #25, squash `328490e`) |
 | PORT-03 | Native MSVC flags + `WIN32` subsystem; portable `mock_engine` test target; Win32 Job Object; Windows CI | PORT-02 (CMake ordering) | — | ✅ Done (PR #26, squash `38ce332`, 2026-09-06; Linux tier verified, Windows/MSVC smoke + CI job pending) |
-| UI-15 | Move Log sticky-bottom races the GTK4 kinetic-scroll animation (the recurring "ui12 scroll flake") | — | — | 🔲 Not started (pulled from Backlog mid-sprint 2026-09-06) |
+| UI-15 | Move Log sticky-bottom races the GTK4 kinetic-scroll animation (the recurring "ui12 scroll flake") | — | — | ✅ Done (branch `ui-15/move-log-scroll-races-kinetic-animation`, 2026-09-06; `test_ui12` 20/20 under load + ctest, `ranls-gui-ui-tests` 30/30, `ranls-gui-tests` 209/209) |
 
 Points not yet estimated (consistent with Sprints 3–14).
 
