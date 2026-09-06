@@ -13,6 +13,19 @@ internal tracking files for traceability.
 
 _Nothing yet._
 
+## [0.4.1] - 2026-09-06
+
+Sprint 14 — Windows/macOS portability groundwork. No change to behaviour on Linux.
+
+### Fixed
+
+- Windows: the Settings engine-path field now accepts `.exe`/`.bat`/`.cmd`/`.com` executables
+  (previously it applied a POSIX execute-permission check that does not exist on Windows), and
+  `.rdb` game saves are now flushed to disk durably so a crash right after saving cannot lose the
+  file (PORT-01).
+- Windows and macOS: the settings file is now kept next to the application binary instead of
+  wherever the app happened to be launched from (PORT-01).
+
 ## [0.4.0] - 2026-09-06
 
 Sprint 13 — Open Protocol Extension: engines can add their own console commands without a rebuild.
@@ -192,7 +205,8 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/nguyencongminh090/RANLS/releases/tag/v0.3.0
