@@ -27,9 +27,9 @@ const TODO_DIR = path.join(ROOT, 'docs', 'todo');
 const INSTRUCTION_DIR = path.join(ROOT, 'docs', 'instruction');
 
 // A line that looks like a task index entry at all (used to flag malformed ones).
-const BULLET_START_RE = /^-\s*(✅\s*)?\*\*([A-Za-z0-9-]+)\.\*\*/;
+const BULLET_START_RE = /^-\s*(✅\s*|🔲\s*|🚧\s*)?\*\*([A-Za-z0-9-]+)\.\*\*/;
 // A fully well-formed index line: - **CODE.** summary [...] — [detail](docs/todo/CODE-slug.md)
-const TODO_LINE_RE = /^-\s*(✅\s*)?\*\*([A-Za-z0-9-]+)\.\*\*.*\(docs\/todo\/\2-([^)]+)\.md\)/;
+const TODO_LINE_RE = /^-\s*(✅\s*|🔲\s*|🚧\s*)?\*\*([A-Za-z0-9-]+)\.\*\*.*\(docs\/todo\/\2-([^)]+)\.md\)/;
 // ## CODE — slug   (heading form used in instruction.md; CODE bounded by whitespace, not hyphen)
 const INSTRUCTION_HEADING_RE = /^##\s+([A-Za-z0-9-]+)\s/;
 
