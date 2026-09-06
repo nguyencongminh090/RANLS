@@ -1,6 +1,6 @@
 # UI-15 — Move Log sticky-bottom races the GTK4 kinetic-scroll animation (the recurring "ui12 scroll flake")
 
-**Status:** 🔲 OPEN (Backlog) — filed 2026-09-06
+**Status:** 🔲 OPEN (Active — Sprint 15) — filed 2026-09-06; pulled from Backlog into Sprint 15 Active mid-sprint 2026-09-06
 
 ## Source
 

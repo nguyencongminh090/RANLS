@@ -98,9 +98,11 @@ Sprint 15 (opened 2026-09-06, goal "Tier-2 Windows portability: bundled assets +
 - ✅ **PORT-02.** Bundle `style.css` into the binary via GResource (`load_from_resource`), dropping the `__FILE__`-path fallback in `application.cpp` that currently bakes a build-host absolute path into the executable and loses all styling on any non-CWD launch. [Model: Sonnet 5] — [detail](docs/todo/PORT-02-bundle-style-css-via-gresource.md) — shipped 2026-09-06 (PR #25, squash `328490e`); build clean, `strings ranls-gui | grep /run/media` empty, new `port02-style-css-bundled` CTest + `ranls-gui-tests` + `rel02` pass, `ranls-gui-ui-tests` unchanged (2 pre-existing flakes: anlz05 wire race + ui12 scroll)
 - ✅ **PORT-03.** Native MSVC build support + portable test harness: `if(MSVC)` compiler-flag branch + `WIN32` subsystem in `CMakeLists.txt`; a CMake-built `mock_engine` target to replace the hardcoded `/bin/cat` / `/bin/true` stand-ins across 7 test suites; Win32 Job Object so the engine subprocess dies with the GUI on Windows. Gate resolved 2026-09-06 — native MSVC / Windows CI is a supported goal (audit `docs/audit/2026-09-06-native-msvc-windows-ci-goal.md`). [Model: Sonnet 5] — [detail](docs/todo/PORT-03-msvc-build-and-portable-test-harness.md) — done 2026-09-06 (branch `port-03/msvc-build-and-portable-test-harness`); scope items 1–3 landed, item 4 (Windows CI job) deferred as optional follow-up. Linux tier: clean from-scratch build (no new warnings), `ranls-gui-tests` 209/209, `port02`+`rel02` pass, `ranls-gui-ui-tests` 29/30 (lone failure `test_anlz05_no_automove_action` = pre-existing ANLZ-05 wire race, identical on baseline `670d0dc`; the prior deterministic ui-tests SIGSEGV was a pre-existing `BottomPanel` scroll-idle UAF, now fixed with `sigc::track_obj` + regression test — also resolves the "ui12 scroll" flake). Windows tier (native MSVC compile, no console window, `taskkill /f` orphan check) pending a human smoke test. See [fix-log](docs/fix-log/2026-09-06-port-03-msvc-build-and-portable-test-harness.md).
 
-## Backlog
+Sprint 15 — pulled from Backlog mid-sprint 2026-09-06:
 
 - 🔲 **UI-15.** Move Log sticky-bottom races the GTK4 `GtkScrolledWindow` kinetic-scroll animation — `scrollMoveLogToEnd()` only calls `scroll_to(mark)`, never the direct `vadj->set_value(maxValue)` snap UI-14 added to the Engine Log path. Load-dependent flake in `test_ui12_move_log_scroll_target` (line 136); a real gap on fast game replay. PORT-03 fixed the related idle-UAF crash but not this. [Model: Sonnet 5] — [detail](docs/todo/UI-15-move-log-scroll-races-kinetic-animation.md)
+
+## Backlog
 
 Filed 2026-09-04 from the WinGraph-coverage discussion (`docs/notes/2026-09-04-wingraph-analyze-mode-and-backfill.md`)
 after web/GitHub research into how Lizzie/LizzieYZY, Sabaki, KaTrain and En Croissant handle it —
@@ -172,6 +174,11 @@ build+launch+save-`.rdb`+pick-engine smoke remains an outstanding human step.
 from Backlog into Sprint 15 Active 2026-09-06** (goal "Tier-2 Windows portability") — PORT-03's
 "is native MSVC a goal?" gate was resolved yes the same day (user decision, audit
 `docs/audit/2026-09-06-native-msvc-windows-ci-goal.md`). MSYS2/MinGW already builds and runs.
+
+Filed 2026-09-06 (UI-15) from a `/systematic-debugging` pass on the recurring "ui12 scroll flake"
+cited across ~5 fix-log entries — root cause is `BottomPanel::scrollMoveLogToEnd()` never getting
+UI-14's direct `vadj->set_value` kinetic-animation snap. **Pulled from Backlog into Sprint 15 Active
+2026-09-06** (mid-sprint, after PORT-02/PORT-03 landed — see `docs/sprint/current.md`).
 
 Filed 2026-08-21 from a full read of `src/` (UI/UX + codebase review). Prefixes: `RT` realtime
 pipeline · `STATE` state lifetime · `PROTO` engine protocol · `ENG` engine lifecycle ·

@@ -41,11 +41,19 @@ Sprint 14 closed 2026-09-06 (archived: `docs/sprint/archive/sprint-14.md`, relea
   the MSYS2 MINGW64 path. `software-architecture` at the CMake-branch design point; the Job Object
   touches the engine-lifecycle seam ENG-01/ENG-03 own. Native MSVC + `taskkill /f`-leaves-no-orphan
   are non-Linux checks — a required human MSVC/Windows smoke step.
+- **UI-15** — `src/ui/bottom_panel.cpp` only. Pulled in mid-sprint 2026-09-06 (unrelated to the
+  Windows-portability goal — a `/systematic-debugging`-diagnosed GTK4 scroll defect). Mirror UI-14's
+  `scrollEngineLogToBottom()` kinetic-animation snap (`vadj->set_value(upper - page_size)`) into
+  `scrollMoveLogToEnd()`, and convert `test_ui12_move_log_scroll_target`'s fixed `pump(300)` to a
+  condition-based wait. `/systematic-debugging` phases 1–3 already done (see the detail file). Must
+  **not** touch `programmaticScroll_`/`stickToBottom_` semantics, the Engine Log path, the RT-02
+  buffer cap, or the UI-05 gutter. `gtk-ui-design` at the `scroll_to`-vs-`vadjustment` seam.
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
 | PORT-02 | Bundle `style.css` via GResource; drop the `__FILE__` build-host-path fallback | — | — | ✅ Done (PR #25, squash `328490e`) |
 | PORT-03 | Native MSVC flags + `WIN32` subsystem; portable `mock_engine` test target; Win32 Job Object; Windows CI | PORT-02 (CMake ordering) | — | ✅ Done (PR #26, squash `38ce332`, 2026-09-06; Linux tier verified, Windows/MSVC smoke + CI job pending) |
+| UI-15 | Move Log sticky-bottom races the GTK4 kinetic-scroll animation (the recurring "ui12 scroll flake") | — | — | 🔲 Not started (pulled from Backlog mid-sprint 2026-09-06) |
 
 Points not yet estimated (consistent with Sprints 3–14).
 
