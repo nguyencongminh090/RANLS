@@ -1,5 +1,9 @@
 #include "bottom_panel.h"
 
+#include "command/command_completer.h"
+
+#include <algorithm>
+
 namespace {
 /// Batch-flush interval for the engine log. Balances "feels live" against
 /// collapsing many rapid engine lines into one buffer transaction (RT-02).
@@ -110,6 +114,7 @@ BottomPanel::BottomPanel()
     commandEntry_.signal_activate().connect([this]() {
         auto text = commandEntry_.get_text();
         if (!text.empty()) {
+            hideSuggestions();  // CONS-01: submit never accepts a suggestion (R3)
             commandHistory_.push_back(std::string(text));
             historyIdx_ = -1;
             commandEntry_.set_text("");
@@ -120,10 +125,57 @@ BottomPanel::BottomPanel()
         }
     });
 
+    // ── CONS-01: command-name AutoComplete ─────────────────────────────────
+    // A custom popover (Gtk::EntryCompletion is gone in GTK4) anchored under
+    // the entry, plus inline grey ghost-text for the current token. All of
+    // this is a sibling of the Engine Log gutter+TextView row — it never
+    // touches engineLogView_, the gutter, or flushPending() (UI-05).
+    ghostLabel_.set_halign(Gtk::Align::START);
+    ghostLabel_.set_valign(Gtk::Align::CENTER);
+    ghostLabel_.add_css_class("dim-label");
+    ghostLabel_.set_can_target(false);   // never steal a click from the entry
+    ghostLabel_.set_visible(false);
+    commandOverlay_.set_child(commandEntry_);
+    commandOverlay_.add_overlay(ghostLabel_);
+
+    suggestionList_.set_selection_mode(Gtk::SelectionMode::SINGLE);
+    suggestionList_.add_css_class("cons01-suggestions");
+    suggestionPopover_.set_child(suggestionList_);
+    suggestionPopover_.set_parent(commandEntry_);
+    suggestionPopover_.set_position(Gtk::PositionType::TOP);
+    suggestionPopover_.set_has_arrow(false);
+    suggestionPopover_.set_autohide(false);  // keep key events flowing to the entry
+    suggestionList_.signal_row_activated().connect(
+        [this](Gtk::ListBoxRow *row) {
+            if (!row) return;
+            suggestionSel_ = row->get_index();
+            acceptSelectedSuggestion();
+        });
+
+    // Live suggestion refresh on every text change (Q2). `suppressSuggest_`
+    // keeps our own programmatic set_text (Tab-complete, history nav) from
+    // re-entering this.
+    commandEntry_.property_text().signal_changed().connect(
+        [this]() {
+            if (suppressSuggest_) return;
+            refreshSuggestions();
+        });
+
+    auto focusCtrl = Gtk::EventControllerFocus::create();
+    focusCtrl->signal_leave().connect([this]() { hideSuggestions(); });
+    commandEntry_.add_controller(focusCtrl);
+
     // Up/Down arrow for command history.
     auto keyCtrl = Gtk::EventControllerKey::create();
     keyCtrl->signal_key_pressed().connect(
         [this](guint keyval, guint, Gdk::ModifierType) -> bool {
+            // CONS-01: while the suggestion popover is open, Tab/Up/Down/Enter/
+            // Esc drive it; anything it does not consume falls through. With
+            // the popover closed this branch is inert and the history logic
+            // below is byte-for-byte unchanged (HC2).
+            if (suggestOpen_ && handleSuggestionKey(keyval))
+                return true;
+
             if (commandHistory_.empty()) return false;
 
             if (keyval == GDK_KEY_Up) {
@@ -153,10 +205,234 @@ BottomPanel::BottomPanel()
     commandEntry_.add_controller(keyCtrl);
 
     engineLogBox_.append(engineLogRow_);
-    engineLogBox_.append(commandEntry_);
+    engineLogBox_.append(commandOverlay_);  // CONS-01: entry + ghost-text overlay
     append_page(engineLogBox_, "Engine Log");
 
     set_size_request(-1, 120);
+}
+
+BottomPanel::~BottomPanel()
+{
+    // A Gtk::Popover with set_parent() must be explicitly unparented before
+    // its parent widget is destroyed, or GTK warns on teardown.
+    suggestionPopover_.unparent();
+}
+
+void BottomPanel::setCommandNameProvider(std::function<std::vector<std::string>()> provider)
+{
+    commandNameProvider_ = std::move(provider);
+}
+
+void BottomPanel::setCommandUsageProvider(std::function<std::string(const std::string &)> provider)
+{
+    commandUsageProvider_ = std::move(provider);
+}
+
+// ── CONS-01: command-entry AutoComplete ────────────────────────────────────
+
+void BottomPanel::refreshSuggestions()
+{
+    const std::string text = std::string(commandEntry_.get_text());
+    const int caret = commandEntry_.get_position();
+
+    if (!commandNameProvider_ || !command_completer::shouldSuggest(text, caret)) {
+        hideSuggestions();
+        return;
+    }
+
+    // Re-query the registry every time (HC4): `.ptc` extension commands are
+    // re-synced on every engine start/reload, so a cached snapshot goes stale.
+    const std::string prefix = command_completer::currentPrefix(text);
+    suggestionMatches_ = command_completer::matches(prefix, commandNameProvider_());
+    tabCycle_ = -1;
+
+    if (suggestionMatches_.empty()) {
+        hideSuggestions();
+        return;
+    }
+
+    if (suggestionSel_ < 0 || suggestionSel_ >= static_cast<int>(suggestionMatches_.size()))
+        suggestionSel_ = 0;
+
+    rebuildSuggestionRows();
+    updateGhostText();
+
+    suggestOpen_ = true;
+    if (get_mapped()) {
+        suggestionPopover_.set_pointing_to(
+            Gdk::Rectangle(0, 0, commandEntry_.get_width(), commandEntry_.get_height()));
+        suggestionPopover_.popup();
+    }
+}
+
+void BottomPanel::rebuildSuggestionRows()
+{
+    while (auto *child = suggestionList_.get_first_child())
+        suggestionList_.remove(*child);
+
+    const std::size_t kMaxRows = 8;
+    const std::size_t n = std::min(kMaxRows, suggestionMatches_.size());
+    for (std::size_t i = 0; i < n; ++i) {
+        const std::string &name = suggestionMatches_[i];
+        std::string label = "!" + name;
+        if (commandUsageProvider_) {
+            const std::string usage = commandUsageProvider_(name);
+            if (!usage.empty())
+                label += "   " + usage;
+        }
+        auto *row = Gtk::make_managed<Gtk::Label>(label);
+        row->set_halign(Gtk::Align::START);
+        row->add_css_class("monospace");
+        suggestionList_.append(*row);
+    }
+
+    if (auto *row = suggestionList_.get_row_at_index(suggestionSel_))
+        suggestionList_.select_row(*row);
+}
+
+void BottomPanel::updateGhostText()
+{
+    const std::string text = std::string(commandEntry_.get_text());
+    const std::string prefix = command_completer::currentPrefix(text);
+
+    std::string ghost;
+    if (suggestionMatches_.size() == 1
+        && command_completer::toLower(suggestionMatches_.front())
+               == command_completer::toLower(prefix)) {
+        // Name is complete → show its usage string as a static arg hint (A3).
+        if (commandUsageProvider_) {
+            const std::string usage = commandUsageProvider_(suggestionMatches_.front());
+            if (!usage.empty())
+                ghost = "   " + usage;
+        }
+    } else {
+        const std::string lcp = command_completer::longestCommonPrefix(suggestionMatches_);
+        if (lcp.size() > prefix.size())
+            ghost = lcp.substr(prefix.size());
+    }
+
+    if (ghost.empty()) {
+        ghostLabel_.set_visible(false);
+        return;
+    }
+
+    // Position the ghost right after the caret text. Measured with a layout
+    // from the entry so family/size match; a few px of slack covers the
+    // entry's internal padding.
+    auto layout = commandEntry_.create_pango_layout(std::string(commandEntry_.get_text()));
+    int w = 0, h = 0;
+    layout->get_pixel_size(w, h);
+    ghostLabel_.set_margin_start(w + 8);
+    ghostLabel_.set_text(ghost);
+    ghostLabel_.set_visible(true);
+}
+
+void BottomPanel::hideSuggestions()
+{
+    suggestOpen_ = false;
+    suggestionSel_ = -1;
+    tabCycle_ = -1;
+    suggestionMatches_.clear();
+    ghostLabel_.set_visible(false);
+    suggestionPopover_.popdown();
+}
+
+void BottomPanel::moveSuggestionSelection(int delta)
+{
+    if (suggestionMatches_.empty()) return;
+    const int n = static_cast<int>(suggestionMatches_.size());
+    suggestionSel_ = std::clamp(suggestionSel_ + delta, 0, n - 1);
+    if (auto *row = suggestionList_.get_row_at_index(suggestionSel_))
+        suggestionList_.select_row(*row);
+}
+
+void BottomPanel::applyFirstToken(const std::string &name, bool trailingSpace)
+{
+    const std::string text = std::string(commandEntry_.get_text());
+    std::size_t s = 0;
+    while (s < text.size()
+           && std::isspace(static_cast<unsigned char>(text[s])))
+        ++s;
+    std::size_t bangLen = 0;
+    command_completer::startsWithBang(text.substr(s), bangLen);
+    std::size_t tokEnd = s + bangLen;
+    while (tokEnd < text.size()
+           && !std::isspace(static_cast<unsigned char>(text[tokEnd])))
+        ++tokEnd;
+
+    const std::string lead = text.substr(0, s);
+    const std::string bang = (bangLen == command_completer::fullwidthBang().size())
+                                 ? command_completer::fullwidthBang()
+                                 : std::string("!");
+    std::string rest = text.substr(tokEnd);
+
+    std::string out = lead + bang + name;
+    if (trailingSpace && (rest.empty() || rest.front() != ' '))
+        out += ' ';
+    const int caret = static_cast<int>(out.size());
+    out += rest;
+
+    suppressSuggest_ = true;
+    commandEntry_.set_text(out);
+    commandEntry_.set_position(caret);
+    suppressSuggest_ = false;
+}
+
+void BottomPanel::completeOrCycle()
+{
+    if (suggestionMatches_.empty()) return;
+
+    const std::string text = std::string(commandEntry_.get_text());
+    const std::string prefix = command_completer::currentPrefix(text);
+    const std::string lcp = command_completer::longestCommonPrefix(suggestionMatches_);
+
+    if (command_completer::toLower(lcp).size()
+        > command_completer::toLower(prefix).size()) {
+        // Grow to the longest common prefix first.
+        const bool unique = suggestionMatches_.size() == 1;
+        applyFirstToken(lcp, unique);
+    } else {
+        // Already at the LCP → cycle to the next candidate.
+        tabCycle_ = (tabCycle_ + 1) % static_cast<int>(suggestionMatches_.size());
+        suggestionSel_ = tabCycle_;
+        applyFirstToken(suggestionMatches_[tabCycle_],
+                        /*trailingSpace=*/suggestionMatches_.size() == 1);
+    }
+    refreshSuggestions();  // re-derive matches / ghost against the new text
+}
+
+void BottomPanel::acceptSelectedSuggestion()
+{
+    if (suggestionSel_ < 0
+        || suggestionSel_ >= static_cast<int>(suggestionMatches_.size()))
+        return;
+    applyFirstToken(suggestionMatches_[suggestionSel_], /*trailingSpace=*/true);
+    hideSuggestions();
+}
+
+bool BottomPanel::handleSuggestionKey(unsigned int keyval)
+{
+    switch (keyval) {
+        case GDK_KEY_Escape:
+            hideSuggestions();  // entry text left exactly as typed (A5/R5)
+            return true;
+        case GDK_KEY_Up:
+            moveSuggestionSelection(-1);
+            return true;
+        case GDK_KEY_Down:
+            moveSuggestionSelection(+1);
+            return true;
+        case GDK_KEY_Tab:
+        case GDK_KEY_ISO_Left_Tab:
+            completeOrCycle();
+            return true;
+        case GDK_KEY_Return:
+        case GDK_KEY_KP_Enter:
+            acceptSelectedSuggestion();  // into the entry, does NOT submit (R3)
+            return true;
+        default:
+            return false;
+    }
 }
 
 const char *BottomPanel::gutterColorForKind(LogTagKind tag)

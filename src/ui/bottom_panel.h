@@ -4,8 +4,11 @@
 #include "sticky_scroll.h"
 #include <gtkmm.h>
 #include <sigc++/sigc++.h>
+#include <functional>
 #include <string>
 #include <vector>
+
+struct RanlsCons01Probe;  // tests/test_cons01_command_autocomplete.cpp
 
 /// Tabbed bottom panel with Move Log, Engine Log + command input.
 ///
@@ -24,6 +27,7 @@
 class BottomPanel : public Gtk::Notebook {
 public:
     BottomPanel();
+    ~BottomPanel() override;
 
     /// Append a SEND (stdin) line to the engine log.
     void appendSend(const Glib::ustring &text);
@@ -40,7 +44,57 @@ public:
     /// Signal emitted when user submits a command in the engine log entry.
     sigc::signal<void(std::string)> signal_command_sent;
 
+    /// CONS-01: supplier of the current `!` command-name set for AutoComplete.
+    /// MainWindow wires this to CommandDispatcher::registeredNames(). Queried
+    /// fresh on every suggestion refresh — never cached here (HC4).
+    void setCommandNameProvider(std::function<std::vector<std::string>()> provider);
+
+    /// CONS-01: supplier of the `usage` string for a completed command name
+    /// (CommandDispatcher::commandUsage). Shown as the static argument hint.
+    void setCommandUsageProvider(std::function<std::string(const std::string &)> provider);
+
 private:
+    friend struct ::RanlsCons01Probe;
+
+    // ── CONS-01: command-entry AutoComplete ─────────────────────────────────
+    /// Recompute the candidate set for the current entry text + caret and
+    /// show/hide the popover and ghost-text. Called on every `notify::text`
+    /// (guarded by `suppressSuggest_` so our own programmatic `set_text`
+    /// during Tab-complete / history nav does not re-enter).
+    void refreshSuggestions();
+    /// Handle a key while the suggestion popover is logically open. Returns
+    /// true iff the key was consumed (Tab/Up/Down/Enter/Esc). Any other key
+    /// falls through to normal entry editing.
+    bool handleSuggestionKey(unsigned int keyval);
+    void hideSuggestions();
+    void rebuildSuggestionRows();
+    void updateGhostText();
+    /// Tab: complete the first token to the longest common prefix; if already
+    /// at the LCP, cycle to the next candidate.
+    void completeOrCycle();
+    /// Enter (popover open): drop the highlighted candidate into the entry
+    /// with a trailing space. Does NOT submit (R3).
+    void acceptSelectedSuggestion();
+    /// Rewrite just the `!<name>` first token of the entry text, keeping any
+    /// leading whitespace and everything after the first token. Guarded so it
+    /// does not trigger a suggestion refresh from inside itself.
+    void applyFirstToken(const std::string &name, bool trailingSpace);
+    void moveSuggestionSelection(int delta);
+
+    std::function<std::vector<std::string>()>              commandNameProvider_;
+    std::function<std::string(const std::string &)>        commandUsageProvider_;
+
+    Gtk::Overlay commandOverlay_;
+    Gtk::Label   ghostLabel_;
+    Gtk::Popover suggestionPopover_;
+    Gtk::ListBox suggestionList_;
+
+    std::vector<std::string> suggestionMatches_;
+    int  suggestionSel_   = -1;     ///< highlighted row index into suggestionMatches_
+    int  tabCycle_        = -1;     ///< last index applied by a Tab cycle
+    bool suggestOpen_     = false;  ///< popover is logically open (drives key routing)
+    bool suppressSuggest_ = false;  ///< re-entrancy guard around programmatic set_text
+
     void appendLogLine(const Glib::ustring &prefix, const Glib::ustring &text, LogTagKind tag);
 
     /// CSS-independent color for a tag kind, used to paint the gutter labels.
