@@ -166,6 +166,25 @@ bool CommandDispatcher::executeLine(const std::string &line)
     return true;
 }
 
+std::vector<std::string> CommandDispatcher::registeredNames() const
+{
+    std::vector<std::string> names;
+    names.reserve(specs_.size());
+    for (const auto &s : specs_)
+        names.push_back(s.name);
+    std::sort(names.begin(), names.end());
+    names.erase(std::unique(names.begin(), names.end()), names.end());
+    return names;
+}
+
+std::string CommandDispatcher::commandUsage(const std::string &name) const
+{
+    for (const auto &s : specs_)
+        if (s.name == name)
+            return s.usage;
+    return {};
+}
+
 void CommandDispatcher::printHelp() const
 {
     // Group specs by group name.
