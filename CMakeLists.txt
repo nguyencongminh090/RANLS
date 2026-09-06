@@ -17,6 +17,33 @@ pkg_check_modules(GTKMM REQUIRED IMPORTED_TARGET gtkmm-4.0)
 # ── zlib (RDB-01: .rdb container crc32 + deflate payload codec) ──────────────
 find_package(ZLIB REQUIRED)
 
+# ── gio-2.0 + glib-compile-resources (PORT-02: bundle style.css as GResource) ─
+pkg_check_modules(GIO REQUIRED IMPORTED_TARGET gio-2.0)
+find_program(GLIB_COMPILE_RESOURCES glib-compile-resources
+    HINTS $ENV{HOME}/.local/bin
+)
+if(NOT GLIB_COMPILE_RESOURCES)
+    pkg_get_variable(GLIB_COMPILE_RESOURCES gio-2.0 glib_compile_resources)
+endif()
+if(NOT GLIB_COMPILE_RESOURCES)
+    message(FATAL_ERROR "glib-compile-resources not found (needed to bundle style.css)")
+endif()
+
+set(RANLS_GRESOURCE_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/ranls.gresource.xml)
+set(RANLS_GRESOURCE_C    ${CMAKE_CURRENT_BINARY_DIR}/generated/ranls_gresource.c)
+add_custom_command(
+    OUTPUT  ${RANLS_GRESOURCE_C}
+    COMMAND ${GLIB_COMPILE_RESOURCES}
+            --target=${RANLS_GRESOURCE_C}
+            --sourcedir=${CMAKE_CURRENT_SOURCE_DIR}/src/resources
+            --generate-source
+            ${RANLS_GRESOURCE_XML}
+    DEPENDS ${RANLS_GRESOURCE_XML}
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/style.css
+    COMMENT "Compiling GResource bundle (style.css)"
+    VERBATIM
+)
+
 # ── Source files ─────────────────────────────────────────────────────────────
 set(GUI_SOURCES
     # Entry point
@@ -95,7 +122,7 @@ configure_file(
 )
 
 # ── Executable ───────────────────────────────────────────────────────────────
-add_executable(ranls-gui ${GUI_SOURCES})
+add_executable(ranls-gui ${GUI_SOURCES} ${RANLS_GRESOURCE_C})
 
 target_include_directories(ranls-gui PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -104,6 +131,7 @@ target_include_directories(ranls-gui PRIVATE
 
 target_link_libraries(ranls-gui PRIVATE
     PkgConfig::GTKMM
+    PkgConfig::GIO
     ZLIB::ZLIB
 )
 
@@ -111,21 +139,24 @@ target_compile_options(ranls-gui PRIVATE
     -Wall -Wextra -Wpedantic
 )
 
-# ── Copy style.css alongside the binary during build ────────────────────────
-add_custom_command(TARGET ranls-gui POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/resources/style.css"
-        "${CMAKE_CURRENT_BINARY_DIR}/style.css"
-    COMMENT "Copying style.css to build directory..."
-)
-
 # ── Install rules (used by package.sh via cmake --install) ──────────────────
+# style.css is bundled into the binary as a GResource (PORT-02) — no sidecar
+# file to copy at build time or install alongside the binary.
 install(TARGETS ranls-gui RUNTIME DESTINATION .)
-install(FILES src/resources/style.css DESTINATION .)
 
 # ── Tests (model/engine layers only, no gtkmm/display server required) ──────
 option(RANLS_GUI_BUILD_TESTS "Build the ranls-gui-tests target" ON)
 if(RANLS_GUI_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
+
+    # ── PORT-02: guard the GResource bundling of style.css ──────────────────
+    # No gtkmm/display test infra here, so this is a binary-inspection guard:
+    # the CSS resource path must be linked in, and no build-host absolute path
+    # may be baked into the executable.
+    add_test(NAME port02-style-css-bundled
+        COMMAND ${CMAKE_COMMAND}
+            -DBIN=$<TARGET_FILE:ranls-gui>
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/port02_check_gresource.cmake
+    )
 endif()

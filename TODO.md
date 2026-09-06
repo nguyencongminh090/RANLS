@@ -95,7 +95,7 @@ Sprint 14 (opened 2026-09-06, goal "Backlog tooling fix + Tier-1 Windows portabi
 
 Sprint 15 (opened 2026-09-06, goal "Tier-2 Windows portability: bundled assets + MSVC/CI harness") — pulled from Backlog:
 
-- 🔲 **PORT-02.** Bundle `style.css` into the binary via GResource (`load_from_resource`), dropping the `__FILE__`-path fallback in `application.cpp` that currently bakes a build-host absolute path into the executable and loses all styling on any non-CWD launch. [Model: Sonnet 5] — [detail](docs/todo/PORT-02-bundle-style-css-via-gresource.md)
+- ✅ **PORT-02.** Bundle `style.css` into the binary via GResource (`load_from_resource`), dropping the `__FILE__`-path fallback in `application.cpp` that currently bakes a build-host absolute path into the executable and loses all styling on any non-CWD launch. [Model: Sonnet 5] — [detail](docs/todo/PORT-02-bundle-style-css-via-gresource.md) — shipped 2026-09-06; build clean, ctest 3/4 (ui-tests unchanged: pre-existing anlz05 flake only), no build-host path in binary
 - 🔲 **PORT-03.** Native MSVC build support + portable test harness: `if(MSVC)` compiler-flag branch + `WIN32` subsystem in `CMakeLists.txt`; a CMake-built `mock_engine` target to replace the hardcoded `/bin/cat` / `/bin/true` stand-ins across 7 test suites; Win32 Job Object so the engine subprocess dies with the GUI on Windows. Gate resolved 2026-09-06 — native MSVC / Windows CI is a supported goal (audit `docs/audit/2026-09-06-native-msvc-windows-ci-goal.md`). [Model: Sonnet 5] — [detail](docs/todo/PORT-03-msvc-build-and-portable-test-harness.md)
 
 ## Backlog
