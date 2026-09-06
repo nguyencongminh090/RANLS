@@ -125,6 +125,7 @@ add_executable(ranls-gui-ui-tests
     test_ui10_engine_log_scroll_target.cpp
     test_ui12_move_log_scroll_target.cpp
     test_ui11_about_dialog.cpp
+    test_port01_engine_path_check.cpp
     test_name01_window_title.cpp
     test_anlz01_analyze_mode_action.cpp
     test_anlz05_no_automove_action.cpp
