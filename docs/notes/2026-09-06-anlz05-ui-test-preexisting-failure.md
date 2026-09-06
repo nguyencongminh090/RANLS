@@ -56,3 +56,55 @@ xanh** — chỉ cần đối chiếu đúng 1 case `test_anlz05_no_automove_act
 Liên quan: `features/protocol-extension/` không, nhưng [[2026-09-04-wingraph-analyze-mode-and-backfill]]
 (nơi Analyze Mode ra đời) và `.claude/skills/systematic-debugging/condition-based-waiting.md`
 (kỹ thuật đúng để thay các `pumpUntil` timeout-based này).
+
+---
+
+## Cập nhật 2026-09-06 (sau khi PORT-03 merge — PR #26, squash `38ce332`)
+
+**PORT-03 KHÔNG sửa case này.** `mock_engine` của PORT-03 thay `/bin/cat` nhưng vẫn cố tình
+*không* phát dòng toạ độ nào (comment ngay trong test: *"none parse as a move"*). Sau PORT-03
+`ranls-gui-ui-tests` chạy **29/30** — vẫn đúng 1 case `test_anlz05_no_automove_action` fail (con số
+đổi từ 28/29 → 29/30 chỉ vì PORT-03 thêm 1 regression case UI-10, không liên quan). Baseline
+`670d0dc` (trước PORT-03) fail y hệt, dòng 135, 5/5 lần chạy cô lập.
+
+### Root cause thật (chính xác hơn phần "Root cause" ở trên — phần đó chưa đúng)
+
+Không phải *"GTK main-loop headless không chạy tới nơi một cách xác định"*. `pumpUntil` bơm
+main-loop bình thường suốt 3 s; lệnh `BEGIN` bị **cố ý giữ trong hàng đợi**, không phải "chưa kịp
+chạy". Nút thắt là cơ chế **`pendingStopFlush_` của PROTO-04** trong `EngineController`:
+
+1. Scenario A: `analyze()` gửi `YXNBEST`, `searchIntent_ = Analysis`, `state_ = Analyzing`.
+2. Scenario B mở đầu bằng `stopAnalysis()` (`engine_controller.cpp:424`):
+   - `willEmitTrailingCoord = (state_==Analyzing && searchIntent_==Analysis)` → **true**
+   - `pendingStopFlush_ = true` → từ đây **mọi `sendOrDefer()` xếp hàng vào `pendingActions_`,
+     không gửi ra wire**
+   - `setState(Idle)` → `state_` báo "Idle" ngay (nên `REQUIRE(engineState()==Idle)` pass)
+3. `maybeStartAutoMove()` idle callback qua hết mọi guard (analyzeMode off, running, Idle, đúng
+   lượt) → gọi `requestEngineMove()` → `sendOrDefer([...]"BEGIN")` → **bị append vào
+   `pendingActions_`, `engine_.sendLine` không được gọi**.
+4. `pendingStopFlush_` chỉ được xoá ở `signal_move` handler (`engine_controller.cpp:136-141`) khi
+   **một dòng toạ độ từ engine** tới — đó là "trailing coordinate" mà một search `YXNBEST` bị
+   `STOP` giữa chừng vẫn phát ra theo `docs/protocol.md`.
+5. `mock_engine` / `/bin/cat` **không bao giờ phát dòng toạ độ** → `signal_move` không fire →
+   `pendingStopFlush_` kẹt `true` vĩnh viễn → `BEGIN` nằm mãi trong hàng đợi → timeout.
+
+Với **engine thật**: dòng best-move trailing tới → xoá `pendingStopFlush_` → xả `pendingActions_`
+→ `BEGIN` gửi → test pass. Scenario A pass vì nó không nối lệnh thứ hai sau một analysis bị abort,
+nên không chạm cơ chế flush.
+
+Tức: đây là **"engine giả không tôn trọng nửa hợp đồng protocol mà PROTO-04 dựa vào"**, không phải
+race hay non-determinism.
+
+### Hướng xử lý (cập nhật)
+
+Phương án "gộp vào PORT-03" ở trên **đã không thành** — PORT-03 đóng rồi mà case vẫn đỏ. Cần một
+`CODE` mới, ví dụ `TEST-01` "UI test `test_anlz05_no_automove_action` Scenario B phụ thuộc trailing
+coordinate mà `mock_engine` không phát":
+
+1. Cho `mock_engine` một chế độ (env var / sentinel line) phát một dòng toạ độ giả sau khi nhận
+   `STOP` tiếp theo một `YXNBEST` — mô phỏng đúng `docs/protocol.md`. Scenario B sẽ xác định được.
+2. Hoặc: thay `pumpUntil("BEGIN")` bằng condition-based wait trên trạng thái đã settle thật
+   (`pendingStopFlush_ == false`, hoặc một API "queue đã drain") —
+   `systematic-debugging/condition-based-waiting.md`.
+
+Không nới timeout.
