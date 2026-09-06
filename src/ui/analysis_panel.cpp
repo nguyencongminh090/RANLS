@@ -170,3 +170,9 @@ void AnalysisPanel::hideEngineCrashBanner()
 {
     crashBannerRevealer_.set_reveal_child(false);
 }
+
+void AnalysisPanel::showInfoBanner(const std::string &message)
+{
+    crashBannerLabel_.set_text(message);
+    crashBannerRevealer_.set_reveal_child(true);
+}

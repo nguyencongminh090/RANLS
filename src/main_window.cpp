@@ -560,6 +560,19 @@ void MainWindow::connectSignals()
         bottomPanel_.appendRecv(type, line);
     });
 
+    // PROTO-03: a matched `.ptc` on_reply fired a whitelisted sink. Three
+    // destinations, all reusing existing UI surfaces (no BoardRenderer /
+    // BoardViewModel touched).
+    controller_.signal_custom_action.connect([this](const protoext::SinkAction &a) {
+        if (a.sink == "set_status_field" && a.args.size() == 2) {
+            analysisPanel_.engineStatus().setStatusField(a.args[0], a.args[1]);
+        } else if (a.sink == "toast" && a.args.size() == 1) {
+            analysisPanel_.showInfoBanner(a.args[0]);
+        } else if (a.sink == "log" && a.args.size() == 1) {
+            bottomPanel_.appendRecv("Output", a.args[0]);
+        }
+    });
+
     // All commands sent to engine → Engine Log tab as [SEND].
     engine_.signal_line_sent.connect([this](const std::string &cmd) {
         bottomPanel_.appendSend(cmd);
@@ -635,6 +648,9 @@ void MainWindow::connectSignals()
     // finished) it may already be its turn under "Engine plays <side>".
     controller_.signal_state_changed.connect([this](EngineController::EngineState state) {
         if (state == EngineController::EngineState::Idle) {
+            // PROTO-03: engine just started/reloaded — (re)register whatever
+            // `.ptc` extension commands the controller now exposes (Q7).
+            if (commandDispatcher_) commandDispatcher_->syncExtensionCommands();
             maybeStartAutoMove();
             // ANLZ-01: engine just became Idle (started, or a one-shot / prior
             // analyze-mode search finished) — resume pondering the current

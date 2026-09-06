@@ -15,6 +15,7 @@ public:
 private:
     void onApply();
     void onChooseEngine();
+    void onChoosePtc();
     void onEnginePathChanged();
     void updateApplySensitivity();
 
@@ -29,6 +30,7 @@ private:
 
     Gtk::Entry          entryEnginePath_;
     Gtk::Label          lblEnginePathStatus_;
+    Gtk::Entry          entryPtcPath_;   ///< PROTO-03: optional .ptc extension file
     Gtk::Button        *btnApply_ = nullptr;
     bool                enginePathValid_ = false;
     Gtk::DropDown       dropTheme_;

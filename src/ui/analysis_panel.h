@@ -27,6 +27,10 @@ public:
     void showEngineCrashBanner(const std::string &enginePath);
     void hideEngineCrashBanner();
 
+    /// PROTO-03: the `toast(message)` sink. Reuses the crash-banner widget
+    /// (no libadwaita Adw::Toast in this build) to show an arbitrary message.
+    void showInfoBanner(const std::string &message);
+
 private:
     void connectSignals();
 

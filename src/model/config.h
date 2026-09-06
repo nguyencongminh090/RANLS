@@ -90,5 +90,6 @@ struct EngineConfig {
     int         threads       = 1;
     int         hashSizeMB    = 256;
     int         multiPV       = 1;          ///< Set via commands (e.g. !analyze N)
+    std::string protocolExtensionPath;      ///< PROTO-03: optional .ptc file (empty = none)
     std::unordered_map<std::string, std::string> customParams; ///< For unknown INFO keys
 };

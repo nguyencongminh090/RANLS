@@ -115,6 +115,21 @@ SettingsDialog::SettingsDialog(Gtk::Window &parent, const EngineConfig &eConfig,
     addRow(engineTab, "Engine Path", *pathContainer,
            "Path to the Gomocup/Yixin-protocol engine executable.");
 
+    // PROTO-03: optional protocol-extension (.ptc) file. Empty = none.
+    auto *ptcBox = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 4);
+    entryPtcPath_.set_text(eConfig.protocolExtensionPath);
+    entryPtcPath_.set_hexpand(true);
+    auto *btnPtcBrowse = Gtk::make_managed<Gtk::Button>("Browse…");
+    btnPtcBrowse->signal_clicked().connect(sigc::mem_fun(*this, &SettingsDialog::onChoosePtc));
+    auto *btnPtcClear = Gtk::make_managed<Gtk::Button>("Clear");
+    btnPtcClear->signal_clicked().connect([this]() { entryPtcPath_.set_text(""); });
+    ptcBox->append(entryPtcPath_);
+    ptcBox->append(*btnPtcBrowse);
+    ptcBox->append(*btnPtcClear);
+    addRow(engineTab, "Protocol Extension (.ptc)", *ptcBox,
+           "Optional TOML file declaring extra console commands for this engine "
+           "(PROTO-03). Takes effect on engine start / Reload.");
+
     spinThreads_.set_adjustment(Gtk::Adjustment::create(eConfig.threads, 1, 256, 1));
     spinThreads_.set_digits(0);
     addRow(engineTab, "Threads", spinThreads_, "Number of search threads the engine may use.");
@@ -255,6 +270,7 @@ void SettingsDialog::onApply()
     eConfig.threads      = static_cast<int>(spinThreads_.get_value());
     eConfig.hashSizeMB   = static_cast<int>(spinHash_.get_value());
     eConfig.multiPV      = static_cast<int>(spinMultiPV_.get_value());
+    eConfig.protocolExtensionPath = entryPtcPath_.get_text();
 
     ViewConfig vConfig = baseViewConfig_;
     vConfig.theme           = static_cast<AppTheme>(dropTheme_.get_selected());
@@ -269,6 +285,30 @@ void SettingsDialog::onApply()
 
     signal_applied.emit(eConfig, vConfig);
     close();
+}
+
+void SettingsDialog::onChoosePtc()
+{
+    auto dialog = Gtk::FileDialog::create();
+    dialog->set_title("Select Protocol Extension (.ptc)");
+
+    auto filter = Gtk::FileFilter::create();
+    filter->set_name("Protocol extension (*.ptc)");
+    filter->add_pattern("*.ptc");
+    auto filters = Gio::ListStore<Gtk::FileFilter>::create();
+    filters->append(filter);
+    dialog->set_filters(filters);
+    dialog->set_default_filter(filter);
+
+    dialog->open(*this, [this, dialog](Glib::RefPtr<Gio::AsyncResult> &result) {
+        try {
+            auto file = dialog->open_finish(result);
+            if (file)
+                entryPtcPath_.set_text(file->get_path());
+        } catch (const Glib::Error &) {
+            // User cancelled.
+        }
+    });
 }
 
 void SettingsDialog::onChooseEngine()

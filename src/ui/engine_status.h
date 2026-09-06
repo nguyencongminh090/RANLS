@@ -5,6 +5,9 @@
 
 #include <gtkmm.h>
 
+#include <map>
+#include <string>
+
 /// Displays live engine statistics + engine on/off state.
 class EngineStatusView : public Gtk::Box {
 public:
@@ -41,6 +44,12 @@ public:
     /// onto the toggle button without firing signal_analyze_mode_toggled.
     void setAnalyzeModeActive(bool active);
 
+    /// PROTO-03: the `set_status_field(name, value)` sink. `name` is chosen by
+    /// the `.ptc` author and arbitrary, so it cannot reuse the 6 fixed stat
+    /// members — this maintains a small dynamic name→label container, adding a
+    /// label pair the first time a name is seen and updating it thereafter.
+    void setStatusField(const std::string &name, const std::string &value);
+
 private:
     Gtk::Label labelState_;
     Gtk::Button btnStart_;
@@ -61,4 +70,8 @@ private:
     Gtk::Label valueTime_;
     Gtk::Label valueEval_;
     Gtk::Label valueBest_;
+
+    // PROTO-03: dynamic set_status_field rows.
+    Gtk::Box                              dynFieldsBox_{Gtk::Orientation::HORIZONTAL, 8};
+    std::map<std::string, Gtk::Label *>   dynValues_;
 };
