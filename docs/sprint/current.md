@@ -31,7 +31,7 @@
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| TOOL-03 | `check-task-structure.js` trips on `⛔` SUPERSEDED ANLZ-03 index lines | — | — | 🔲 Not started |
+| TOOL-03 | `check-task-structure.js` trips on `⛔` SUPERSEDED ANLZ-03 index lines | — | — | ✅ Done (PR #23, squash `69e10e0`) |
 | PORT-01 | Tier-1 guarded Windows fixes: `unistd.h` guard + exec-extension check, `_commit()`, `GetModuleFileNameW` | — | — | 🔲 Not started |
 
 Points not yet estimated (consistent with Sprints 3–13).
