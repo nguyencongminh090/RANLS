@@ -242,6 +242,17 @@ void BottomPanel::scrollMoveLogToEnd()
     if (!moveLogEndMark_)
         return;
     moveLogView_.scroll_to(moveLogEndMark_, 0.0, 0.0, 1.0);
+    // GTK4's GtkScrolledWindow answers `scroll_to` with a multi-frame kinetic
+    // animation of the vadjustment, not an instant set, so after a fast burst
+    // append the view is still mid-animation and lands a few px short of the
+    // newest move. Snap the adjustment directly, exactly as
+    // scrollEngineLogToBottom() does (UI-14) — the Move Log always follows the
+    // bottom (UI-12), so there is no "is the user at the bottom" check here.
+    if (auto vadj = scrolledMoveLog_.get_vadjustment()) {
+        const double maxValue = vadj->get_upper() - vadj->get_page_size();
+        if (maxValue > vadj->get_value())
+            vadj->set_value(maxValue);
+    }
     if (!moveLogScrollIdlePending_) {
         moveLogScrollIdlePending_ = true;
         // track_obj ties the idle slot to this widget's lifetime: if the
@@ -254,6 +265,11 @@ void BottomPanel::scrollMoveLogToEnd()
             moveLogScrollIdlePending_ = false;
             if (moveLogEndMark_)
                 moveLogView_.scroll_to(moveLogEndMark_, 0.0, 0.0, 1.0);
+            if (auto vadj = scrolledMoveLog_.get_vadjustment()) {
+                const double maxValue = vadj->get_upper() - vadj->get_page_size();
+                if (maxValue > vadj->get_value())
+                    vadj->set_value(maxValue);
+            }
         }, *this));
     }
 }
