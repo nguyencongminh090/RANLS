@@ -108,3 +108,26 @@ coordinate mà `mock_engine` không phát":
    `systematic-debugging/condition-based-waiting.md`.
 
 Không nới timeout.
+
+---
+
+## Cập nhật 2026-09-06 (đã sửa — inline, không CODE)
+
+**Tiêu đề file ("preexisting-failure") và câu "không phải regression" ở trên là SAI.** Đây là
+**regression của PROTO-04** (`502bd77`, PR #18). Test xanh ở ANLZ-07 (PR #17, 2026-09-04), đỏ ngay ở
+PROTO-04 (2026-09-05). ENG-03 cùng ngày (nhánh từ `main` đã chứa `502bd77`) gắn nhãn "pre-existing"
+đầu tiên; 5 entry sau (UI-14, PROTO-03, PORT-01/02/03) mỗi lần "identical on baseline" đều dùng
+baseline đã sau `502bd77` — không ai bisect về mốc xanh cuối.
+
+Lưu ý phương án 2 ở trên (**condition-based wait `pendingStopFlush_ == false`**) **tự nó không giải
+quyết** — không có gì xoá `pendingStopFlush_` nếu thiếu dòng toạ độ trailing, nên wait cũng chỉ
+timeout ở predicate khác. Bắt buộc phải *cấp* toạ độ đó.
+
+**Đã sửa** (`docs/fix-log/2026-09-06-anlz05-uitest-trailing-coordinate-mock-engine.md`): Scenario B
+phát `p.eng().signal_line_received.emit("7,7")` sau `stopAnalysis()` — đúng nước default tâm bàn mà
+engine thật trả về cho bàn trống, giống `test_anlz06`/`test_proto04`. Không đụng production, không
+nới timeout, không đụng `mock_engine`. `ranls-gui-ui-tests` 30/30.
+
+Bài học quy trình: `docs/audit/2026-09-06-anlz05-uitest-misdiagnosis-and-proto04-verification-gap.md`.
+Phương án protocol-level "search terminated" signal: đã cân nhắc, **hoãn** — engine thật luôn đóng
+vòng lặp cho mọi thế cờ thực tế (kể cả bàn trống), không đáng một protocol path mới.

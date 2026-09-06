@@ -124,6 +124,16 @@ TEST_CASE("ANLZ-05: Analyze Mode blocks auto-move and analyses the engine's-turn
         p.ctrl().stopAnalysis();
         REQUIRE(p.ctrl().engineState() == EngineController::EngineState::Idle);
 
+        // PROTO-04: stopAnalysis() interrupting Scenario A's live YXNBEST search
+        // arms pendingStopFlush_ — from here every outbound command defers until
+        // the aborted search's trailing coordinate line lands (ANLZ-06: YXNBEST
+        // still emits one after STOP). A real engine sends it (on this empty
+        // board, its default move); the protocol-blind mock_engine never emits a
+        // coordinate-shaped line, so feed the trailing coordinate the way
+        // test_anlz06 / test_proto04 do — otherwise the deferred auto-move BEGIN
+        // below stays queued forever and pumpUntil times out.
+        p.eng().signal_line_received.emit("7,7");
+
         ViewConfig vc = p.gs().viewConfig();
         vc.analyzeMode = false;
         p.gs().setViewConfig(vc);
