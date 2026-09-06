@@ -96,7 +96,7 @@ TEST_CASE("EngineController reaches Crashed exactly once when the process dies u
     EngineController ctrl(gs, proc);
 
     EngineConfig cfg = gs.engineConfig();
-    cfg.enginePath = "/bin/true"; // exits ~immediately with no args/output.
+    cfg.enginePath = MOCK_ENGINE_QUIT_PATH; // PORT-03: exits ~immediately, no args/output.
     gs.setEngineConfig(cfg);
 
     std::vector<EngineController::EngineState> transitions;
@@ -123,7 +123,7 @@ TEST_CASE("EngineController reaches Crashed exactly once when the process dies u
 // ─── (c) EngineProcess-level: stdout+stderr EOF de-dup, directly ──────────
 TEST_CASE("EngineProcess de-dups signal_process_died across stdout+stderr EOF") {
     EngineProcess proc;
-    bool started = proc.start("/bin/true");
+    bool started = proc.start(MOCK_ENGINE_QUIT_PATH); // PORT-03
     REQUIRE(started);
 
     int diedCount = 0;

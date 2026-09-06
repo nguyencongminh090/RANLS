@@ -43,6 +43,38 @@ RUN_TESTS=1 ./build_msys2.sh    # MSYS2 (MINGW64/UCRT64 shell)
 Set `-DRANLS_GUI_BUILD_TESTS=OFF` when configuring CMake to skip building the test target
 entirely (e.g. for a packaging build that shouldn't need `sigc++` dev headers standalone).
 
+The test suite no longer depends on POSIX `/bin/cat` / `/bin/true` — CMake builds two tiny
+portable stand-in engines (`tests/mock_engine/`, targets `mock_engine` and `mock_engine_quit`)
+and passes their paths to the test binaries as compile definitions (PORT-03). They build on
+any toolchain.
+
+## Building on Windows
+
+**MSYS2 MINGW64 / UCRT64** (recommended, GCC + pkg-config):
+
+```sh
+pacman -S mingw-w64-x86_64-gtkmm4 mingw-w64-x86_64-zlib mingw-w64-x86_64-cmake \
+          mingw-w64-x86_64-ninja mingw-w64-x86_64-gcc
+./build_msys2.sh
+```
+
+**Native MSVC** (PORT-03): the top-level `CMakeLists.txt` has an `if(MSVC)` branch that swaps
+the GCC/Clang `-Wall -Wextra -Wpedantic` flags for `/W4 /permissive-`, and `ranls-gui` is built
+with the `WIN32` subsystem so no `cmd.exe` console window appears on launch. MSVC has no
+`pkg-config` on `PATH`, so provide gtkmm-4.0 + zlib through a
+[vcpkg](https://vcpkg.io) toolchain file (vcpkg ships a `pkg-config` shim the CMake logic uses):
+
+```bat
+vcpkg install gtkmm zlib
+cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=<vcpkg>/scripts/buildsystems/vcpkg.cmake
+cmake --build build
+```
+
+The Win32 Job Object in `src/engine/engine_process.cpp` (`JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`)
+ensures the engine subprocess is terminated if the GUI process dies — the Windows analogue of
+the Linux `PR_SET_PDEATHSIG` guard. macOS has no clean equivalent and keeps the plain
+`Gio::Subprocess` fallback.
+
 # 弈心界面程序
 
 **本项目是[Yixin-Board](https://github.com/accreator/Yixin-Board)的修改版本，原代码由[accreator](https://github.com/accreator)开发。**

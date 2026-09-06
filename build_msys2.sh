@@ -6,6 +6,9 @@ if [[ -z "${MSYSTEM:-}" ]]; then
   exit 1
 fi
 
+# This is the GCC + pkg-config Windows path. For a native MSVC build (no
+# pkg-config; needs a vcpkg toolchain file) see README "Building on Windows".
+
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${1:-$ROOT_DIR/build_cmd}"
 GENERATOR="${GENERATOR:-Ninja}"

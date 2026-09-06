@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Linux / macOS (GCC or Clang + pkg-config). MSYS2 MINGW64 -> build_msys2.sh;
+# native MSVC (vcpkg toolchain file) -> see README "Building on Windows".
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${1:-$ROOT_DIR/build_cmd}"
 GENERATOR="${GENERATOR:-Ninja}"

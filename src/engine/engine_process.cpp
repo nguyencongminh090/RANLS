@@ -6,6 +6,9 @@
 #ifdef __linux__
 #include <sys/prctl.h>
 #include <unistd.h>
+#elif defined(_WIN32)
+#include <windows.h>
+#include <cstdlib>
 #endif
 
 EngineProcess::EngineProcess() = default;
@@ -34,6 +37,48 @@ void engineChildSetup(gpointer)
     if (::getppid() == 1) ::_exit(1);
 }
 } // namespace
+#elif defined(_WIN32)
+namespace {
+// PORT-03: Windows has no PR_SET_PDEATHSIG. The equivalent is a Job Object
+// with JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE: when the last handle to the job
+// closes — which the OS does for us when this (GUI) process exits for any
+// reason, including a crash or `taskkill /f` — every process still assigned
+// to the job is terminated. One process-wide job is created lazily and each
+// spawned engine is assigned to it right after spawn. The job handle is
+// deliberately never closed: it must stay open for the whole GUI lifetime,
+// and normal process teardown closes it (triggering the kill). This does
+// NOT touch the Linux PR_SET_PDEATHSIG path or the plain Gio::Subprocess
+// fallback used on other platforms.
+HANDLE engineJobObject()
+{
+    static HANDLE job = [] {
+        HANDLE h = ::CreateJobObjectW(nullptr, nullptr);
+        if (h) {
+            JOBOBJECT_EXTENDED_LIMIT_INFORMATION info{};
+            info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+            ::SetInformationJobObject(h, JobObjectExtendedLimitInformation,
+                                     &info, sizeof(info));
+        }
+        return h;
+    }();
+    return job;
+}
+
+void assignToEngineJob(const Glib::RefPtr<Gio::Subprocess> &proc)
+{
+    HANDLE job = engineJobObject();
+    if (!job || !proc) return;
+    // Gio::Subprocess::get_identifier() is the decimal PID string on Windows.
+    std::string ident = proc->get_identifier();
+    if (ident.empty()) return;
+    DWORD pid = static_cast<DWORD>(std::strtoul(ident.c_str(), nullptr, 10));
+    if (pid == 0) return;
+    HANDLE ph = ::OpenProcess(PROCESS_SET_QUOTA | PROCESS_TERMINATE, FALSE, pid);
+    if (!ph) return;
+    ::AssignProcessToJobObject(job, ph);
+    ::CloseHandle(ph);
+}
+} // namespace
 #endif
 
 bool EngineProcess::start(const std::string &enginePath)
@@ -55,9 +100,15 @@ bool EngineProcess::start(const std::string &enginePath)
         g_subprocess_launcher_set_child_setup(
             launcher->gobj(), &engineChildSetup, nullptr, nullptr);
         process_ = launcher->spawn({enginePath});
+#elif defined(_WIN32)
+        // PORT-03: spawn normally, then bind the child to a kill-on-close
+        // Job Object so it dies with the GUI (the PR_SET_PDEATHSIG analogue).
+        process_ = Gio::Subprocess::create({enginePath}, flags);
+        assignToEngineJob(process_);
 #else
-        // Windows/macOS: no PDEATHSIG equivalent wired up here (known gap,
-        // see docs/fix-log — this task targets Linux/GTK4 per project scope).
+        // macOS/other: no clean PR_SET_PDEATHSIG / Job-Object equivalent
+        // (PORT-03). A crashed GUI can orphan the engine here; the
+        // destructor / stop() EOF-on-stdin path is the only cleanup.
         process_ = Gio::Subprocess::create({enginePath}, flags);
 #endif
 

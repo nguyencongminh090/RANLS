@@ -169,6 +169,40 @@ TEST_CASE("UI-10: a user who scrolled up is not yanked back down by new lines")
     window->set_visible(false);
 }
 
+// PORT-03 regression: a BottomPanel destroyed while one of its deferred
+// scroll idles is still queued must not dereference the freed widget when
+// that idle later runs. Before the fix (sigc::track_obj on the
+// scrollEngineLogToBottom / scrollMoveLogToEnd idle slots) this was a
+// use-after-free crash in Gtk::TextView::scroll_to — surfaced deterministically
+// once the engine test harness switched from /bin/cat to the build-tree
+// mock_engine path, and the same defect behind the intermittent "ui12 scroll"
+// crash.
+TEST_CASE("PORT-03: a pending scroll idle does not outlive its BottomPanel")
+{
+    if (!gtkReady()) return;
+
+    {
+        Gtk::Window window;                             // stack-owned
+        auto *panel = Gtk::make_managed<BottomPanel>();  // owned by `window`
+        window.set_child(*panel);
+        window.set_default_size(720, 260);
+        window.set_visible(true);
+        pump(120);
+
+        // Queue scroll idles on both logs, then let `window` (and its managed
+        // `panel`) go out of scope immediately — without pumping long enough
+        // for the idles to run.
+        for (int i = 0; i < 50; ++i) {
+            panel->appendSend(Glib::ustring::compose("pending idle line %1", i));
+            panel->appendMoveLog(Glib::ustring::compose("move %1", i));
+        }
+        window.set_visible(false);
+    }  // window + panel destroyed here with idles still queued
+
+    pump(400);  // the stale idles fire now — must be no-ops, not a crash
+    CHECK(true);
+}
+
 TEST_CASE("UI-14: a SEND burst immediately followed by a RECV burst still ends pinned to the bottom")
 {
     if (!gtkReady()) return;

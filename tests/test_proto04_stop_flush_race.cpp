@@ -55,7 +55,7 @@ bool pumpUntil(const std::function<bool()> &done, int timeoutMs = 3000)
 // Same stand-in as test_anlz06_search_intent_gate.cpp: /bin/cat stays alive
 // reading stdin, never itself produces a coordinate-shaped line, so inbound
 // traffic is simulated separately via EngineProcess::signal_line_received.
-constexpr const char *kFakeEngine = "/bin/cat";
+constexpr const char *kFakeEngine = MOCK_ENGINE_PATH; // PORT-03: portable cat-like stand-in
 
 struct Fixture {
     GameState gs;
