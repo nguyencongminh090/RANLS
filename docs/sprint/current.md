@@ -29,7 +29,7 @@
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| TOOL-02 | `check-task-structure.js` regexes skip `🔲`/`🚧` open items — false orphan reports | — | — | 🔲 Not started |
+| TOOL-02 | `check-task-structure.js` regexes skip `🔲`/`🚧` open items — false orphan reports | — | — | ✅ Done — PR #21, squash `7ceeeed` (2026-09-06). `⛔`/SUPERSEDED-line handling split to TOOL-03 (Backlog). |
 | PROTO-03 | Open Protocol Extension: user-defined `.ptc` runtime commands for Gomocup-family engines | — | — | 🔲 Not started |
 
 Points not yet estimated (consistent with Sprints 3–12).

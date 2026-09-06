@@ -90,7 +90,7 @@ Sprint 13 (opened 2026-09-06, goal "Open Protocol Extension (.ptc runtime comman
 
 ## Backlog
 
-_Empty — TOOL-02 and PROTO-03 pulled into Sprint 13 Active 2026-09-06._
+- 🔲 **TOOL-03.** `check-task-structure.js` still exits 1 on the `⛔`-marked, non-canonically-formatted ANLZ-03 index lines (`⛔` not in the marker alternation; ` SUPERSEDED` inside the `**…**` span). Split out of TOOL-02 (which was scoped to `🔲`/`🚧` only) 2026-09-06. Needs a small decision first — teach the script the `⛔`/SUPERSEDED shape, or normalise the ANLZ-03 lines. [Model: Haiku 4.5] — [detail](docs/todo/TOOL-03-superseded-marker-lines.md)
 
 Filed 2026-09-04 from the WinGraph-coverage discussion (`docs/notes/2026-09-04-wingraph-analyze-mode-and-backfill.md`)
 after web/GitHub research into how Lizzie/LizzieYZY, Sabaki, KaTrain and En Croissant handle it —
@@ -147,6 +147,9 @@ Filed 2026-09-04 (TOOL-02) — surfaced while scaffolding ANLZ-03: `check-task-s
 recognise the `🔲` open-marker, so an open item with a detail file trips its orphan check. Not a
 blocker for `check-tracking-sync.js` (the sprint-command gate), which passes. Detail file scaffolded
 and **pulled from Backlog into Sprint 13 Active 2026-09-06** (see `docs/sprint/current.md`).
+TOOL-02 shipped 2026-09-06 (PR #21, squash `7ceeeed`) — regex widened to `🔲`/`🚧`; the `⛔`
+SUPERSEDED-line case was outside its written scope and is split to **TOOL-03** (Backlog, filed
+2026-09-06).
 
 Filed 2026-08-21 from a full read of `src/` (UI/UX + codebase review). Prefixes: `RT` realtime
 pipeline · `STATE` state lifetime · `PROTO` engine protocol · `ENG` engine lifecycle ·
