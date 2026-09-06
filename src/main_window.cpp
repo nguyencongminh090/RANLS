@@ -128,6 +128,17 @@ MainWindow::MainWindow()
         .clearConsole = [this]() { bottomPanel_.clearEngineLog(); },
     });
 
+    // CONS-01: feed the Engine Log command entry's AutoComplete from the live
+    // command registry. Providers are re-queried on every popover-open so a
+    // post-syncExtensionCommands() `.ptc` set is picked up without a restart.
+    bottomPanel_.setCommandNameProvider([this]() -> std::vector<std::string> {
+        return commandDispatcher_ ? commandDispatcher_->registeredNames()
+                                  : std::vector<std::string>{};
+    });
+    bottomPanel_.setCommandUsageProvider([this](const std::string &name) -> std::string {
+        return commandDispatcher_ ? commandDispatcher_->commandUsage(name) : std::string{};
+    });
+
     connectSignals();
 
     // UI-03: seed the persistent rule indicator once at startup so it never

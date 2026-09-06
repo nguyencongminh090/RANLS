@@ -44,6 +44,19 @@ public:
     /// Print help for all commands.
     void printHelp() const;
 
+    /// CONS-01: read-only snapshot of every currently-registered command name
+    /// (built-ins from registerBuiltins() + whatever syncExtensionCommands()
+    /// last registered), sorted ascending and de-duplicated. Feeds the Engine
+    /// Log command entry's AutoComplete UI, which re-queries this on every
+    /// popover-open so a post-syncExtensionCommands() set is picked up (HC4).
+    /// Does not touch executeLine() routing, handlers_, or pos-session state.
+    std::vector<std::string> registeredNames() const;
+
+    /// CONS-01: the `usage` string registered for `name` (e.g. "!analyze [n]"),
+    /// or "" if no command by that name is registered. Used as the static
+    /// argument hint once a name is complete.
+    std::string commandUsage(const std::string &name) const;
+
     /// PROTO-03: (re)register every `.ptc` extension command the controller
     /// currently exposes into the SAME `!`-prefixed registry as built-ins
     /// (Q7). Idempotent — call after every engine start/reload. Extension

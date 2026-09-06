@@ -26,7 +26,7 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 Sprint 16 (opened 2026-09-07, goal "Engine Log command console: autocomplete + autocorrect") —
 pulled from Backlog:
 
-- 🔲 **CONS-01.** Engine Log command entry: AutoComplete (command suggestion — popover + ghost-text) — [detail](docs/todo/CONS-01-console-command-autocomplete.md) · [instruction](docs/instruction/CONS-01-console-command-autocomplete.md)
+- ✅ **CONS-01.** Engine Log command entry: AutoComplete (command suggestion — popover + ghost-text) — [detail](docs/todo/CONS-01-console-command-autocomplete.md) · [instruction](docs/instruction/CONS-01-console-command-autocomplete.md)
 - 🔲 **CONS-02.** Engine Log command entry: AutoCorrect (missing `!`, wrong case, "did you mean") — depends on CONS-01 — [detail](docs/todo/CONS-02-console-syntax-autocorrect.md) · [instruction](docs/instruction/CONS-02-console-syntax-autocorrect.md)
 
 ## Backlog
