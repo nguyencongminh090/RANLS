@@ -10,15 +10,39 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# ── Find gtkmm-4.0 ──────────────────────────────────────────────────────────
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(GTKMM REQUIRED IMPORTED_TARGET gtkmm-4.0)
+# ── Find gtkmm-4.0 + gio-2.0 ────────────────────────────────────────────────
+#
+# PORT-03: the GCC/Clang + pkg-config path (Linux, MSYS2 MINGW64) is the
+# default and unchanged. Native MSVC has no pkg-config on PATH, so under
+# MSVC we use CMake's own package discovery instead. With vcpkg this means
+# configuring with
+#   -DCMAKE_TOOLCHAIN_FILE=<vcpkg>/scripts/buildsystems/vcpkg.cmake
+# after `vcpkg install gtkmm zlib` — vcpkg ships gtkmm4/glibmm CMake configs
+# (unofficial-* package names) and a `PkgConfig` shim, so pkg_check_modules
+# also works there. See README "Building on Windows".
+if(MSVC)
+    # vcpkg exposes gtkmm via a pkg-config shim; fall back to it if present,
+    # otherwise expect the caller's toolchain to provide gtkmm-4.0.
+    find_package(PkgConfig)
+    if(PkgConfig_FOUND)
+        pkg_check_modules(GTKMM REQUIRED IMPORTED_TARGET gtkmm-4.0)
+        pkg_check_modules(GIO   REQUIRED IMPORTED_TARGET gio-2.0)
+    else()
+        message(FATAL_ERROR
+            "MSVC build needs gtkmm-4.0 via a vcpkg toolchain file "
+            "(pkg-config shim) — see README 'Building on Windows'.")
+    endif()
+else()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(GTKMM REQUIRED IMPORTED_TARGET gtkmm-4.0)
+    # ── gio-2.0 + glib-compile-resources (PORT-02: bundle style.css) ─────────
+    pkg_check_modules(GIO REQUIRED IMPORTED_TARGET gio-2.0)
+endif()
 
 # ── zlib (RDB-01: .rdb container crc32 + deflate payload codec) ──────────────
 find_package(ZLIB REQUIRED)
 
-# ── gio-2.0 + glib-compile-resources (PORT-02: bundle style.css as GResource) ─
-pkg_check_modules(GIO REQUIRED IMPORTED_TARGET gio-2.0)
+# ── glib-compile-resources (PORT-02: bundle style.css as GResource) ─────────
 find_program(GLIB_COMPILE_RESOURCES glib-compile-resources
     HINTS $ENV{HOME}/.local/bin
 )
@@ -122,7 +146,9 @@ configure_file(
 )
 
 # ── Executable ───────────────────────────────────────────────────────────────
-add_executable(ranls-gui ${GUI_SOURCES} ${RANLS_GRESOURCE_C})
+# PORT-03: WIN32 selects the Windows GUI subsystem (no cmd.exe console window
+# on launch). It is silently ignored on non-Windows platforms.
+add_executable(ranls-gui WIN32 ${GUI_SOURCES} ${RANLS_GRESOURCE_C})
 
 target_include_directories(ranls-gui PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -135,9 +161,12 @@ target_link_libraries(ranls-gui PRIVATE
     ZLIB::ZLIB
 )
 
-target_compile_options(ranls-gui PRIVATE
-    -Wall -Wextra -Wpedantic
-)
+# PORT-03: MSVC rejects the GCC/Clang -W* flags; use its own warning level.
+if(MSVC)
+    target_compile_options(ranls-gui PRIVATE /W4 /permissive-)
+else()
+    target_compile_options(ranls-gui PRIVATE -Wall -Wextra -Wpedantic)
+endif()
 
 # ── Install rules (used by package.sh via cmake --install) ──────────────────
 # style.css is bundled into the binary as a GResource (PORT-02) — no sidecar
