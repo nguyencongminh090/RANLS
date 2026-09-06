@@ -1,10 +1,10 @@
 # PORT-03 — Native MSVC build support + portable test harness + Windows engine cleanup
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** 🔲 OPEN (Active — Sprint 15)
 **Area:** `CMakeLists.txt`, `tests/CMakeLists.txt`, ~8 `tests/test_*.cpp`, `src/engine/engine_process.cpp`, new `tests/mock_engine/`
-**Priority:** P3 — only needed if native Visual Studio / Windows CI becomes a goal; MSYS2 MINGW64 already builds and runs
+**Priority:** P3 — MSYS2 MINGW64 already builds and runs; this adds the native MSVC toolchain + a portable test harness so a Windows CI job is possible
 **Source:** Platform-dependency audit 2026-09-06 — see [docs/audit/2026-09-06-platform-dependency-audit.md](../audit/2026-09-06-platform-dependency-audit.md). Split from PORT-01 (Tier 3) per the 2026-09-06 tiering decision.
-**Design:** none yet — needs a decision on whether native MSVC / Windows CI is actually wanted before this leaves Backlog.
+**Design:** none — gate resolved 2026-09-06: native MSVC + Windows CI **is** a supported goal (user decision, see [docs/audit/2026-09-06-native-msvc-windows-ci-goal.md](../audit/2026-09-06-native-msvc-windows-ci-goal.md)). Scope below stands as written; scoped directly.
 **Depends on / relates to:** PORT-01 (Tier-1 guards land first), PORT-02; ENG-03 (the Linux-only PDEATHSIG this extends); audit 2026-09-06.
 
 ## Problem

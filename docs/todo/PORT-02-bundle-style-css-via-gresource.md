@@ -1,6 +1,6 @@
 # PORT-02 — Bundle style.css into the binary via GResource
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** 🔲 OPEN (Active — Sprint 15)
 **Area:** `src/application.cpp`, `CMakeLists.txt`, new `src/resources/ranls.gresource.xml`
 **Priority:** P3 — cosmetic-only failure mode, but the current fallback bakes a developer path into the binary
 **Source:** Platform-dependency audit 2026-09-06 — see [docs/audit/2026-09-06-platform-dependency-audit.md](../audit/2026-09-06-platform-dependency-audit.md). Split from PORT-01 (Tier 2) per the 2026-09-06 tiering decision.

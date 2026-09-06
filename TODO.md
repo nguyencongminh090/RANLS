@@ -93,10 +93,15 @@ Sprint 14 (opened 2026-09-06, goal "Backlog tooling fix + Tier-1 Windows portabi
 - ✅ **TOOL-03.** `check-task-structure.js` still exits 1 on the `⛔`-marked, non-canonically-formatted ANLZ-03 index lines (`⛔` not in the marker alternation; ` SUPERSEDED` inside the `**…**` span). Split out of TOOL-02 (which was scoped to `🔲`/`🚧` only) 2026-09-06. Needs a small decision first — teach the script the `⛔`/SUPERSEDED shape, or normalise the ANLZ-03 lines. [Model: Haiku 4.5] — [detail](docs/todo/TOOL-03-superseded-marker-lines.md)
 - ✅ **PORT-01.** Tier-1 Windows fixes (guarded, isolated, ~30 lines): `#if !defined(_WIN32)` around `<unistd.h>` + a Windows executable-extension check in place of `access(X_OK)` (`settings_dialog.cpp`); `_commit()` alongside `fsync()` so `.rdb` saves are crash-durable on Windows (`rdb_container.cpp`); `GetModuleFileNameW` / `_NSGetExecutablePath` branches in `executableDir()` so settings sit next to the binary, not the launch CWD (`settings_storage.cpp`). No Linux behaviour change. [Model: Sonnet 5] — [detail](docs/todo/PORT-01-cross-platform-build-and-runtime.md)
 
-## Backlog
+Sprint 15 (opened 2026-09-06, goal "Tier-2 Windows portability: bundled assets + MSVC/CI harness") — pulled from Backlog:
 
 - 🔲 **PORT-02.** Bundle `style.css` into the binary via GResource (`load_from_resource`), dropping the `__FILE__`-path fallback in `application.cpp` that currently bakes a build-host absolute path into the executable and loses all styling on any non-CWD launch. [Model: Sonnet 5] — [detail](docs/todo/PORT-02-bundle-style-css-via-gresource.md)
-- 🔲 **PORT-03.** Native MSVC build support + portable test harness: `if(MSVC)` compiler-flag branch + `WIN32` subsystem in `CMakeLists.txt`; a CMake-built `mock_engine` target to replace the hardcoded `/bin/cat` / `/bin/true` stand-ins across 7 test suites; Win32 Job Object so the engine subprocess dies with the GUI on Windows. Needs a decision on whether native MSVC / Windows CI is actually a goal before it leaves Backlog. [Model: Sonnet 5] — [detail](docs/todo/PORT-03-msvc-build-and-portable-test-harness.md)
+- 🔲 **PORT-03.** Native MSVC build support + portable test harness: `if(MSVC)` compiler-flag branch + `WIN32` subsystem in `CMakeLists.txt`; a CMake-built `mock_engine` target to replace the hardcoded `/bin/cat` / `/bin/true` stand-ins across 7 test suites; Win32 Job Object so the engine subprocess dies with the GUI on Windows. Gate resolved 2026-09-06 — native MSVC / Windows CI is a supported goal (audit `docs/audit/2026-09-06-native-msvc-windows-ci-goal.md`). [Model: Sonnet 5] — [detail](docs/todo/PORT-03-msvc-build-and-portable-test-harness.md)
+
+## Backlog
+
+_Empty — PORT-02 and PORT-03 pulled into Sprint 15 Active 2026-09-06._
+
 Filed 2026-09-04 from the WinGraph-coverage discussion (`docs/notes/2026-09-04-wingraph-analyze-mode-and-backfill.md`)
 after web/GitHub research into how Lizzie/LizzieYZY, Sabaki, KaTrain and En Croissant handle it —
 user chose the continuous-analysis ("Lizzie way") approach. ANLZ-01's
@@ -161,9 +166,12 @@ Linux-only?") that turned into a `/systematic-debugging` platform-dependency aud
 against a parallel Gemini report. Findings recorded in
 `docs/audit/2026-09-06-platform-dependency-audit.md`; no code changed. Product decision 2026-09-06
 (after a Gemini advisory pass): keep the portable-app model (settings next to the binary), do the
-Tier-1 guarded fixes now (**PORT-01**, pulled into Sprint 14 Active 2026-09-06), and defer GResource
-asset bundling (**PORT-02**, Backlog) and the MSVC / Windows-CI harness (**PORT-03**, Backlog —
-gated on whether native MSVC is ever a goal). MSYS2/MinGW already builds and runs.
+Tier-1 guarded fixes now (**PORT-01**, shipped Sprint 14, PR #24). PORT-01's MSYS2 MINGW64
+build+launch+save-`.rdb`+pick-engine smoke remains an outstanding human step.
+**PORT-02** (GResource asset bundling) and **PORT-03** (MSVC + Windows-CI harness) were **pulled
+from Backlog into Sprint 15 Active 2026-09-06** (goal "Tier-2 Windows portability") — PORT-03's
+"is native MSVC a goal?" gate was resolved yes the same day (user decision, audit
+`docs/audit/2026-09-06-native-msvc-windows-ci-goal.md`). MSYS2/MinGW already builds and runs.
 
 Filed 2026-08-21 from a full read of `src/` (UI/UX + codebase review). Prefixes: `RT` realtime
 pipeline · `STATE` state lifetime · `PROTO` engine protocol · `ENG` engine lifecycle ·
