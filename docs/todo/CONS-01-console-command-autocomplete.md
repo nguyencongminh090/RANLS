@@ -1,6 +1,6 @@
 # CONS-01 — Engine Log command entry: AutoComplete (command suggestion)
 
-**Status:** 🔲 OPEN (Backlog) — filed 2026-09-07.
+**Status:** 🔲 OPEN (Active — Sprint 16, pulled 2026-09-07) — filed 2026-09-07.
 
 Feature A of `features/console-autocomplete/` (design draft + open questions resolved
 2026-09-07 — see [planning.md](../../features/console-autocomplete/planning.md) Resolution table).

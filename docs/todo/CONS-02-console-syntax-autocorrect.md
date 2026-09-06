@@ -1,6 +1,6 @@
 # CONS-02 — Engine Log command entry: AutoCorrect (syntax fix-ups)
 
-**Status:** 🔲 OPEN (Backlog) — filed 2026-09-07.
+**Status:** 🔲 OPEN (Active — Sprint 16, pulled 2026-09-07) — filed 2026-09-07.
 
 Feature B of `features/console-autocomplete/` (see
 [planning.md](../../features/console-autocomplete/planning.md) Resolution table, 2026-09-07).
