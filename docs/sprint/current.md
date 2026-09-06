@@ -45,7 +45,7 @@ Sprint 14 closed 2026-09-06 (archived: `docs/sprint/archive/sprint-14.md`, relea
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
 | PORT-02 | Bundle `style.css` via GResource; drop the `__FILE__` build-host-path fallback | — | — | ✅ Done (PR #25, squash `328490e`) |
-| PORT-03 | Native MSVC flags + `WIN32` subsystem; portable `mock_engine` test target; Win32 Job Object; Windows CI | PORT-02 (CMake ordering) | — | 🔲 Not started |
+| PORT-03 | Native MSVC flags + `WIN32` subsystem; portable `mock_engine` test target; Win32 Job Object; Windows CI | PORT-02 (CMake ordering) | — | ✅ Done (branch `port-03/…`, 2026-09-06; Linux tier verified, Windows smoke + CI job pending) |
 
 Points not yet estimated (consistent with Sprints 3–14).
 
