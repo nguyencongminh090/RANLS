@@ -384,6 +384,66 @@ void GomocupProtocol::parseLine(const std::string& line) {
         }
         return;
     }
+
+    // PROTO-03: nothing built-in claimed this line — give a loaded `.ptc`
+    // extension's on_reply patterns a chance. Built-in parsing above runs
+    // first and unchanged (PROTO-01 hardening intact); this is purely additive.
+    tryExtensionReply(line);
+}
+
+// ── PROTO-03: extension table ───────────────────────────────────────────────
+void GomocupProtocol::setExtension(std::shared_ptr<protoext::ExtensionTable> table)
+{
+    ext_ = std::move(table);
+}
+
+void GomocupProtocol::tryExtensionReply(const std::string &line)
+{
+    if (!ext_) return;
+    ext_->matchReply(
+        line,
+        [this](const protoext::SinkAction &action) { signal_custom_action.emit(action); },
+        [this](const std::string &msg) { signal_log.emit(EngineMessageType::Debug, msg); });
+}
+
+std::vector<std::string> GomocupProtocol::customCommandNames() const
+{
+    return ext_ ? ext_->commandNames() : std::vector<std::string>{};
+}
+
+std::string GomocupProtocol::customCommandGroup(const std::string &name) const
+{
+    if (!ext_) return {};
+    const auto *cmd = ext_->find(name);
+    return cmd ? cmd->group : std::string{};
+}
+
+std::vector<std::string> GomocupProtocol::generateCustom(
+    const std::string              &name,
+    const std::vector<std::string> &args,
+    const std::vector<Coord>       &path)
+{
+    if (!ext_) return {};
+
+    // Precompute per-item x/y/color — color alternates by index, identical to
+    // generateAnalyzeRequest()'s `(i % 2 == 0) ? 1 : 2`.
+    std::vector<protoext::PathItem> items;
+    items.reserve(path.size());
+    for (size_t i = 0; i < path.size(); ++i) {
+        protoext::PathItem it;
+        it.x = path[i].x;
+        it.y = path[i].y;
+        it.color = (i % 2 == 0) ? 1 : 2;
+        items.push_back(it);
+    }
+
+    std::vector<std::string> out;
+    std::string err;
+    if (!ext_->generateSend(name, args, items, out, err)) {
+        signal_log.emit(EngineMessageType::Error, "PTC command '" + name + "': " + err);
+        return {};
+    }
+    return out;
 }
 
 void GomocupProtocol::resetCurrentPVState() {

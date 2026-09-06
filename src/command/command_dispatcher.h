@@ -44,6 +44,13 @@ public:
     /// Print help for all commands.
     void printHelp() const;
 
+    /// PROTO-03: (re)register every `.ptc` extension command the controller
+    /// currently exposes into the SAME `!`-prefixed registry as built-ins
+    /// (Q7). Idempotent — call after every engine start/reload. Extension
+    /// commands land in the `[extension]` help group; their declared `group`
+    /// is informational only (Q9).
+    void syncExtensionCommands();
+
 private:
     using Handler = std::function<void(const Command &)>;
 
@@ -86,5 +93,9 @@ private:
     std::vector<CommandSpec> specs_;
     std::unordered_map<std::string, Handler> handlers_;
     std::optional<PosSession> posSession_;
+
+    /// PROTO-03: names currently registered via syncExtensionCommands(), so a
+    /// later sync can drop the stale ones before adding the new set.
+    std::vector<std::string> extensionCommandNames_;
 };
 

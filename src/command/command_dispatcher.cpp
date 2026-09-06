@@ -330,6 +330,7 @@ void CommandDispatcher::registerBuiltins()
                 }
                 ctx_.controller.startEngine();
                 ctx_.controller.sendConfig();
+                syncExtensionCommands();  // PROTO-03
                 printInfo("OK: engine started");
             } else if (sub == "stop") {
                 ctx_.controller.stopEngine();
@@ -560,6 +561,42 @@ void CommandDispatcher::registerBuiltins()
                 printError("Unknown database subcommand: " + sub);
             }
         });
+}
+
+void CommandDispatcher::syncExtensionCommands()
+{
+    // Drop any previously-registered extension commands (a reload may remove
+    // or replace them). They live in the same registry as built-ins (Q7).
+    for (const auto &name : extensionCommandNames_) {
+        handlers_.erase(name);
+        specs_.erase(std::remove_if(specs_.begin(), specs_.end(),
+                                    [&](const CommandSpec &s) { return s.name == name; }),
+                     specs_.end());
+    }
+    extensionCommandNames_.clear();
+
+    for (const auto &name : ctx_.controller.customCommandNames()) {
+        // Defensive: never shadow a built-in even if the loader's Q3 check is
+        // somehow bypassed.
+        if (handlers_.count(name)) continue;
+        std::string grp = ctx_.controller.customCommandGroup(name);
+        CommandSpec spec{
+            "extension",
+            name,
+            "!" + name + " [args...]",
+            grp.empty() ? std::string("extension command")
+                        : ("extension command (" + grp + ")"),
+        };
+        std::string cmdName = name;
+        registerCommand(std::move(spec), [this, cmdName](const Command &c) {
+            if (!ctx_.engine.isRunning()) {
+                printError("Engine not running. Use: !engine start");
+                return;
+            }
+            ctx_.controller.sendCustomCommand(cmdName, c.args);
+        });
+        extensionCommandNames_.push_back(name);
+    }
 }
 
 void CommandDispatcher::setEngineConfigKey(const std::string &key, const std::string &value)

@@ -1,6 +1,8 @@
 #include "engine_controller.h"
 #include "gomocup_protocol.h"
+#include <fstream>
 #include <iostream>
+#include <iterator>
 
 EngineController::EngineController(GameState &gameState, EngineProcess &engine)
     : gameState_(gameState)
@@ -158,6 +160,15 @@ void EngineController::connectProtocolSignals() {
         protocol_->clearAnalysisState();
     });
 
+    // PROTO-03: forward matched-on_reply sink actions. GomocupProtocol always
+    // implements ICustomCommandSource, but signal_custom_action only ever
+    // fires once a `.ptc` table is loaded AND a pattern matches — a
+    // `.ptc`-less run is unaffected.
+    if (auto *cs = dynamic_cast<ICustomCommandSource *>(protocol_.get())) {
+        cs->signal_custom_action.connect(
+            [this](const protoext::SinkAction &a) { signal_custom_action.emit(a); });
+    }
+
     protocol_->signal_database_entry.connect([this](const DatabaseEntry& entry) {
         signal_database_entry.emit(entry);
     });
@@ -205,6 +216,65 @@ void EngineController::startEngine()
     }
 
     setState(EngineState::Idle);
+
+    // PROTO-03: load-once (Q6) — pick up the configured `.ptc` for this session.
+    loadExtensionTable();
+}
+
+void EngineController::loadExtensionTable()
+{
+    // Start clean: a reload must not inherit the previous session's table.
+    customSource_ = nullptr;
+    extensionTable_.reset();
+    auto *gp = dynamic_cast<GomocupProtocol *>(protocol_.get());
+    if (gp) gp->setExtension(nullptr);
+
+    const std::string &path = gameState_.engineConfig().protocolExtensionPath;
+    if (path.empty() || !gp) return;
+
+    std::ifstream in(path, std::ios::binary);
+    if (!in.is_open()) {
+        signal_engine_output.emit("Error", "PTC: cannot open extension file: " + path);
+        return;
+    }
+    std::string text((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+
+    std::string err;
+    auto table = protoext::ExtensionTable::loadFromString(
+        text, protoext::builtinCommandNames(), err);
+    if (!table) {
+        // Fail closed (Q3/Q5): engine still runs with only built-in behaviour.
+        signal_engine_output.emit("Error", "PTC rejected (" + path + "): " + err);
+        return;
+    }
+
+    extensionTable_ = std::make_shared<protoext::ExtensionTable>(std::move(*table));
+    gp->setExtension(extensionTable_);
+    customSource_ = dynamic_cast<ICustomCommandSource *>(protocol_.get());
+    signal_engine_output.emit(
+        "Output", "PTC loaded: " + std::to_string(extensionTable_->commands().size()) +
+                      " extension command(s) from " + path);
+}
+
+void EngineController::sendCustomCommand(const std::string &name,
+                                        const std::vector<std::string> &args)
+{
+    if (!isUsable() || !customSource_) return;
+    auto lines = customSource_->generateCustom(name, args, gameState_.currentPath());
+    if (lines.empty()) return; // error already surfaced via signal_log
+    sendOrDefer([this, lines = std::move(lines)]() {
+        for (const auto &l : lines) engine_.sendLine(l);
+    });
+}
+
+std::vector<std::string> EngineController::customCommandNames() const
+{
+    return customSource_ ? customSource_->customCommandNames() : std::vector<std::string>{};
+}
+
+std::string EngineController::customCommandGroup(const std::string &name) const
+{
+    return customSource_ ? customSource_->customCommandGroup(name) : std::string{};
 }
 
 void EngineController::stopEngine(std::function<void()> onComplete)
