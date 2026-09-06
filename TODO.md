@@ -5,210 +5,91 @@ for the full convention before editing this file.
 
 - **Backlog** — prioritized, not yet committed to a sprint.
 - **Active** — committed to the current sprint (see `docs/sprint/current.md`).
+- **Completed** — shipped items, kept only as links to their detail files. Per-sprint context
+  (goal, committed `CODE`s, burndown, roll-overs) lives in `docs/sprint/archive/sprint-*.md`;
+  per-fix detail in `docs/fix-log.md`; non-bug decisions in `docs/audit.md`.
 
 Each line links to its detail file at `docs/todo/<CODE>-<slug>.md`. `CODE` = a 2-5 letter
-feature-area prefix + running number (e.g. `WALL-01`, `UI-07`). `✅` marks a finished item — see
-`.claude/rules/tracking-files.md` for the index/detail sync rule this implies.
+feature-area prefix + running number. `✅` marks a finished item, `⛔` a superseded one — see
+`.claude/rules/tracking-files.md` for the index/detail sync rule.
+
+Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engine protocol ·
+`ENG` engine lifecycle · `NAV` navigation · `UI` display logic · `UX` usability · `TEST` harness ·
+`CLEAN` hygiene · `IO` game persistence · `DOC` documentation · `TOOL` repo tooling ·
+`REL` release/versioning · `PORT` cross-platform portability · `ANLZ` analyze mode ·
+`RDB` `.rdb` save format · `NAME` app naming.
 
 ---
 
 ## Active
-- ✅ **TEST-01.** No test infrastructure exists — blocks the regression tests STATE-01 and PROTO-01 require [Model: Sonnet 5] — [detail](docs/todo/TEST-01-test-infrastructure.md)
-- ✅ **PROTO-01.** Harden the Gomocup parser: out-of-bounds `currentPVs_[-1]` in `onPVDone`, unbounded `NUMPV` resize, unvalidated database coords [Model: Sonnet 5] — [detail](docs/todo/PROTO-01-parser-hardening.md)
-- ✅ **STATE-01.** Stale PV / engine status / board markers survive New Game, makeMove, and undo/redo [Model: Sonnet 5] — [detail](docs/todo/STATE-01-stale-analysis-after-position-change.md)
-- ✅ **RT-01.** No throttle anywhere on the engine→UI analysis path; 6 emit sites drive a full UI rebuild per parsed line [Model: Sonnet 5] — [detail](docs/todo/RT-01-throttle-analysis-signal.md)
-- ✅ **STATE-02.** Settings dialog silently resets `multiPV` and wipes `customParams`, then persists it — [detail](docs/todo/STATE-02-settings-dialog-drops-config-fields.md)
-- ✅ **ENG-01.** Engine state is dishonest ("● ON" with no process, crash ≡ never-started, no "thinking" state) and stopping blocks the UI ~2.5s — [detail](docs/todo/ENG-01-engine-state-honesty-and-blocking-stop.md)
-- ✅ **RT-02.** Engine log grows unbounded and writes per-line; gutter labels desync on wrap — [detail](docs/todo/RT-02-engine-log-unbounded.md)
-- ✅ **RT-03.** PVView full rebuild destroys hover, breaking the board PV ghost-stone preview during analysis — [detail](docs/todo/RT-03-pvview-rebuild-breaks-hover.md)
-- ✅ **PROTO-02.** Hardcoded board size 15 in coordinate parsing, `Best:` readout, and star points — breaks every non-15×15 board — [detail](docs/todo/PROTO-02-hardcoded-board-size-15.md)
-- ✅ **STATE-03.** `currentPVs_` never shrinks and materialises empty PV slots rendered as garbage rows — [detail](docs/todo/STATE-03-currentpvs-never-shrinks.md)
-- ✅ **RT-04.** Both tree views fully rebuild many times per second during analysis; `layoutTree` is O(n²) — [detail](docs/todo/RT-04-tree-views-full-rebuild.md)
-- ✅ **NAV-01.** `undoAll`/`redoAll` send one database query and rebuild the whole UI per ply — [detail](docs/todo/NAV-01-undoall-floods-engine-and-ui.md)
-- ✅ **UI-01.** Win-rate graph attributes evals to the wrong side (off by one ply); evals can go unrecorded — [detail](docs/todo/UI-01-winrate-attribution-errors.md)
-- ✅ **UI-02.** Tree "Table" tab can't click-to-jump and shows no current path; the two tree views disagree — [detail](docs/todo/UI-02-tree-view-parity.md)
-- ✅ **UI-03.** Selected rule (Renju/Standard) has no effect on what the board shows — [detail](docs/todo/UI-03-rule-not-visible-on-board.md)
-- ✅ **UX-01.** Three panels render as blank rectangles instead of empty states — [detail](docs/todo/UX-01-empty-states.md)
-- ✅ **UX-02.** Settings dialog accepts an invalid engine path with no feedback — [detail](docs/todo/UX-02-settings-validation.md)
-- ✅ **UX-03.** Unlabelled icon buttons, no focus indication on custom-drawn widgets, no confirmation before destroying a game — [detail](docs/todo/UX-03-accessibility-and-destructive-actions.md)
-- ✅ **UX-04.** Board rendering never verified at the extremes of the supported 5–22 range (investigation) — [detail](docs/todo/UX-04-board-size-ergonomics.md)
-- ✅ **CLEAN-01.** Leaked dialogs, dead signals, leftover debug output, duplicated constant — [detail](docs/todo/CLEAN-01-dialog-leaks-and-dead-code.md)
-- ✅ **UX-05.** `Gtk::Paned` divider position doesn't rescale when the window is resized back up after being shrunk, leaving the board squeezed — [detail](docs/todo/UX-05-paned-resize-does-not-restore.md)
-- ✅ **IO-01.** `onLoadGame()`/`onSaveGame()` are empty stubs — Load/Save Game silently do nothing [Model: Sonnet 5] — [detail](docs/todo/IO-01-load-save-game.md)
-- ✅ **DOC-01.** README.md claims GTK3; project actually targets GTK4 [Model: Haiku 4.5] — [detail](docs/todo/DOC-01-readme-gtk-mismatch.md)
-- ✅ **TOOL-01.** `check-tracking-sync.js` still isn't wired as a `Stop` hook [Model: Haiku 4.5] — [detail](docs/todo/TOOL-01-wire-tracking-sync-hook.md)
-- ✅ **CLEAN-02.** Uncommitted `build.sh` mode change; `build/`/`build_dist/` untracked and ungitignored [Model: Haiku 4.5] — [detail](docs/todo/CLEAN-02-build-artifacts-and-gitignore.md)
-- ✅ **UI-04.** PV view appends lines across positions instead of replacing; shows multiple `PV #1` rows with MultiPV=1 — [detail](docs/todo/UI-04-pv-view-appends-across-positions.md)
-- ✅ **UI-05.** Engine Log: move the direction tag (`[SEND]`/`[MESSAGE]`/…) into a fixed-width non-copyable gutter column so row copies contain only engine text — [detail](docs/todo/UI-05-engine-log-direction-gutter-column.md)
-- ✅ **UX-06.** Settings "UI Setting" section: Show Coordinates and Light/Dark do nothing, WinGraph Mode unclear/misrendering, UI Profile undefined; plus organise the dialog — [detail](docs/todo/UX-06-settings-dialog-ui-section-broken-and-unclear.md)
-- ✅ **UI-06.** Rename the redundant "Analysis" menu to "Engine plays" (Black/White/Off auto-move selector); new `MatchConfig`. Design resolved with user 2026-08-30 — [detail](docs/todo/UI-06-analysis-menu-duplicate-repurpose-to-player-assignment.md)
-- ✅ **UI-07.** PV panel still accumulates a stale row per analysed position (real `MESSAGE depth …` format; UI-04's fix missed this) — [detail](docs/todo/UI-07-pv-panel-still-accumulates-across-positions.md)
-- ✅ **STATE-04.** Rule and board size are never persisted — reset to Freestyle / default on every launch (found during UI-06 smoke); design resolved with user 2026-08-30 [Model: Sonnet 5] — [detail](docs/todo/STATE-04-rule-and-board-size-not-persisted.md)
 
-Sprint 7 (opened 2026-08-31, goal "UI polish + release prep") — pulled from Backlog:
-
-- ✅ **UI-08.** Remove the empty-state placeholder text ("No moves yet", "No analysis yet", …); keep panels clean/empty — partial reversal of UX-01 — [detail](docs/todo/UI-08-remove-empty-state-placeholder-text.md)
-- ✅ **ENG-02.** Interrupting engine auto-play (Stop / manual analyze on the engine's turn) reverts "Engine plays" to Off (manual analyze) — builds on UI-06 — [detail](docs/todo/ENG-02-engine-play-interrupted-reverts-to-manual.md)
-- ✅ **UI-09.** Win-rate graph: SingleSide is always Black (drop the follow-engine-side coupling from UX-06, write notes); keep BothSide; make the win-rate line thicker + higher-contrast (colour-theory / WCAG pass) — [detail](docs/todo/UI-09-wingraph-single-side-black-and-thicker-line.md)
-- ✅ **REL-01.** No user-facing version history: create root `CHANGELOG.md` ("Keep a Changelog", SemVer 0.x), backfill Sprints 1–6, add a "cut a release" checklist + tag `v0.1.0`; doc/process only — [detail](docs/todo/REL-01-changelog-and-release-checklist.md)
-- ✅ **REL-02.** Version string disagrees across CMake (`1.0.0`), About dialog (`"2.0"`), and git (no tags): single-source it via `configure_file` → `version.h`, wire into About + a pre-GTK `--version` flag. Depends on REL-01 — [detail](docs/todo/REL-02-version-string-single-source.md)
-
-Sprint 8 (opened 2026-08-31, goal "Engine-log sticky-bottom + About-window rewrite") — pulled from Backlog:
-
-- ✅ **UI-10.** Engine Log doesn't stay scrolled to the end while the engine is analysing — new streamed lines land off-screen; expected sticky-bottom during analysis — [detail](docs/todo/UI-10-engine-log-not-sticky-to-bottom-during-analysis.md)
-- ✅ **UI-11.** Rewrite the About window: custom deliberate layout (logo + info column), add developer credit (Nguyen Minh), tech/build info, links & protocol; correct the app name to `RANLS`; keep `APP_VERSION` single-sourced (REL-02) — [detail](docs/todo/UI-11-about-window-rewrite.md)
-- ✅ **UI-12.** Move Log doesn't auto-scroll to the newest move — same `Gtk::Overlay`-breaks-`Gtk::Scrollable` no-op that UI-10's second pass fixed for the Engine Log — [detail](docs/todo/UI-12-move-log-not-sticky-to-bottom.md) — pulled into Sprint 8 Active 2026-08-31
-
-Sprint 9 (opened 2026-09-03, goal "WinGraph coverage + app-wide RANLS rename") — pulled from Backlog:
-
-- ✅ **UI-13.** WinGraph skips one side's plies: per-node evals are written only for the position at `currentPath()` during a search, so with "Engine plays <side>" the opponent's plies stay NaN. Graph should record the returned win% for every analysed position regardless of side. Trace + candidate fixes in detail file (filed 2026-09-03 from user report) — [detail](docs/todo/UI-13-wingraph-record-eval-regardless-of-side.md) · [instruction](docs/instruction/UI-13-wingraph-record-eval-regardless-of-side.md)
-- ✅ **NAME-01.** Consistent app-wide rename `"Rapfi Analysis"` → `RANLS`: window title (`src/main_window.cpp:114`), `style.css` header comment, GTK application id, and a future `.desktop` file. Split out of UI-11 (which renamed only the About dialog's own text) per user decision 2026-08-31 — [detail](docs/todo/NAME-01-app-wide-rename-ranls.md)
-
-Sprint 10 (opened 2026-09-04, goal "Analyze Mode — continuous background analysis for full WinGraph coverage") — pulled from Backlog:
-
-- ✅ **ANLZ-01.** Analyze Mode — continuous background analysis so WinGraph fills a real point for every position the user visits (the "Lizzie way"); no formula backfill on the plotted line. Orthogonal to "Engine plays". Design resolved — `features/analyze-mode/planning.md` Q1–Q8 accepted 2026-09-04. Supersedes the `GRAPH-xx` "evaluate the whole played line" idea. [Model: Sonnet 5] — shipped 2026-09-04 (PR #9, squash `0ae2b8a`); build clean, ctest 3/3, +`test_anlz01_analyze_mode_coverage.cpp` / `test_anlz01_analyze_mode_action.cpp` / +1 settings case; manual live-engine smoke still needs a human — [detail](docs/todo/ANLZ-01-continuous-analyze-mode.md) · [instruction](docs/instruction/ANLZ-01-continuous-analyze-mode.md) · [fix-log](docs/fix-log/2026-09-04-analyze-mode.md) · design `features/analyze-mode/`
-- ✅ **ANLZ-04.** WinGraph: draw a faint dashed "bridge" segment connecting the two nearest evaluated plies across a NaN run, instead of breaking the line into disjoint segments. Always on, no gap-length cap; gap plies still get no dot and hover still reads "(no eval)". Deliberate refinement of UI-01's "disjoint segments" rule — needs a `docs/audit/` entry. [Model: Sonnet 5] — pulled from Backlog into Sprint 10 Active 2026-09-04 (mid-sprint, after ANLZ-01 shipped) — [detail](docs/todo/ANLZ-04-wingraph-bridge-nan-gaps.md) · [instruction](docs/instruction/ANLZ-04-wingraph-bridge-nan-gaps.md)
-
-Sprint 11 (opened 2026-09-04, goal "New `.rdb` binary save format — persist the full variation tree + per-node analysis so a reloaded game keeps its WinGraph") — pulled from Backlog. Integration branch `feat/rdb-save-format` (sub-PRs merge into it; one PR back to `main`):
-
-- ⛔ **ANLZ-03. SUPERSEDED** by RDB-01/02/03 (user decision 2026-09-04: reject extending `.yxgame`, introduce binary `.rdb` instead). Its goal (reloaded game keeps its WinGraph) + regression-test intent carry into RDB-03. — [detail](docs/todo/ANLZ-03-persist-winrate-in-save-file.md) · design [features/rdb-save-format/](features/rdb-save-format/)
-- ✅ **RDB-01.** `.rdb` container framing (`"RDB1"` magic + header) + `ICompressor` (Raw / DEFLATE-over-zlib) + `GameGraph` serialisation DTO + hand-rolled CBOR payload codec + `VariationTree`↔`GameGraph` convert. Model-layer only, no UI. [Model: Sonnet 5] — [detail](docs/todo/RDB-01-rdb-container-and-codec.md) · [instruction](docs/instruction/RDB-01-rdb-container-and-codec.md)
-- ✅ **RDB-02.** Wire `.rdb` into Save/Open via `IGameArchiveReader/Writer` + `RdbArchive` + `YxgameReader` (import-only) + extension factory; retire `GameIO::saveGame`; dialog filters. Depends on RDB-01. [Model: Sonnet 5] — [detail](docs/todo/RDB-02-wire-rdb-into-save-open.md) · [instruction](docs/instruction/RDB-02-wire-rdb-into-save-open.md)
-- ✅ **RDB-03.** Persist + restore per-node analysis end-to-end (extend `TreeNode`, resolve the `evalHistory()` gate, full save→reopen→WinGraph-identical path) — **closes the original ANLZ-03 goal** + carries its NaN-round-trip / legacy-import / out-of-range regression tests. Depends on RDB-01+02. [Model: Sonnet 5] — [detail](docs/todo/RDB-03-persist-restore-node-analysis.md) · [instruction](docs/instruction/RDB-03-persist-restore-node-analysis.md)
-
-Sprint 12 (opened 2026-09-04, goal "Post-ANLZ-01 Analyze Mode fixes plus engine-subprocess cleanup on exit") — pulled from Backlog:
-
-- ✅ **ANLZ-05.** Analyze Mode refinement (user report 2026-09-04 against shipped ANLZ-01): (1) while Analyze Mode is on the engine must **never** auto-move — not even on its own turn under "Engine plays &lt;side&gt;" — it only analyses; Stop just stops the search. **Reverses `features/analyze-mode/planning.md` Q6.** (2) A board click during an in-flight Analyze-Mode search stops the search, places the stone, and restarts analysis (today `makeMove()`'s `analyzing_` guard silently swallows it). `MainWindow`-layer only, orthogonal to ENG-02; one-shot Analyze / "Engine plays" with Analyze Mode off unchanged. [Model: Sonnet 5] — [detail](docs/todo/ANLZ-05-analyze-mode-no-automove-allow-mid-search-moves.md) · [instruction](docs/instruction/ANLZ-05-analyze-mode-no-automove-allow-mid-search-moves.md)
-- ✅ **ENG-03.** Engine subprocess can be orphaned when the window is closed via the WM close button ("X") or when the GUI crashes: `signal_close_request` is unwired (only the Quit menu/hotkey stops the engine), the heap `MainWindow` is never `delete`d, and there is no `PR_SET_PDEATHSIG`. Relies on the engine self-exiting on stdin EOF — a mid-search engine lingers, a non-compliant one leaks. Wire close-request → graceful stop + add PDEATHSIG. Builds on ENG-01, must not regress ENG-02. [Model: Sonnet 5] — [detail](docs/todo/ENG-03-orphaned-engine-on-crash-or-wm-close.md) · [instruction](docs/instruction/ENG-03-orphaned-engine-on-crash-or-wm-close.md)
-- ✅ **ANLZ-06.** Regression against shipped ANLZ-05 (user report 2026-09-04): in Analyze Mode an analysis search's best move is auto-played on the board — (1) pressing Stop drops a stone; (2) a board click mid-search produces a double move (user's stone **and** the engine's for the same turn, e.g. `a1 a2 a3` + user `a4` → `a1 a2 a3 a4 b1`). Root cause (`/systematic-debugging` Phase 1–2 done): `analyze()`'s `YXNBEST` request culminates in the engine emitting a bestmove coordinate line, and `EngineController` relays **every** coordinate line to `signal_engine_move` unconditionally (`engine_controller.cpp:68`) — no analysis-vs-move-intent discriminator. Fix in `EngineController` only: a `SearchIntent` flag set by `analyze()` / `requestEngineMove()`, gate `signal_engine_move`, reset on every stop path. `YXNBEST` request unchanged; ENG-02 / UI-06 / one-shot Analyze unchanged. [Model: Sonnet 5] — [detail](docs/todo/ANLZ-06-analyze-mode-search-plays-stray-move.md) · [instruction](docs/instruction/ANLZ-06-analyze-mode-search-plays-stray-move.md)
-- ✅ **ANLZ-07.** Regression against shipped ANLZ-06 (user report 2026-09-04, same transcript): once ANLZ-06 correctly stops playing the discarded coordinate, Analyze Mode never settles — `scheduleAnalyzeModeRestart()` re-arms unconditionally on every Idle transition with no check that the position or result changed, so once a search converges quickly (a forced mate in the report, but any fast-converging position) it busy-loops `STOP`→full board redump→`YXNBEST`→discard→`STOP`→… at native CPU speed, forever. Fixed: `EngineController::analysisConverged()` (skip-restart-if-unchanged, no backstop timer, per the resolved design). [Model: Sonnet 5] — [detail](docs/todo/ANLZ-07-analyze-mode-restart-busy-loop.md) · [instruction](docs/instruction/ANLZ-07-analyze-mode-restart-busy-loop.md)
-
-Sprint 13 (opened 2026-09-06, goal "Open Protocol Extension (.ptc runtime commands) plus tracking-tool marker fix") — pulled from Backlog:
-
-- ✅ **TOOL-02.** `check-task-structure.js` regexes (`BULLET_START_RE` / `TODO_LINE_RE`) only recognise `✅` or no marker — a `🔲` open-marker line is silently skipped, so an open Backlog/Active item with a detail file is falsely reported as an orphan. Add `🔲` (and `🚧`) to the marker alternation. [Model: Haiku 4.5] — [detail](docs/todo/TOOL-02-check-task-structure-markers.md)
-- ✅ **PROTO-03.** Open Protocol Extension: let an engine developer declare new console-triggered commands via a `.ptc` (TOML) file, loaded by `GomocupProtocol` at runtime — no C++ change, no YixinBoard rebuild. `group` classification (6 instant kinds; real-search `analysis` kind deferred), typed `args`, single-line or open/repeat/close `send` (mirrors `YXBOARD`/`BOARD...DONE`, can use live `$currentPath`), single-line `on_reply` with a bounded `if/elif/else` DSL calling 3 whitelisted sinks. Design resolved 2026-09-05/06, `features/protocol-extension/planning.md` Q1–Q9 accepted — [detail](docs/todo/PROTO-03-open-protocol-extension.md) · design `features/protocol-extension/`
-
-Sprint 14 (opened 2026-09-06, goal "Backlog tooling fix + Tier-1 Windows portability") — pulled from Backlog:
-
-- ✅ **TOOL-03.** `check-task-structure.js` still exits 1 on the `⛔`-marked, non-canonically-formatted ANLZ-03 index lines (`⛔` not in the marker alternation; ` SUPERSEDED` inside the `**…**` span). Split out of TOOL-02 (which was scoped to `🔲`/`🚧` only) 2026-09-06. Needs a small decision first — teach the script the `⛔`/SUPERSEDED shape, or normalise the ANLZ-03 lines. [Model: Haiku 4.5] — [detail](docs/todo/TOOL-03-superseded-marker-lines.md)
-- ✅ **PORT-01.** Tier-1 Windows fixes (guarded, isolated, ~30 lines): `#if !defined(_WIN32)` around `<unistd.h>` + a Windows executable-extension check in place of `access(X_OK)` (`settings_dialog.cpp`); `_commit()` alongside `fsync()` so `.rdb` saves are crash-durable on Windows (`rdb_container.cpp`); `GetModuleFileNameW` / `_NSGetExecutablePath` branches in `executableDir()` so settings sit next to the binary, not the launch CWD (`settings_storage.cpp`). No Linux behaviour change. [Model: Sonnet 5] — [detail](docs/todo/PORT-01-cross-platform-build-and-runtime.md)
-
-Sprint 15 (opened 2026-09-06, goal "Tier-2 Windows portability: bundled assets + MSVC/CI harness") — pulled from Backlog:
-
-- ✅ **PORT-02.** Bundle `style.css` into the binary via GResource (`load_from_resource`), dropping the `__FILE__`-path fallback in `application.cpp` that currently bakes a build-host absolute path into the executable and loses all styling on any non-CWD launch. [Model: Sonnet 5] — [detail](docs/todo/PORT-02-bundle-style-css-via-gresource.md) — shipped 2026-09-06 (PR #25, squash `328490e`); build clean, `strings ranls-gui | grep /run/media` empty, new `port02-style-css-bundled` CTest + `ranls-gui-tests` + `rel02` pass, `ranls-gui-ui-tests` unchanged (2 pre-existing flakes: anlz05 wire race + ui12 scroll)
-- ✅ **PORT-03.** Native MSVC build support + portable test harness: `if(MSVC)` compiler-flag branch + `WIN32` subsystem in `CMakeLists.txt`; a CMake-built `mock_engine` target to replace the hardcoded `/bin/cat` / `/bin/true` stand-ins across 7 test suites; Win32 Job Object so the engine subprocess dies with the GUI on Windows. Gate resolved 2026-09-06 — native MSVC / Windows CI is a supported goal (audit `docs/audit/2026-09-06-native-msvc-windows-ci-goal.md`). [Model: Sonnet 5] — [detail](docs/todo/PORT-03-msvc-build-and-portable-test-harness.md) — done 2026-09-06 (branch `port-03/msvc-build-and-portable-test-harness`); scope items 1–3 landed, item 4 (Windows CI job) deferred as optional follow-up. Linux tier: clean from-scratch build (no new warnings), `ranls-gui-tests` 209/209, `port02`+`rel02` pass, `ranls-gui-ui-tests` 29/30 (lone failure `test_anlz05_no_automove_action` = pre-existing ANLZ-05 wire race, identical on baseline `670d0dc`; the prior deterministic ui-tests SIGSEGV was a pre-existing `BottomPanel` scroll-idle UAF, now fixed with `sigc::track_obj` + regression test — also resolves the "ui12 scroll" flake). Windows tier (native MSVC compile, no console window, `taskkill /f` orphan check) pending a human smoke test. See [fix-log](docs/fix-log/2026-09-06-port-03-msvc-build-and-portable-test-harness.md).
-
-Sprint 15 — pulled from Backlog mid-sprint 2026-09-06:
-
-- ✅ **UI-15.** Move Log sticky-bottom races the GTK4 `GtkScrolledWindow` kinetic-scroll animation — `scrollMoveLogToEnd()` only calls `scroll_to(mark)`, never the direct `vadj->set_value(maxValue)` snap UI-14 added to the Engine Log path. Load-dependent flake in `test_ui12_move_log_scroll_target` (line 136); a real gap on fast game replay. PORT-03 fixed the related idle-UAF crash but not this. [Model: Sonnet 5] — [detail](docs/todo/UI-15-move-log-scroll-races-kinetic-animation.md) — done 2026-09-06 (PR #29, squash `28d1513`); `scrollMoveLogToEnd()` now mirrors `scrollEngineLogToBottom()`'s direct `scrolledMoveLog_` vadjustment snap on both the immediate call and the `track_obj` idle re-issue; `test_ui12_move_log_scroll_target` converted to a condition-based wait. Build clean (no new warnings); `test_ui12` 20/20 direct runs under `nproc`-wide CPU load + 5/5 under `ctest` load; `ranls-gui-ui-tests` 30/30, `ranls-gui-tests` 209/209, `port02`+`rel02` pass. See [fix-log](docs/fix-log/2026-09-06-ui-15-move-log-scroll-races-kinetic-animation.md).
+No sprint open (see `docs/sprint/current.md`). Run `/sprint open <N> "<goal>" <CODE...>` to commit
+Backlog items.
 
 ## Backlog
 
-Filed 2026-09-04 from the WinGraph-coverage discussion (`docs/notes/2026-09-04-wingraph-analyze-mode-and-backfill.md`)
-after web/GitHub research into how Lizzie/LizzieYZY, Sabaki, KaTrain and En Croissant handle it —
-user chose the continuous-analysis ("Lizzie way") approach. ANLZ-01's
-`features/analyze-mode/planning.md` Q1–Q8 were resolved with the user 2026-09-04 (all 8 proposed
-defaults accepted verbatim) — **ANLZ-01 pulled into Sprint 10 Active 2026-09-04** (see
-`docs/sprint/current.md`).
+No open items — everything filed to date has shipped. New work enters here via
+`docs/notes/` → `features/<slug>/` → `docs/todo/<CODE>-<slug>.md` + a Backlog line.
 
-The old **ANLZ-02** ("Analyze entire game" one-shot sweep) and the briefly-considered
-"Toggle Ponder" idea were both **dropped 2026-09-04** — a CPU alpha-beta engine (Rapfi) is too
-expensive to keep pondering the way Lizzie can with GPU KataGo, and ANLZ-04's connected graph
-covers the discontinuity that motivated them. `ANLZ-02` is a retired code, not reused. ANLZ-04 was
-filed to Backlog then **pulled into Sprint 10 Active 2026-09-04** (mid-sprint, after ANLZ-01 shipped —
-see `docs/sprint/current.md`). ANLZ-03 (follows ANLZ-01) had its
-`docs/todo/ANLZ-03-persist-winrate-in-save-file.md` + `docs/instruction/` detail files scaffolded
-2026-09-04, then was **pulled from Backlog into Sprint 11 Active 2026-09-04** (see
-`docs/sprint/current.md`) — Sprint 11 goal: make the per-position win% durable across save/load.
-**Superseded 2026-09-04 during implementation discussion**: user rejected extending the `.yxgame`
-text schema and chose a new binary `.rdb` (Ranls Database) format — CBOR payload + DEFLATE
-container, whole variation tree + per-node analysis, open/versioned structure (tree not DAG,
-single-game — reasoning in `features/rdb-save-format/planning.md`). ANLZ-03 → `⛔ SUPERSEDED`;
-work re-split into `RDB-01` (container/codec/DTO), `RDB-02` (Save/Open wiring, `.yxgame`
-import-only), `RDB-03` (per-node analysis persistence — closes ANLZ-03's goal). Sprint 11 re-planned
-around `RDB-01..03` on integration branch `feat/rdb-save-format`.
+## Completed
 
-Filed 2026-09-04 (ANLZ-05) from a user report against the shipped ANLZ-01: in Analyze Mode the
-engine should never auto-move and a click should be accepted mid-search. Reverses planning Q6
-(see `features/analyze-mode/planning.md` "Revision 2026-09-04") — **pulled into Sprint 12 Active
-2026-09-04** (see `docs/sprint/current.md`).
+Shipped in Sprints 1–15 (all archived in `docs/sprint/archive/`):
 
-Filed 2026-09-04 (ANLZ-06) from a user report against the just-merged ANLZ-05 (PR #15): in Analyze
-Mode an analysis search's best move is auto-played (Stop drops a stone; a board click mid-search
-double-moves). `/systematic-debugging` Phase 1–2 completed same day — root cause is
-`EngineController` relaying every engine coordinate line to `signal_engine_move` with no
-analysis-vs-move discriminator, since `YXNBEST` (used by `analyze()`) still ends by emitting a
-bestmove. **Pulled into Sprint 12 Active 2026-09-04** (see `docs/sprint/current.md`).
-
-Filed 2026-09-04 (ANLZ-07) from a user report against the just-merged ANLZ-06 (PR #16), same
-transcript: once ANLZ-06 correctly discards the analysis-intent coordinate, nothing else stops
-`scheduleAnalyzeModeRestart()` re-arming itself on every Idle transition, so a quickly-converging
-search (a forced mate in the report) busy-loops STOP/redump/search/discard forever.
-`/systematic-debugging` Phase 1–2 completed same day from the transcript. **Pulled into Sprint 12
-Active 2026-09-04** (see `docs/sprint/current.md`); design resolved with the user same day
-(skip-restart-if-unchanged only, no minimum-interval backstop) — ready for `/implement-task
-ANLZ-07`. See `docs/todo/ANLZ-07-analyze-mode-restart-busy-loop.md`.
-
-Filed 2026-09-04 (ENG-03) from a user safety question — "if the program crashes / the user closes
-normally or while analyzing, does the engine subprocess terminate correctly?" — plus a trace of the
-engine lifecycle: only the Quit menu/hotkey and the C++ destructors guarantee a kill; the WM close
-button is unwired and a GUI crash skips both, leaving termination to rely on the engine self-exiting
-on stdin EOF. **Pulled into Sprint 12 Active 2026-09-04** (see `docs/sprint/current.md`).
-
-Filed 2026-09-04 (TOOL-02) — surfaced while scaffolding ANLZ-03: `check-task-structure.js` doesn't
-recognise the `🔲` open-marker, so an open item with a detail file trips its orphan check. Not a
-blocker for `check-tracking-sync.js` (the sprint-command gate), which passes. Detail file scaffolded
-and **pulled from Backlog into Sprint 13 Active 2026-09-06** (see `docs/sprint/current.md`).
-TOOL-02 shipped 2026-09-06 (PR #21, squash `7ceeeed`) — regex widened to `🔲`/`🚧`; the `⛔`
-SUPERSEDED-line case was outside its written scope and is split to **TOOL-03** — **pulled from
-Backlog into Sprint 14 Active 2026-09-06** (see `docs/sprint/current.md`).
-
-Filed 2026-09-06 (PORT-01/02/03) from a user question ("does the source compile cross-platform or
-Linux-only?") that turned into a `/systematic-debugging` platform-dependency audit, cross-checked
-against a parallel Gemini report. Findings recorded in
-`docs/audit/2026-09-06-platform-dependency-audit.md`; no code changed. Product decision 2026-09-06
-(after a Gemini advisory pass): keep the portable-app model (settings next to the binary), do the
-Tier-1 guarded fixes now (**PORT-01**, shipped Sprint 14, PR #24). PORT-01's MSYS2 MINGW64
-build+launch+save-`.rdb`+pick-engine smoke remains an outstanding human step.
-**PORT-02** (GResource asset bundling) and **PORT-03** (MSVC + Windows-CI harness) were **pulled
-from Backlog into Sprint 15 Active 2026-09-06** (goal "Tier-2 Windows portability") — PORT-03's
-"is native MSVC a goal?" gate was resolved yes the same day (user decision, audit
-`docs/audit/2026-09-06-native-msvc-windows-ci-goal.md`). MSYS2/MinGW already builds and runs.
-
-Filed 2026-09-06 (UI-15) from a `/systematic-debugging` pass on the recurring "ui12 scroll flake"
-cited across ~5 fix-log entries — root cause is `BottomPanel::scrollMoveLogToEnd()` never getting
-UI-14's direct `vadj->set_value` kinetic-animation snap. **Pulled from Backlog into Sprint 15 Active
-2026-09-06** (mid-sprint, after PORT-02/PORT-03 landed — see `docs/sprint/current.md`).
-
-Filed 2026-08-21 from a full read of `src/` (UI/UX + codebase review). Prefixes: `RT` realtime
-pipeline · `STATE` state lifetime · `PROTO` engine protocol · `ENG` engine lifecycle ·
-`NAV` navigation · `UI` display logic · `UX` usability · `TEST` harness · `CLEAN` hygiene ·
-`IO` game persistence · `DOC` documentation · `TOOL` repo tooling · `REL` release/versioning ·
-`PORT` cross-platform portability.
-
-Filed 2026-08-30 from a follow-up UI review request and from `features/versioning-and-changelog/`
-(UI-08, ENG-02, UI-09, REL-01, REL-02) — all shipped in Sprint 7 (archived
-`docs/sprint/archive/sprint-7.md`).
-
-Filed 2026-08-31 from user bug report / request (UI-10, UI-11) — **both pulled into Sprint 8's
-Active section 2026-08-31** (see above and `docs/sprint/current.md`).
-
-Filed 2026-09-03 from a user report (UI-13, WinGraph coverage) — **pulled from Backlog into Sprint 9
-Active 2026-09-03**, alongside NAME-01 (see above and `docs/sprint/current.md`).
-
-Filed 2026-08-31 from UI-10's second pass (the Engine Log fix surfaced the same latent no-op in
-the Move Log): UI-12 — **pulled from Backlog into Sprint 8 Active 2026-08-31** (see
-`docs/sprint/current.md`).
-
-Filed 2026-09-05/06 (PROTO-03) from a multi-session design discussion ("open environment for open
-protocol" — let engine developers add commands without a rebuild). Design fully worked through
-`features/protocol-extension/` (`user_story.md`, `diagram/flow.md`, `planning.md` Q1–Q9, plus a
-worked `.ptc` example) before filing. planning.md header + the stale `$currentPath` follow-up bullet
-synced to the resolved Q9 state 2026-09-06. **Pulled from Backlog into Sprint 13 Active 2026-09-06**
-(see `docs/sprint/current.md`).
-
-Earlier: IO-01/DOC-01/TOOL-01/CLEAN-02 (filed 2026-08-30, leftover-task sweep) shipped in Sprint 5.
-UI-04/UI-05/UX-06/UI-06 (filed 2026-08-30, UI review session) were committed straight into Sprint
-6's Active section above (see `docs/sprint/current.md`). STATE-04 (filed 2026-08-30 from UI-06's
-smoke pass) was likewise pulled straight into Sprint 6 Active.
-
+- ✅ **RT-01.** throttle the engine→UI analysis signal — [detail](docs/todo/RT-01-throttle-analysis-signal.md)
+- ✅ **RT-02.** engine log unbounded / per-line writes / gutter desync — [detail](docs/todo/RT-02-engine-log-unbounded.md)
+- ✅ **RT-03.** PVView rebuild breaks board PV ghost-stone hover — [detail](docs/todo/RT-03-pvview-rebuild-breaks-hover.md)
+- ✅ **RT-04.** tree views full-rebuild per line; O(n²) layoutTree — [detail](docs/todo/RT-04-tree-views-full-rebuild.md)
+- ✅ **STATE-01.** stale analysis survives position change — [detail](docs/todo/STATE-01-stale-analysis-after-position-change.md)
+- ✅ **STATE-02.** settings dialog drops multiPV / customParams — [detail](docs/todo/STATE-02-settings-dialog-drops-config-fields.md)
+- ✅ **STATE-03.** `currentPVs_` never shrinks; garbage empty rows — [detail](docs/todo/STATE-03-currentpvs-never-shrinks.md)
+- ✅ **STATE-04.** rule and board size not persisted across launches — [detail](docs/todo/STATE-04-rule-and-board-size-not-persisted.md)
+- ✅ **PROTO-01.** Gomocup parser hardening (OOB / unbounded NUMPV / coords) — [detail](docs/todo/PROTO-01-parser-hardening.md)
+- ✅ **PROTO-02.** hardcoded board size 15 in coord parsing / readout / stars — [detail](docs/todo/PROTO-02-hardcoded-board-size-15.md)
+- ✅ **PROTO-03.** open protocol extension (`.ptc` runtime commands) — [detail](docs/todo/PROTO-03-open-protocol-extension.md)
+- ✅ **ENG-01.** engine state honesty + non-blocking stop — [detail](docs/todo/ENG-01-engine-state-honesty-and-blocking-stop.md)
+- ✅ **ENG-02.** interrupted engine auto-play reverts to manual analyze — [detail](docs/todo/ENG-02-engine-play-interrupted-reverts-to-manual.md)
+- ✅ **ENG-03.** orphaned engine on crash / WM close (close-request + PDEATHSIG) — [detail](docs/todo/ENG-03-orphaned-engine-on-crash-or-wm-close.md)
+- ✅ **NAV-01.** `undoAll`/`redoAll` flood engine and UI per ply — [detail](docs/todo/NAV-01-undoall-floods-engine-and-ui.md)
+- ✅ **UI-01.** win-rate graph off-by-one attribution; unrecorded evals — [detail](docs/todo/UI-01-winrate-attribution-errors.md)
+- ✅ **UI-02.** tree Table/Tree view parity (click-to-jump, current path) — [detail](docs/todo/UI-02-tree-view-parity.md)
+- ✅ **UI-03.** selected rule not visible on the board — [detail](docs/todo/UI-03-rule-not-visible-on-board.md)
+- ✅ **UI-04.** PV view appends lines across positions — [detail](docs/todo/UI-04-pv-view-appends-across-positions.md)
+- ✅ **UI-05.** engine log direction tag → fixed-width non-copyable gutter — [detail](docs/todo/UI-05-engine-log-direction-gutter-column.md)
+- ✅ **UI-06.** repurpose "Analysis" menu → "Engine plays" (`MatchConfig`) — [detail](docs/todo/UI-06-analysis-menu-duplicate-repurpose-to-player-assignment.md)
+- ✅ **UI-07.** PV panel still accumulates a stale row per position — [detail](docs/todo/UI-07-pv-panel-still-accumulates-across-positions.md)
+- ✅ **UI-08.** remove empty-state placeholder text (partial UX-01 reversal) — [detail](docs/todo/UI-08-remove-empty-state-placeholder-text.md)
+- ✅ **UI-09.** WinGraph SingleSide=Black; thicker high-contrast line — [detail](docs/todo/UI-09-wingraph-single-side-black-and-thicker-line.md)
+- ✅ **UI-10.** engine log not sticky-to-bottom during analysis — [detail](docs/todo/UI-10-engine-log-not-sticky-to-bottom-during-analysis.md)
+- ✅ **UI-11.** About window rewrite — [detail](docs/todo/UI-11-about-window-rewrite.md)
+- ✅ **UI-12.** move log not sticky-to-bottom (Overlay breaks Scrollable) — [detail](docs/todo/UI-12-move-log-not-sticky-to-bottom.md)
+- ✅ **UI-13.** WinGraph record eval regardless of side — [detail](docs/todo/UI-13-wingraph-record-eval-regardless-of-side.md)
+- ✅ **UI-15.** move log sticky-bottom races GTK4 kinetic-scroll animation — [detail](docs/todo/UI-15-move-log-scroll-races-kinetic-animation.md)
+- ✅ **UX-01.** empty states for blank panels — [detail](docs/todo/UX-01-empty-states.md)
+- ✅ **UX-02.** settings dialog engine-path validation — [detail](docs/todo/UX-02-settings-validation.md)
+- ✅ **UX-03.** accessibility + confirm before destroying a game — [detail](docs/todo/UX-03-accessibility-and-destructive-actions.md)
+- ✅ **UX-04.** board rendering at the extremes of the 5–22 range (investigation) — [detail](docs/todo/UX-04-board-size-ergonomics.md)
+- ✅ **UX-05.** `Gtk::Paned` divider doesn't restore on window regrow — [detail](docs/todo/UX-05-paned-resize-does-not-restore.md)
+- ✅ **UX-06.** settings "UI Setting" section broken/unclear + reorganise — [detail](docs/todo/UX-06-settings-dialog-ui-section-broken-and-unclear.md)
+- ✅ **TEST-01.** test infrastructure — [detail](docs/todo/TEST-01-test-infrastructure.md)
+- ✅ **CLEAN-01.** leaked dialogs, dead signals, debug output, dup constant — [detail](docs/todo/CLEAN-01-dialog-leaks-and-dead-code.md)
+- ✅ **CLEAN-02.** build artifacts + `.gitignore` — [detail](docs/todo/CLEAN-02-build-artifacts-and-gitignore.md)
+- ✅ **IO-01.** implement Load/Save Game (were empty stubs) — [detail](docs/todo/IO-01-load-save-game.md)
+- ✅ **DOC-01.** README GTK3→GTK4 mismatch — [detail](docs/todo/DOC-01-readme-gtk-mismatch.md)
+- ✅ **TOOL-01.** wire `check-tracking-sync.js` as a Stop hook — [detail](docs/todo/TOOL-01-wire-tracking-sync-hook.md)
+- ✅ **TOOL-02.** `check-task-structure.js` recognise `🔲`/`🚧` markers — [detail](docs/todo/TOOL-02-check-task-structure-markers.md)
+- ✅ **TOOL-03.** `check-task-structure.js` handle `⛔`/SUPERSEDED lines — [detail](docs/todo/TOOL-03-superseded-marker-lines.md)
+- ✅ **REL-01.** root `CHANGELOG.md` + release checklist + `v0.1.0` — [detail](docs/todo/REL-01-changelog-and-release-checklist.md)
+- ✅ **REL-02.** single-source the version string (`configure_file` → `version.h`) — [detail](docs/todo/REL-02-version-string-single-source.md)
+- ✅ **NAME-01.** app-wide rename → `RANLS` — [detail](docs/todo/NAME-01-app-wide-rename-ranls.md)
+- ✅ **ANLZ-01.** continuous Analyze Mode (full WinGraph coverage) — [detail](docs/todo/ANLZ-01-continuous-analyze-mode.md)
+- ⛔ **ANLZ-03. SUPERSEDED** by RDB-01/02/03 (goal carried into RDB-03) — [detail](docs/todo/ANLZ-03-persist-winrate-in-save-file.md)
+- ✅ **ANLZ-04.** WinGraph dashed "bridge" segment across NaN gaps — [detail](docs/todo/ANLZ-04-wingraph-bridge-nan-gaps.md)
+- ✅ **ANLZ-05.** Analyze Mode: never auto-move; accept mid-search clicks — [detail](docs/todo/ANLZ-05-analyze-mode-no-automove-allow-mid-search-moves.md)
+- ✅ **ANLZ-06.** Analyze Mode search plays a stray move (`SearchIntent` gate) — [detail](docs/todo/ANLZ-06-analyze-mode-search-plays-stray-move.md)
+- ✅ **ANLZ-07.** Analyze Mode restart busy-loop (`analysisConverged()`) — [detail](docs/todo/ANLZ-07-analyze-mode-restart-busy-loop.md)
+- ✅ **RDB-01.** `.rdb` container framing + codec + `GameGraph` DTO — [detail](docs/todo/RDB-01-rdb-container-and-codec.md)
+- ✅ **RDB-02.** wire `.rdb` into Save/Open; `.yxgame` import-only — [detail](docs/todo/RDB-02-wire-rdb-into-save-open.md)
+- ✅ **RDB-03.** persist + restore per-node analysis end-to-end (closes ANLZ-03) — [detail](docs/todo/RDB-03-persist-restore-node-analysis.md)
+- ✅ **PORT-01.** Tier-1 Windows build/runtime fixes (guarded) — [detail](docs/todo/PORT-01-cross-platform-build-and-runtime.md)
+- ✅ **PORT-02.** bundle `style.css` via GResource — [detail](docs/todo/PORT-02-bundle-style-css-via-gresource.md)
+- ✅ **PORT-03.** native MSVC build + portable test harness (`mock_engine`) — [detail](docs/todo/PORT-03-msvc-build-and-portable-test-harness.md)
