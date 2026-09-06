@@ -32,7 +32,7 @@
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
 | TOOL-03 | `check-task-structure.js` trips on `⛔` SUPERSEDED ANLZ-03 index lines | — | — | ✅ Done (PR #23, squash `69e10e0`) |
-| PORT-01 | Tier-1 guarded Windows fixes: `unistd.h` guard + exec-extension check, `_commit()`, `GetModuleFileNameW` | — | — | ✅ Done (branch `port-01/cross-platform-build-and-runtime`; MSYS2 smoke pending human) |
+| PORT-01 | Tier-1 guarded Windows fixes: `unistd.h` guard + exec-extension check, `_commit()`, `GetModuleFileNameW` | — | — | ✅ Done (PR #24, squash `4edb0a2`; MSYS2 smoke pending human) |
 
 Points not yet estimated (consistent with Sprints 3–13).
 
