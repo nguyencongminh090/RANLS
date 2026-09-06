@@ -21,6 +21,7 @@ add_executable(ranls-gui-tests
     test_main.cpp
     test_move_history.cpp
     test_gomocup_protocol.cpp
+    test_proto03_protocol_extension.cpp
     test_game_state.cpp
     test_rt01_throttle.cpp
     test_rt04_tree_signal.cpp
@@ -64,6 +65,7 @@ add_executable(ranls-gui-tests
     ${CMAKE_SOURCE_DIR}/src/model/rdb/game_graph_convert.cpp
     ${CMAKE_SOURCE_DIR}/src/model/rdb/game_archive.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/gomocup_protocol.cpp
+    ${CMAKE_SOURCE_DIR}/src/engine/protocol_extension.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_process.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_controller.cpp
 )
@@ -163,6 +165,7 @@ add_executable(ranls-gui-ui-tests
     ${CMAKE_SOURCE_DIR}/src/model/rdb/game_graph_convert.cpp
     ${CMAKE_SOURCE_DIR}/src/model/rdb/game_archive.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/gomocup_protocol.cpp
+    ${CMAKE_SOURCE_DIR}/src/engine/protocol_extension.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_process.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_controller.cpp
 )
