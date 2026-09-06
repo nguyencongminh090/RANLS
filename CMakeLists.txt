@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.18.2)
 project(ranls-gui
     VERSION     0.4.1
-    LANGUAGES   CXX
+    # C is needed to compile the glib-compile-resources output
+    # (generated/ranls_gresource.c, PORT-02); with CXX only, add_executable
+    # silently drops the .c and the stylesheet is never bundled.
+    LANGUAGES   CXX C
     DESCRIPTION "RANLS — Renju/Gomoku Analysis GUI"
 )
 
@@ -167,6 +170,12 @@ if(MSVC)
 else()
     target_compile_options(ranls-gui PRIVATE -Wall -Wextra -Wpedantic)
 endif()
+
+# PORT-02: the glib-compile-resources output embeds the stylesheet as one long
+# C string literal — ISO C99 only mandates 4095 chars, so -Wpedantic warns.
+# It is generated code; silence warnings for that one translation unit only.
+set_source_files_properties(${RANLS_GRESOURCE_C} PROPERTIES
+    COMPILE_OPTIONS "$<IF:$<BOOL:${MSVC}>,/w,-w>")
 
 # ── Install rules (used by package.sh via cmake --install) ──────────────────
 # style.css is bundled into the binary as a GResource (PORT-02) — no sidecar

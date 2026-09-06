@@ -2,6 +2,11 @@
  * RANLS GUI — Adaptive Theme
  * ═══════════════════════════════════════════════════════════════════════════ */
 
+/* @ranls-gresource-marker — PORT-02 build guard (tests/port02_check_gresource.cmake).
+ * A CSS comment, ignored by the GTK parser. Its presence in the linked binary
+ * proves the compiled GResource blob (not just application.cpp's path literal,
+ * which string-merging can hide) is actually bundled. Do not remove. */
+
 /* ── Panels ─────────────────────────────────────────────────────────────── */
 .panel {
     border-radius:    4px;
