@@ -90,6 +90,10 @@ struct EngineConfig {
     int         threads       = 1;
     int         hashSizeMB    = 256;
     int         multiPV       = 1;          ///< Set via commands (e.g. !analyze N)
+    int         showDetail    = 3;          ///< PROTO-05: INFO SHOW_DETAIL value (0..3).
+                                            ///< 3 = REALTIME feed + per-depth INFO PV blocks.
+                                            ///< Emitted before customParams, so a user
+                                            ///< SHOW_DETAIL in customParams still wins.
     std::string protocolExtensionPath;      ///< PROTO-03: optional .ptc file (empty = none)
     std::unordered_map<std::string, std::string> customParams; ///< For unknown INFO keys
 };

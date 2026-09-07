@@ -192,6 +192,13 @@ SettingsDialog::SettingsDialog(Gtk::Window &parent, const EngineConfig &eConfig,
     spinMultiPV_.set_digits(0);
     addRow(searchTab, "Multi PV", spinMultiPV_, "Number of principal variations the engine reports.");
 
+    spinShowDetail_.set_adjustment(Gtk::Adjustment::create(eConfig.showDetail, 0, 3, 1));
+    spinShowDetail_.set_digits(0);
+    addRow(searchTab, "Analysis Detail", spinShowDetail_,
+           "How much incremental search output the engine streams (INFO SHOW_DETAIL). "
+           "0 = final result only; 2 = per-depth PV blocks; 3 = also the live move feed. "
+           "Default 3. A SHOW_DETAIL set via the console still overrides this.");
+
     // ── UI tab ──────────────────────────────────────────────────────────────
     auto themeModel = Gtk::StringList::create({"System", "Light", "Dark"});
     dropTheme_.set_model(themeModel);
@@ -298,6 +305,7 @@ void SettingsDialog::onApply()
     eConfig.threads      = static_cast<int>(spinThreads_.get_value());
     eConfig.hashSizeMB   = static_cast<int>(spinHash_.get_value());
     eConfig.multiPV      = static_cast<int>(spinMultiPV_.get_value());
+    eConfig.showDetail   = static_cast<int>(spinShowDetail_.get_value());
     eConfig.protocolExtensionPath = entryPtcPath_.get_text();
 
     ViewConfig vConfig = baseViewConfig_;

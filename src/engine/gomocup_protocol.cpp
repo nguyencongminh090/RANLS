@@ -241,7 +241,14 @@ GomocupProtocol::GomocupProtocol(int boardSize) : boardSize_(boardSize) {}
 
 std::vector<std::string> GomocupProtocol::generateStart(int boardSize) {
     boardSize_ = boardSize;
-    return {"START " + std::to_string(boardSize)};
+    // PROTO-05: YXSHOWINFO unconditionally, before START (protocol.md §1.1 /
+    // §9.2). It is a one-way, idempotent flag flip that (a) upgrades Rapfi's
+    // messageMode BRIEF->NORMAL so the per-depth `Depth ...` and per-candidate
+    // `(n) ...` MESSAGE lines the parser already understands actually get
+    // emitted, and (b) silences "unknown command" errors for the rest of the
+    // session -- the accepted tradeoff being that console typos also stop
+    // being reported (see docs/fix-log/2026-09-07-proto-05-*).
+    return {"YXSHOWINFO", "START " + std::to_string(boardSize)};
 }
 
 std::vector<std::string> GomocupProtocol::generateRule(GameRule rule) {
@@ -257,7 +264,14 @@ std::vector<std::string> GomocupProtocol::generateConfig(const EngineConfig& cfg
     cmds.push_back("INFO max_node " + std::to_string(cfg.maxNodes));
     cmds.push_back("INFO thread_num " + std::to_string(cfg.threads));
     cmds.push_back("INFO hash_size " + std::to_string(static_cast<int64_t>(cfg.hashSizeMB) * 1024));
-    cmds.push_back("INFO SHOW_DETAIL 0");
+    // PROTO-05: configurable SHOW_DETAIL (was hardcoded 0, which suppressed
+    // every incremental analysis stream the parser is written to consume).
+    // Default 3 = REALTIME + per-depth INFO PV blocks. Emitted BEFORE the
+    // customParams loop so a user-supplied SHOW_DETAIL in customParams (the
+    // command_dispatcher.cpp `!set show_detail N` path) still wins by being
+    // the last write on the wire.
+    int showDetail = cfg.showDetail < 0 ? 0 : (cfg.showDetail > 3 ? 3 : cfg.showDetail);
+    cmds.push_back("INFO SHOW_DETAIL " + std::to_string(showDetail));
 
     for (const auto& [key, val] : cfg.customParams) {
         cmds.push_back("INFO " + key + " " + val);
@@ -488,15 +502,15 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
         return;
     }
 
-    auto commitPV = [this](int idx, PVLine pv) {
+    auto commitPV = [this](int idx, PVLine pv, bool roundStart = true) {
         if (idx < 0 || idx >= kMaxPVCount) {
             signal_log.emit(EngineMessageType::Error,
                              "GomocupProtocol: rejected out-of-range PV index " + std::to_string(idx));
             return;
         }
         // STATE-03: a fresh primary-line (index 0) report marks the start of
-        // a new multi-PV round in the MESSAGE-stream formats (Bestline,
-        // NORMAL "(n)|...", UCILIKE "multipv ..."), none of which carry an
+        // a new multi-PV round in the ranked MESSAGE-stream format
+        // (NORMAL "(n)|..." and UCILIKE "multipv ..."), which carries no
         // explicit NUMPV/count signal the way the INFO/Detail stream does.
         // Without this, a round that reports fewer PVs than the previous one
         // (e.g. multiPV lowered mid-search) leaves the old round's surplus
@@ -508,7 +522,14 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
         // per round (true for Rapfi: search/ab/search.cpp's multiPV loop is
         // single-threaded and never skips/reorders indices), so an index-0
         // report is unambiguously "a new round started."
-        if (idx == 0 && currentPVs_.size() > 1) {
+        //
+        // PROTO-05: the per-depth "Depth ..." and end-of-search "Bestline ..."
+        // summary lines ALSO commit index 0, but they are NOT round markers --
+        // they carry only PV #1 and are interleaved with (or follow) the
+        // ranked "(n)" list. Truncating on them would wipe PVs #2..#N that the
+        // "(n)" stream legitimately reported for the same round. Those callers
+        // pass roundStart = false.
+        if (roundStart && idx == 0 && currentPVs_.size() > 1) {
             currentPVs_.resize(1);
             currentNumPV_ = 1;
         }
@@ -535,7 +556,7 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
             pv.mateStep = currentStatus_.mateStep;
             pv.evalText = currentStatus_.evalText;
             pv.moves = std::move(moves);
-            commitPV(0, std::move(pv));
+            commitPV(0, std::move(pv), /*roundStart=*/false);
         }
         return;
     }
@@ -559,7 +580,16 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
                 PVLine pv;
                 pv.depth = currentStatus_.depth;
                 pv.selDepth = currentStatus_.selDepth;
+                // Two Rapfi NORMAL formats reach here (searchoutput.cpp):
+                //   printPvCompletes: "(n) <v> | <rootDepth>-<selDepth> | <pv>"  (3 parts)
+                //   printRootMoves:   "(n) <v> (W .., D .., S ..) | V <nodes> | SD <sd> | <pv>" (4 parts)
+                // parts[1] is "D-SD" in the first form (parseDepthPair fills both)
+                // and "V <nodes>" in the second (parseDepthPair is a no-op on it).
                 parseDepthPair(parts[1], pv.depth, pv.selDepth);
+                for (size_t pi = 1; pi + 1 < parts.size(); ++pi) {
+                    if (parts[pi].rfind("SD ", 0) == 0)
+                        pv.selDepth = parseIntToken(trimCopy(parts[pi].substr(3)), pv.selDepth);
+                }
                 pv.nodes = currentStatus_.nodes;
                 pv.score = currentStatus_.winrate;
                 pv.mateStep = currentStatus_.mateStep;
@@ -571,7 +601,8 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
                         currentStatus_.evalText = pv.evalText;
                     }
                 }
-                pv.moves = parseMoveTokens(parts[2], boardSize_);
+                // Moves are always the trailing pipe-field in both formats.
+                pv.moves = parseMoveTokens(parts.back(), boardSize_);
 
                 currentPVIndex_ = pvIndex;
                 if (currentNumPV_ <= pvIndex) currentNumPV_ = pvIndex + 1;
@@ -611,7 +642,7 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
             }
         }
 
-        commitPV(0, std::move(pv));
+        commitPV(0, std::move(pv), /*roundStart=*/false);
         return;
     }
 
@@ -619,7 +650,15 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
         auto parts = splitPipe(msg);
         bool updated = false;
         for (const auto &part : parts) {
-            if (part.rfind("Depth ", 0) == 0) {
+            if (part.rfind("Speed ", 0) == 0) {
+                // PROTO-05: the end-of-search summary line leads with
+                // "Speed <speedText>" (speedText is nodes/sec, possibly with a
+                // K/M/G suffix -- searchoutput.cpp speedText()). This token was
+                // previously never parsed, so NPS from the final summary was
+                // dropped. parseNodeCount handles the suffixed forms.
+                currentStatus_.nps = parseNodeCount(trimCopy(part.substr(6)));
+                updated = true;
+            } else if (part.rfind("Depth ", 0) == 0) {
                 parseDepthPair(trimCopy(part.substr(6)), currentStatus_.depth, currentStatus_.selDepth);
                 updated = true;
             } else if (part.rfind("Eval ", 0) == 0) {
