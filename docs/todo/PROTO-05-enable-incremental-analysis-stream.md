@@ -1,6 +1,37 @@
 # PROTO-05 — enable engine incremental analysis stream (per-depth PV / Multi-PV / value / board-PV)
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** ✅ DONE (Sprint 17 Active — branch `proto-05/enable-incremental-analysis-stream`, not yet merged)
+
+Implemented Mechanism C (decided with the user): (1) `YXSHOWINFO` prepended to
+`generateStart()` (before `START`) — unconditional, auto-bumps Rapfi BRIEF→NORMAL,
+silences unknown-command errors for the session; (2) `EngineConfig::showDetail`
+(new field, default 3) emitted as `INFO SHOW_DETAIL <n>` by `generateConfig()`
+before the `customParams` loop, replacing the hardcoded `INFO SHOW_DETAIL 0` —
+`command_dispatcher.cpp:680`'s `customParams["SHOW_DETAIL"]` override still wins
+(emitted last). SettingsDialog control **was added** ("Analysis Detail" 0–3 spin,
+Search tab) + persisted via `settings_storage`. (3) `parseMessage` `"Speed "`
+branch now parses the leading `Speed <speedText>` token into `currentStatus_.nps`.
+(4) Parser verification: fixed the `"(n)"` branch to read PV moves from the
+trailing pipe field + parse `SD <n>` so Rapfi's 4-part `printRootMoves` ranked
+list parses (moves were read from `"SD 14"` and lost); added `roundStart` to the
+`commitPV` lambda so the per-depth `"Depth …"` and end `"Bestline …"` summary
+lines (index 0, but not round markers) no longer truncate the `(n)`-stream
+Multi-PV list #2..#N for the same round. STATE-03 truncation kept for the real
+`(1)` round marker; `onPVDone`/`INFO NUMPV` shrink path already correct — no
+change. Stage-and-swap round buffering **not** needed (no PVView flicker to fix;
+per-depth 1→N growth was already the pre-PROTO-05 `(n)`-stream behaviour).
+ANLZ-07 `analysisConverged()` semantics unchanged — still compares bestMove +
+evalText on the (now richer) final snapshot.
+
+**Verification:** full build clean (only the 3 pre-existing `-Wunused-function`
+warnings). `ctest` 4/4 green: `ranls-gui-tests` 218 cases / 2532 assertions,
+`ranls-gui-ui-tests` 39 cases / 290 assertions (was 38/281 — +`test_proto05_incremental_stream`,
+2 cases / 9 assertions), `port02-style-css-bundled` + `rel02-version-single-source`
+pass. `test_rt01_throttle`, `test_proto03_*`, `test_ui07_*`, `test_anlz06`,
+`test_anlz07` all green. New regression test: `tests/test_proto05_incremental_stream.cpp`.
+Live-engine manual check (analyse ~5 s, watch PV list / value readout progress,
+confirm Multi-PV rows 2..N) remains an outstanding **human** step — no engine
+binary / display on the build host.
 **Area:** `src/engine/gomocup_protocol.cpp` (`generateConfig` / `generateStart` / `generateAnalyzeRequest`), possibly `src/model/engine_config.h` + `src/ui/settings_dialog.*`; regression test under `tests/`
 **Priority:** P1
 **Source:** `docs/notes/2026-09-07-pv-multipv-display-root-cause.md` (architecture report, 2026-09-07) — user asked "how does the engine update the display on a new depth in multi-pv analyze?"
