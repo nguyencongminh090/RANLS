@@ -233,6 +233,18 @@ rendering, don't change the `YXNBEST` request. Watch STATE-03 mid-round truncati
 re-verify ANLZ-07 convergence under the richer feed.
 [detail](docs/instruction/PROTO-05-enable-incremental-analysis-stream.md)
 
+## PROTO-06 — port-realtime-feed-to-board
+
+Design gate first — 6 open questions in the detail file (state carrier / throttling / compositing /
+reset / toggle / best-highlight). Recommended: dedicated `RealtimeSearchState` on `GameState`, new
+`signal_realtime` coalesced on the RT-01 tick (**not** via `setAnalysisData`), reference priority
+tag > lost > best > pos, reset on `signal_board_changed` / search-end / stop. Use
+`software-architecture` (adds a 2nd model→ui channel) + `gtk-ui-design` (new `BoardRenderer` layer).
+Match `RefYXB/Yixin-Board/main.c:6408–6460` + `:705–712`. Watch coordinate axis order, redraw rate
+(coalesce, never per-line `queue_draw`), and REFRESH clearing only `pos` not `lost`. Don't touch
+`drawCandidateMoves` semantics or PROTO-05's config.
+[detail](docs/instruction/PROTO-06-port-realtime-feed-to-board.md)
+
 ---
 
 _Items without an entry here (RT-02/03/04, STATE-02/03, PROTO-02, NAV-01, UI-01/02/03, UX-01…04,

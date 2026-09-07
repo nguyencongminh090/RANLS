@@ -29,9 +29,12 @@ _Empty — PROTO-05 merged (PR #32, squash `ffbefb3`), moved to Completed. Sprin
 
 ## Backlog
 
-_Empty — all filed work is committed to Sprint 17. New work enters via `docs/notes/` → `features/<slug>/` → `docs/todo/<CODE>-<slug>.md` + a Backlog line._
+- 🔲 **PROTO-06.** port the engine `REALTIME` feed (POS / DONE / LOST / REFRESH) to the board as a live "thinking" overlay — PROTO-05 enabled `SHOW_DETAIL 3` so the lines now arrive, but `parseMessage` drops all but BEST/PV/VAL. Reference: `RefYXB/Yixin-Board`. Has open design questions — resolve with the user before implementing. [Model: Sonnet] — [detail](docs/todo/PROTO-06-port-realtime-feed-to-board.md) · [instruction](docs/instruction/PROTO-06-port-realtime-feed-to-board.md)
+
+New work enters via `docs/notes/` → `features/<slug>/` → `docs/todo/<CODE>-<slug>.md` + a Backlog line.
 
 Filed 2026-09-07 from `docs/notes/2026-09-07-pv-multipv-display-root-cause.md`: PROTO-05 — **pulled into Sprint 17 Active 2026-09-07** (see `docs/sprint/current.md`).
+Filed 2026-09-08 from `docs/notes/2026-09-08-refyxb-multipv-rendering.md`: PROTO-06.
 
 ## Completed
 
