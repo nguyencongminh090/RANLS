@@ -25,7 +25,7 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 Sprint 17 (opened 2026-09-07, goal "Enable the engine incremental analysis stream — per-depth PV / Multi-PV / value / board-PV updates reach the GUI during a search") — pulled from Backlog:
 
-- ✅ **PROTO-05.** enable engine incremental analysis stream — per-depth PV / Multi-PV / value / board-PV never update (GUI sends `INFO SHOW_DETAIL 0` + never `YXSHOWINFO`, so Rapfi stays BRIEF and only reports at search end). Run `/systematic-debugging` + pick the enable mechanism with the user first. [Model: Sonnet] — [detail](docs/todo/PROTO-05-enable-incremental-analysis-stream.md) · [instruction](docs/instruction/PROTO-05-enable-incremental-analysis-stream.md)
+_Empty — PROTO-05 merged (PR #32, squash `ffbefb3`), moved to Completed. Sprint 17 ready to close + cut a release._
 
 ## Backlog
 
@@ -97,3 +97,7 @@ Shipped in Sprints 1–16 (all archived in `docs/sprint/archive/`):
 - ✅ **PORT-03.** native MSVC build + portable test harness (`mock_engine`) — [detail](docs/todo/PORT-03-msvc-build-and-portable-test-harness.md)
 - ✅ **CONS-01.** Engine Log command entry: AutoComplete (popover + ghost-text) — [detail](docs/todo/CONS-01-console-command-autocomplete.md) · [instruction](docs/instruction/CONS-01-console-command-autocomplete.md)
 - ✅ **CONS-02.** Engine Log command entry: AutoCorrect (missing `!`, case, "did you mean") — [detail](docs/todo/CONS-02-console-syntax-autocorrect.md) · [instruction](docs/instruction/CONS-02-console-syntax-autocorrect.md)
+
+Sprint 17:
+
+- ✅ **PROTO-05.** enable engine incremental analysis stream (YXSHOWINFO + configurable `INFO SHOW_DETAIL`) — [detail](docs/todo/PROTO-05-enable-incremental-analysis-stream.md) · [instruction](docs/instruction/PROTO-05-enable-incremental-analysis-stream.md)

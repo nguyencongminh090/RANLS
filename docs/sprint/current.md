@@ -29,7 +29,7 @@ Scoped directly from the diagnosis note — no `features/<slug>/` folder. Detail
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| PROTO-05 | enable engine incremental analysis stream (per-depth PV / Multi-PV / value / board-PV) | — | — | ✅ Implemented (branch `proto-05/enable-incremental-analysis-stream`, not merged — orchestrator drives the PR) |
+| PROTO-05 | enable engine incremental analysis stream (per-depth PV / Multi-PV / value / board-PV) | — | — | ✅ Done — merged to `main` via PR #32, squash `ffbefb3` (2026-09-07). Live-engine progressive-update smoke remains an outstanding human step. |
 
 Points not yet estimated (consistent with Sprints 3–16).
 
