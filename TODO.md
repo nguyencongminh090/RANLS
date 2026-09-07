@@ -23,23 +23,17 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 ## Active
 
-Sprint 16 (opened 2026-09-07, goal "Engine Log command console: autocomplete + autocorrect") —
-pulled from Backlog:
-
-- ✅ **CONS-01.** Engine Log command entry: AutoComplete (command suggestion — popover + ghost-text) — [detail](docs/todo/CONS-01-console-command-autocomplete.md) · [instruction](docs/instruction/CONS-01-console-command-autocomplete.md)
-- ✅ **CONS-02.** Engine Log command entry: AutoCorrect (missing `!`, wrong case, "did you mean") — depends on CONS-01 — [detail](docs/todo/CONS-02-console-syntax-autocorrect.md) · [instruction](docs/instruction/CONS-02-console-syntax-autocorrect.md)
+No sprint open. Sprint 16 closed 2026-09-07 (release `v0.5.0`) — see `docs/sprint/current.md`.
+Run `/sprint open 17 …` to commit Backlog items into the next sprint.
 
 ## Backlog
 
 No open items — everything filed to date is committed to a sprint or has shipped. New work enters
 the Backlog via `docs/notes/` → `features/<slug>/` → `docs/todo/<CODE>-<slug>.md` + a Backlog line.
 
-Filed 2026-09-07 from the `features/console-autocomplete/` design (Q1–Q11 resolved with the user
-the same day) — **pulled into Sprint 16 Active 2026-09-07** (see `docs/sprint/current.md`).
-
 ## Completed
 
-Shipped in Sprints 1–15 (all archived in `docs/sprint/archive/`):
+Shipped in Sprints 1–16 (all archived in `docs/sprint/archive/`):
 
 - ✅ **RT-01.** throttle the engine→UI analysis signal — [detail](docs/todo/RT-01-throttle-analysis-signal.md)
 - ✅ **RT-02.** engine log unbounded / per-line writes / gutter desync — [detail](docs/todo/RT-02-engine-log-unbounded.md)
@@ -99,3 +93,5 @@ Shipped in Sprints 1–15 (all archived in `docs/sprint/archive/`):
 - ✅ **PORT-01.** Tier-1 Windows build/runtime fixes (guarded) — [detail](docs/todo/PORT-01-cross-platform-build-and-runtime.md)
 - ✅ **PORT-02.** bundle `style.css` via GResource — [detail](docs/todo/PORT-02-bundle-style-css-via-gresource.md)
 - ✅ **PORT-03.** native MSVC build + portable test harness (`mock_engine`) — [detail](docs/todo/PORT-03-msvc-build-and-portable-test-harness.md)
+- ✅ **CONS-01.** Engine Log command entry: AutoComplete (popover + ghost-text) — [detail](docs/todo/CONS-01-console-command-autocomplete.md) · [instruction](docs/instruction/CONS-01-console-command-autocomplete.md)
+- ✅ **CONS-02.** Engine Log command entry: AutoCorrect (missing `!`, case, "did you mean") — [detail](docs/todo/CONS-02-console-syntax-autocorrect.md) · [instruction](docs/instruction/CONS-02-console-syntax-autocorrect.md)
