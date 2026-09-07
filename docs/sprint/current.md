@@ -33,7 +33,7 @@ Design resolved in `features/console-autocomplete/` (Q1–Q11, 2026-09-07). Deta
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
 | CONS-01 | Engine Log command entry: AutoComplete (popover + ghost-text) | — | — | ✅ Done (PR #30, squash `04f70f6`) |
-| CONS-02 | Engine Log command entry: AutoCorrect (missing `!`, case, did-you-mean) | CONS-01 | — | 🔲 Not started |
+| CONS-02 | Engine Log command entry: AutoCorrect (missing `!`, case, did-you-mean) | CONS-01 | — | ✅ Done (PR #31, squash `8f90303`) |
 
 Points not yet estimated (consistent with Sprints 3–15).
 
