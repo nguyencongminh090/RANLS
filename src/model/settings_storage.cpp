@@ -184,6 +184,7 @@ SettingsBundle load()
     out.engine.threads = parseNumber<int>(get("threads"), out.engine.threads);
     out.engine.hashSizeMB = parseNumber<int>(get("hash_size_mb"), out.engine.hashSizeMB);
     out.engine.multiPV = parseNumber<int>(get("multipv"), out.engine.multiPV);
+    out.engine.showDetail = parseNumber<int>(get("show_detail"), out.engine.showDetail);
 
     // customParams: any key written with the "custom_param." prefix by save()
     // below. Not part of the original on-disk format (see STATE-02) — added
@@ -258,6 +259,7 @@ bool save(const EngineConfig &engine, const ViewConfig &view, const MatchConfig 
     out << "threads=" << engine.threads << "\n";
     out << "hash_size_mb=" << engine.hashSizeMB << "\n";
     out << "multipv=" << engine.multiPV << "\n";
+    out << "show_detail=" << engine.showDetail << "\n";
     out << "protocol_extension_path=" << escapeValue(engine.protocolExtensionPath) << "\n";
     for (const auto &[key, value] : engine.customParams)
         out << "custom_param." << key << "=" << escapeValue(value) << "\n";

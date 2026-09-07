@@ -144,6 +144,7 @@ add_executable(ranls-gui-ui-tests
     test_cons01_command_autocomplete.cpp
     test_cons02_autocorrect_dispatch.cpp
     test_anlz07_analyze_restart_convergence.cpp
+    test_proto05_incremental_stream.cpp
     test_eng03_close_request.cpp
     test_rdb02_save_open.cpp
     test_rdb03_ui_node_analysis.cpp

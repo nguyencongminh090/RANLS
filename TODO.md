@@ -25,7 +25,7 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 Sprint 17 (opened 2026-09-07, goal "Enable the engine incremental analysis stream — per-depth PV / Multi-PV / value / board-PV updates reach the GUI during a search") — pulled from Backlog:
 
-- 🔲 **PROTO-05.** enable engine incremental analysis stream — per-depth PV / Multi-PV / value / board-PV never update (GUI sends `INFO SHOW_DETAIL 0` + never `YXSHOWINFO`, so Rapfi stays BRIEF and only reports at search end). Run `/systematic-debugging` + pick the enable mechanism with the user first. [Model: Sonnet] — [detail](docs/todo/PROTO-05-enable-incremental-analysis-stream.md) · [instruction](docs/instruction/PROTO-05-enable-incremental-analysis-stream.md)
+- ✅ **PROTO-05.** enable engine incremental analysis stream — per-depth PV / Multi-PV / value / board-PV never update (GUI sends `INFO SHOW_DETAIL 0` + never `YXSHOWINFO`, so Rapfi stays BRIEF and only reports at search end). Run `/systematic-debugging` + pick the enable mechanism with the user first. [Model: Sonnet] — [detail](docs/todo/PROTO-05-enable-incremental-analysis-stream.md) · [instruction](docs/instruction/PROTO-05-enable-incremental-analysis-stream.md)
 
 ## Backlog
 

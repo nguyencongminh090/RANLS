@@ -60,6 +60,7 @@ private:
     Gtk::SpinButton     spinMaxDepth_;
     Gtk::SpinButton     spinMaxNodes_;
     Gtk::SpinButton     spinMultiPV_;
+    Gtk::SpinButton     spinShowDetail_;   ///< PROTO-05: INFO SHOW_DETAIL (0..3)
     Gtk::SpinButton     spinThreads_;
     Gtk::SpinButton     spinHash_;
 };
