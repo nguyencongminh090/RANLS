@@ -13,6 +13,32 @@ internal tracking files for traceability.
 
 _Nothing yet._
 
+## [0.5.0] - 2026-09-07
+
+Sprint 16 — the Engine Log command entry gains an interactive command console: as-you-type
+completion and automatic syntax fix-ups on submit.
+
+### Added
+
+- The Engine Log command entry now suggests matching `!` commands as you type, in a popover with
+  usage hints and dim inline ghost-text. Tab completes to the common prefix and then cycles;
+  Up/Down move the selection; Enter drops the highlighted command into the entry (without
+  sending); Esc dismisses. Typing a raw protocol line shows no popover and the command-history
+  Up/Down keys behave exactly as before (CONS-01).
+- The command entry now auto-corrects common mistakes when you press Enter: a known command typed
+  without its leading `!` is sent with one added, wrong-case names (`!ANALYZE`) are normalised to
+  the registered spelling, and the rewrite is shown in the entry and logged as `corrected: …` so
+  a single Ctrl+Z restores what you typed (CONS-02).
+- An unknown `!` command now suggests the nearest real command — `Unknown internal command
+  'anlyze'. Did you mean: !analyze?` — instead of a bare error, and internal commands are matched
+  case-insensitively (CONS-02).
+
+### Fixed
+
+- The Engine Log panel's batch-flush timer is now stopped when the panel is destroyed; it was a
+  latent use-after-free that never surfaced in the app (the panel lives for the whole session)
+  but is a real defect (CONS-02).
+
 ## [0.4.2] - 2026-09-07
 
 Sprint 15 — Windows portability groundwork (bundled assets + native-MSVC build harness). No new
@@ -218,7 +244,8 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/nguyencongminh090/RANLS/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.3.1...v0.4.0
