@@ -222,6 +222,17 @@ raw command gets "corrected" into a desync. `！` fullwidth bang already handled
 — don't double-handle.
 [detail](docs/instruction/CONS-02-console-syntax-autocorrect.md)
 
+## PROTO-05 — enable-incremental-analysis-stream
+
+Root cause is the output-config commands, not the parser: GUI hardcodes `INFO SHOW_DETAIL 0` and
+never sends `YXSHOWINFO`, so Rapfi stays `BRIEF` and only reports at search end. Reproduce with a
+real engine first, then pick the enable mechanism with the user (`YXSHOWINFO` / `SHOW_DETAIL 3` /
+both — recommend both, `SHOW_DETAIL` configurable default 3). Output-config commands + the one
+`parseMessage` `"Speed "` NPS fix only; don't redesign RT-01, don't touch PVView/BoardRenderer
+rendering, don't change the `YXNBEST` request. Watch STATE-03 mid-round truncation flicker and
+re-verify ANLZ-07 convergence under the richer feed.
+[detail](docs/instruction/PROTO-05-enable-incremental-analysis-stream.md)
+
 ---
 
 _Items without an entry here (RT-02/03/04, STATE-02/03, PROTO-02, NAV-01, UI-01/02/03, UX-01…04,

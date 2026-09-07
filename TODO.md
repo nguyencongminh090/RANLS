@@ -28,8 +28,11 @@ Run `/sprint open 17 …` to commit Backlog items into the next sprint.
 
 ## Backlog
 
-No open items — everything filed to date is committed to a sprint or has shipped. New work enters
-the Backlog via `docs/notes/` → `features/<slug>/` → `docs/todo/<CODE>-<slug>.md` + a Backlog line.
+- 🔲 **PROTO-05.** enable engine incremental analysis stream — per-depth PV / Multi-PV / value / board-PV never update (GUI sends `INFO SHOW_DETAIL 0` + never `YXSHOWINFO`, so Rapfi stays BRIEF and only reports at search end). Run `/systematic-debugging` + pick the enable mechanism with the user first. [Model: Sonnet] — [detail](docs/todo/PROTO-05-enable-incremental-analysis-stream.md) · [instruction](docs/instruction/PROTO-05-enable-incremental-analysis-stream.md)
+
+New work enters the Backlog via `docs/notes/` → `features/<slug>/` → `docs/todo/<CODE>-<slug>.md` + a Backlog line.
+
+Filed 2026-09-07 from `docs/notes/2026-09-07-pv-multipv-display-root-cause.md`: PROTO-05.
 
 ## Completed
 
