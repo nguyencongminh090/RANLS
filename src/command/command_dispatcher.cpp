@@ -1,5 +1,6 @@
 #include "command_dispatcher.h"
 
+#include "command_completer.h"
 #include "engine/engine_process.h"
 #include "engine/engine_controller.h"
 
@@ -128,9 +129,36 @@ bool CommandDispatcher::executeLine(const std::string &line)
             return true;
         }
 
+        // CONS-02 (Q9, defense-in-depth): resolve the handler name
+        // case-insensitively. parseCommandLine() already lowercases cmd.name and
+        // every built-in is lowercase, so the direct find covers the common
+        // case; the fallback scan only matters for an oddly-cased `.ptc`
+        // extension name. This normalises the lookup key, not the routing.
         auto it = handlers_.find(parsed.cmd.name);
         if (it == handlers_.end()) {
-            printError("Unknown internal command: " + parsed.cmd.name + " (try: !help)");
+            const std::string want = command_completer::toLower(parsed.cmd.name);
+            for (auto cand = handlers_.begin(); cand != handlers_.end(); ++cand) {
+                if (command_completer::toLower(cand->first) == want) {
+                    it = cand;
+                    break;
+                }
+            }
+        }
+        if (it == handlers_.end()) {
+            // CONS-02 B4: offer near-miss suggestions instead of a bare error.
+            const auto near = nearestNames(parsed.cmd.name);
+            if (!near.empty()) {
+                std::string msg =
+                    "Unknown internal command '" + parsed.cmd.name + "'. Did you mean: ";
+                for (size_t i = 0; i < near.size(); ++i) {
+                    if (i) msg += ", ";
+                    msg += "!" + near[i];
+                }
+                msg += "?";
+                printError(msg);
+            } else {
+                printError("Unknown internal command: " + parsed.cmd.name + " (try: !help)");
+            }
             return false;
         }
 
@@ -175,6 +203,11 @@ std::vector<std::string> CommandDispatcher::registeredNames() const
     std::sort(names.begin(), names.end());
     names.erase(std::unique(names.begin(), names.end()), names.end());
     return names;
+}
+
+std::vector<std::string> CommandDispatcher::nearestNames(const std::string &token) const
+{
+    return command_completer::didYouMean(token, registeredNames());
 }
 
 std::string CommandDispatcher::commandUsage(const std::string &name) const

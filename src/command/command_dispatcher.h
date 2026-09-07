@@ -57,6 +57,13 @@ public:
     /// argument hint once a name is complete.
     std::string commandUsage(const std::string &name) const;
 
+    /// CONS-02: read-only — up to 3 currently-registered command names close to
+    /// `token` (command_completer::didYouMean over registeredNames(): Levenshtein
+    /// <= 2 and <= floor(len/2)), for the unknown-command "did you mean" hint.
+    /// Pure lookup over the live registry, re-queried each call — no effect on
+    /// executeLine() routing, handlers_, or pos-session state (HC3).
+    std::vector<std::string> nearestNames(const std::string &token) const;
+
     /// PROTO-03: (re)register every `.ptc` extension command the controller
     /// currently exposes into the SAME `!`-prefixed registry as built-ins
     /// (Q7). Idempotent — call after every engine start/reload. Extension

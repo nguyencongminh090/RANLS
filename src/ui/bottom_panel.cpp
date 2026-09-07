@@ -113,16 +113,36 @@ BottomPanel::BottomPanel()
     commandEntry_.set_placeholder_text("Type command…");
     commandEntry_.signal_activate().connect([this]() {
         auto text = commandEntry_.get_text();
-        if (!text.empty()) {
-            hideSuggestions();  // CONS-01: submit never accepts a suggestion (R3)
-            commandHistory_.push_back(std::string(text));
-            historyIdx_ = -1;
-            commandEntry_.set_text("");
+        if (text.empty())
+            return;
 
-            std::string cmd(text);
-            // Forward to MainWindow/command layer.
-            signal_command_sent.emit(cmd);
+        hideSuggestions();  // CONS-01: submit never accepts a suggestion (R3)
+        commandHistory_.push_back(std::string(text));
+        historyIdx_ = -1;
+
+        std::string cmd(text);
+
+        // CONS-02: pre-dispatch AutoCorrect. missingBangFix then normalizeCase
+        // on the entry text; on any change, rewrite the entry visibly (a single
+        // set_text is one undo step, so Ctrl+Z restores the original), append
+        // exactly one MESSAGE-tag "corrected:" log line, then dispatch the
+        // corrected string. `！` fullwidth bang and non-matching raw lines are
+        // left untouched (command_completer handles both).
+        if (commandNameProvider_) {
+            if (auto fixed = command_completer::autoCorrect(cmd, commandNameProvider_())) {
+                suppressSuggest_ = true;
+                commandEntry_.set_text(*fixed);
+                commandEntry_.set_position(-1);
+                suppressSuggest_ = false;
+                appendLogLine("MESSAGE", "corrected: " + *fixed, LogTagKind::RecvMessage);
+                cmd = *fixed;
+            }
         }
+
+        // Forward to MainWindow/command layer, then clear (the entry still shows
+        // the corrected text for the duration of the synchronous dispatch).
+        signal_command_sent.emit(cmd);
+        commandEntry_.set_text("");
     });
 
     // ── CONS-01: command-name AutoComplete ─────────────────────────────────
@@ -213,6 +233,13 @@ BottomPanel::BottomPanel()
 
 BottomPanel::~BottomPanel()
 {
+    // Stop the RT-02 batch-flush timeout: sigc::mem_fun does not track object
+    // lifetime, so a still-registered timer would call flushPending() on a
+    // destroyed panel the next time the main context iterates. Harmless while
+    // the panel lives for the whole app run, but the CONS-02 headless tests
+    // build and tear down several panels in one process and pump the loop.
+    flushTimerConn_.disconnect();
+
     // A Gtk::Popover with set_parent() must be explicitly unparented before
     // its parent widget is destroyed, or GTK warns on teardown.
     suggestionPopover_.unparent();
