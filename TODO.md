@@ -23,16 +23,15 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 ## Active
 
-No sprint open. Sprint 16 closed 2026-09-07 (release `v0.5.0`) — see `docs/sprint/current.md`.
-Run `/sprint open 17 …` to commit Backlog items into the next sprint.
-
-## Backlog
+Sprint 17 (opened 2026-09-07, goal "Enable the engine incremental analysis stream — per-depth PV / Multi-PV / value / board-PV updates reach the GUI during a search") — pulled from Backlog:
 
 - 🔲 **PROTO-05.** enable engine incremental analysis stream — per-depth PV / Multi-PV / value / board-PV never update (GUI sends `INFO SHOW_DETAIL 0` + never `YXSHOWINFO`, so Rapfi stays BRIEF and only reports at search end). Run `/systematic-debugging` + pick the enable mechanism with the user first. [Model: Sonnet] — [detail](docs/todo/PROTO-05-enable-incremental-analysis-stream.md) · [instruction](docs/instruction/PROTO-05-enable-incremental-analysis-stream.md)
 
-New work enters the Backlog via `docs/notes/` → `features/<slug>/` → `docs/todo/<CODE>-<slug>.md` + a Backlog line.
+## Backlog
 
-Filed 2026-09-07 from `docs/notes/2026-09-07-pv-multipv-display-root-cause.md`: PROTO-05.
+_Empty — all filed work is committed to Sprint 17. New work enters via `docs/notes/` → `features/<slug>/` → `docs/todo/<CODE>-<slug>.md` + a Backlog line._
+
+Filed 2026-09-07 from `docs/notes/2026-09-07-pv-multipv-display-root-cause.md`: PROTO-05 — **pulled into Sprint 17 Active 2026-09-07** (see `docs/sprint/current.md`).
 
 ## Completed
 
