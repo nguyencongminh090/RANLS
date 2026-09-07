@@ -1,6 +1,34 @@
 # CONS-02 — Engine Log command entry: AutoCorrect (syntax fix-ups)
 
-**Status:** 🔲 OPEN (Active — Sprint 16, pulled 2026-09-07) — filed 2026-09-07.
+**Status:** ✅ DONE (Active — Sprint 16) — filed 2026-09-07, implemented 2026-09-07.
+
+**Summary.** Pure `command_completer` gains `levenshtein` / `normalizeCase` / `didYouMean`
+(Levenshtein ≤ 2 **and** ≤ ⌊len/2⌋, ≤ 3 hits, exact match never suggested) / `missingBangFix`
+(exact case-insensitive first-token match **only** — never fuzzy) / `autoCorrect` (composes
+`missingBangFix` then `normalizeCase`, one rewrite max). `CommandDispatcher` gains read-only
+`nearestNames(token)` + a case-insensitive fallback in the `handlers_` lookup inside
+`executeLine()`; the bare "Unknown internal command" branch now appends `Did you mean: !x?` when
+`nearestNames()` is non-empty (B4). `BottomPanel`'s `signal_activate` handler runs `autoCorrect`
+pre-dispatch: on a change it rewrites the entry visibly (single `set_text` = one Ctrl+Z step),
+appends one `MESSAGE`-tag `corrected: …` log line, then emits the corrected string.
+Fullwidth `！` is left untouched (B3); non-matching raw lines pass through unchanged.
+
+**Also fixed (latent, required by the headless UI test):** `~BottomPanel()` never disconnected
+its RT-02 `flushTimerConn_` batch-flush timeout — `sigc::mem_fun` does not track lifetime, so a
+destroyed panel's timer fired `flushPending()` on freed memory the next time the main loop
+iterated. Harmless while the single app-lifetime panel lives forever; the CONS-02 tests build and
+tear down several panels in one process. Now `flushTimerConn_.disconnect()` in the destructor.
+
+**Verification (2026-09-07, clean `./build.sh` + `ctest`):**
+- `ranls-gui-tests` — 218 cases / 2532 assertions, 0 failed (incl. new pure
+  `tests/test_cons02_autocorrect.cpp`).
+- `ranls-gui-ui-tests` — all cases pass, 0 failed (incl. new
+  `tests/test_cons02_autocorrect_dispatch.cpp`: `nearestNames()`, case-insensitive `!ANALYZE`
+  routing, B4 "did you mean" text, and the real-widget submit path — `analyze 10` → `!analyze 10`
+  visible + `corrected:` logged; `!ANALYZE` → `!analyze`; fullwidth `！analyze` unchanged; `foo
+  bar` passed through).
+- `port02-style-css-bundled`, `rel02-version-single-source` — pass.
+- All six todo "Acceptance criteria" bullets exercised by the two new test files.
 
 Feature B of `features/console-autocomplete/` (see
 [planning.md](../../features/console-autocomplete/planning.md) Resolution table, 2026-09-07).

@@ -9,6 +9,7 @@
 #include <vector>
 
 struct RanlsCons01Probe;  // tests/test_cons01_command_autocomplete.cpp
+struct RanlsCons02Probe;  // tests/test_cons02_autocorrect_dispatch.cpp
 
 /// Tabbed bottom panel with Move Log, Engine Log + command input.
 ///
@@ -55,6 +56,7 @@ public:
 
 private:
     friend struct ::RanlsCons01Probe;
+    friend struct ::RanlsCons02Probe;
 
     // ── CONS-01: command-entry AutoComplete ─────────────────────────────────
     /// Recompute the candidate set for the current entry text + caret and
