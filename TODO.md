@@ -23,9 +23,8 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 ## Active
 
-Sprint 17 (opened 2026-09-07, goal "Enable the engine incremental analysis stream — per-depth PV / Multi-PV / value / board-PV updates reach the GUI during a search") — pulled from Backlog:
-
-_Empty — PROTO-05 merged (PR #32, squash `ffbefb3`), moved to Completed. Sprint 17 ready to close + cut a release._
+No sprint open. Sprint 17 closed 2026-09-08 (release `v0.6.0`) — see `docs/sprint/current.md`.
+Run `/sprint open 18 …` to commit Backlog items into the next sprint.
 
 ## Backlog
 

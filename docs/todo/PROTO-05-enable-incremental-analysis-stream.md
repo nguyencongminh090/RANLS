@@ -1,6 +1,6 @@
 # PROTO-05 — enable engine incremental analysis stream (per-depth PV / Multi-PV / value / board-PV)
 
-**Status:** ✅ DONE (Sprint 17 Active — branch `proto-05/enable-incremental-analysis-stream`, not yet merged)
+**Status:** ✅ DONE (Sprint 17 — merged to `main` via PR #32, squash `ffbefb3`, 2026-09-07; sprint closed + archived 2026-09-08, release `v0.6.0`)
 
 Implemented Mechanism C (decided with the user): (1) `YXSHOWINFO` prepended to
 `generateStart()` (before `START`) — unconditional, auto-bumps Rapfi BRIEF→NORMAL,
