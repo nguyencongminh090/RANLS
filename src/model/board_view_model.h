@@ -2,6 +2,7 @@
 
 #include "board_state.h"
 #include "config.h"
+#include "engine/engine_types.h"   // AnalysisOverlay (PROTO-06)
 
 #include <string>
 #include <vector>
@@ -32,7 +33,6 @@ public:
     Coord                        lastMove;              ///< Last move highlight
     std::vector<Marker>          variantMarkers;        ///< Variation branch markers
     std::vector<Marker>          databaseMarkers;       ///< Database move markers
-    std::vector<Marker>          candidateMoves;        ///< Engine MultiPV candidates (optional)
     std::vector<Coord>           pvPreview;             ///< Ghost stone path for PV hover
     Coord                        hoverMove;             ///< Current mouse hover position
     Stone                        hoverStone = Stone::Empty;
@@ -45,6 +45,20 @@ public:
     /// meaningless). Indication only -- BoardRenderer draws these, it never
     /// blocks a click on them (see docs/todo/UI-03-rule-not-visible-on-board.md).
     std::vector<Coord>           forbiddenPoints;
+
+    /// PROTO-06: resolved single-winner-per-cell live search overlay. Replaces
+    /// `candidateMoves`. Populated by update() ONLY while GameState::isAnalyzing()
+    /// (live-only, matches the original Yixin-Board) AND
+    /// ViewConfig::showSearchOverlay is on. Per-cell priority already resolved
+    /// here: tag > lost > best > examined (pos==1) > examining (pos==2).
+    struct SearchOverlayMark {
+        enum class Kind { Tag, Lost, Best, Examined, Examining };
+        Coord       pos;
+        Kind        kind    = Kind::Tag;
+        std::string label;             ///< winrate/mate text — Tag only
+        double      winrate = 0.5;     ///< backs the HSV heat colour — Tag only
+    };
+    std::vector<SearchOverlayMark> searchOverlay;
 
 private:
     GameState &state_;

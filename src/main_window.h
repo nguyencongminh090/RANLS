@@ -140,6 +140,16 @@ private:
     /// and the analysis-panel toggle button. State-only (no re-entrant persist),
     /// same shape as syncEnginePlaysMenu().
     void syncAnalyzeModeMenu();
+
+    // ── PROTO-06: live search-overlay View-menu toggles ────────────────────
+    /// Toggle handlers for the two View-menu checkboxes. Push the new state
+    /// into ViewConfig, persist all four config blocks (STATE-02), sync the
+    /// menu, refresh the board.
+    void onToggleSearchOverlay(bool active);
+    void onToggleSearchWinrate(bool active);
+    /// Mirror ViewConfig::showSearchOverlay / showSearchWinrate onto the two
+    /// menu checkbox actions. State-only (no re-entrant persist).
+    void syncSearchOverlayMenu();
     /// If Analyze Mode is on, coalesce a burst of position changes into a single
     /// deferred check that, when the engine is running + Idle, does
     /// stopAnalysis(); analyze() on the new current position. Copy of
@@ -209,6 +219,11 @@ private:
     // position — same rationale as autoMoveScheduled_ above.
     Glib::RefPtr<Gio::SimpleAction> analyzeModeAction_;
     bool analyzeModeScheduled_ = false;
+
+    // PROTO-06: the two View-menu checkable actions for the live search
+    // overlay, kept in sync with gameState_.viewConfig() in both directions.
+    Glib::RefPtr<Gio::SimpleAction> searchOverlayAction_;
+    Glib::RefPtr<Gio::SimpleAction> searchWinrateAction_;
 
     // ANLZ-07: latches whether ANY scheduleAnalyzeModeRestart() call
     // coalesced into the pending idle callback requested `force` — a

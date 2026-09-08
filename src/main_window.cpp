@@ -152,6 +152,7 @@ MainWindow::MainWindow()
     gameState_.setMatchConfig(saved.match);
     syncEnginePlaysMenu();
     syncAnalyzeModeMenu();  // ANLZ-01: reflect persisted analyzeMode onto both toggle surfaces
+    syncSearchOverlayMenu(); // PROTO-06: reflect persisted overlay toggles onto the View menu
 
     // STATE-04: restore the last-selected rule (global preference) and the
     // persisted new-game board size. The board is empty at startup so the
@@ -257,6 +258,23 @@ void MainWindow::buildMenuBar()
         });
     add_action(analyzeModeAction_);
 
+    // PROTO-06: two checkable View-menu actions for the live search overlay.
+    // Both default true; seeded from persisted ViewConfig by
+    // syncSearchOverlayMenu() after SettingsStorage::load() in the constructor.
+    auto makeViewToggle = [this](const char *name, void (MainWindow::*handler)(bool)) {
+        auto action = Gio::SimpleAction::create_bool(name, true);
+        action->signal_change_state().connect(
+            [this, action, handler](const Glib::VariantBase &param) {
+                bool active = Glib::VariantBase::cast_dynamic<Glib::Variant<bool>>(param).get();
+                action->set_state(Glib::Variant<bool>::create(active));
+                (this->*handler)(active);
+            });
+        add_action(action);
+        return action;
+    };
+    searchOverlayAction_ = makeViewToggle("show-search-overlay", &MainWindow::onToggleSearchOverlay);
+    searchWinrateAction_ = makeViewToggle("show-search-winrate", &MainWindow::onToggleSearchWinrate);
+
     // ── Build menu model ────────────────────────────────────────────────────
     auto menuModel = Gio::Menu::create();
 
@@ -293,6 +311,11 @@ void MainWindow::buildMenuBar()
     analyzeModeSection->append("Analyze Mode", "win.analyze-mode");
     enginePlaysMenu->append_section("", analyzeModeSection);
 
+    // View menu (PROTO-06) — live search-overlay toggles.
+    auto viewMenu = Gio::Menu::create();
+    viewMenu->append("Search Overlay",       "win.show-search-overlay");
+    viewMenu->append("Search Winrate Tags",  "win.show-search-winrate");
+
     // Help menu.
     auto helpMenu = Gio::Menu::create();
     helpMenu->append("About", "win.about");
@@ -300,6 +323,7 @@ void MainWindow::buildMenuBar()
     menuModel->append_submenu("Game",         gameMenu);
     menuModel->append_submenu("Players",      playersMenu);
     menuModel->append_submenu("Engine plays", enginePlaysMenu);
+    menuModel->append_submenu("View",         viewMenu);
     menuModel->append_submenu("Help",         helpMenu);
 
     menuBar_.set_menu_model(menuModel);
@@ -471,12 +495,11 @@ void MainWindow::connectSignals()
     gameState_.signal_board_changed.connect([this]() {
         // Clear the hover preview overlay when a new move is placed (not tied to
         // state_.pvLines(), so update() below can't refresh it on its own).
-        // candidateMoves is intentionally NOT cleared here anymore: GameState now
-        // clears pvLines_ itself on every position change (see STATE-01), so
-        // update() below already repopulates candidateMoves from the correct
-        // (now-empty, post-change) pvLines() — a separate clear here was
-        // redundant defensive code that could only ever paper over a GameState
-        // bug, not fix one.
+        // The engine overlays are intentionally NOT cleared here: GameState
+        // clears pvLines_ (STATE-01) and the PROTO-06 search overlay
+        // (resetAnalysisState) itself on every position change, so update()
+        // below repopulates from correct, post-change state — a separate clear
+        // here was redundant defensive code.
         boardViewModel_.pvPreview.clear();
 
         boardViewModel_.update();
@@ -542,8 +565,16 @@ void MainWindow::connectSignals()
         boardView_.queueRedraw();
     });
 
-    // Engine analysis updated → update candidate moves on board in realtime.
+    // Engine analysis updated → refresh board-derived render state in realtime.
     gameState_.signal_engine_analysis.connect([this]() {
+        boardViewModel_.update();
+        boardView_.queueRedraw();
+    });
+
+    // PROTO-06: the live per-cell search overlay updates on its own coalesced
+    // channel (GameState::signal_analysis_overlay — driven by the same RT-01
+    // tick, plus flush()/clearAnalysisOverlay() from EngineController).
+    gameState_.signal_analysis_overlay.connect([this]() {
         boardViewModel_.update();
         boardView_.queueRedraw();
     });
@@ -624,6 +655,9 @@ void MainWindow::connectSignals()
         // ViewConfig for any change that didn't route through onToggleAnalyzeMode
         // (state-only, no re-persist — same rationale as syncEnginePlaysMenu).
         syncAnalyzeModeMenu();
+
+        // PROTO-06: same state-only sync for the View-menu overlay toggles.
+        syncSearchOverlayMenu();
     });
 
     // Analysis state changes → toggle UI interaction.
@@ -1187,6 +1221,44 @@ void MainWindow::syncAnalyzeModeMenu()
     if (analyzeModeAction_)
         analyzeModeAction_->set_state(Glib::Variant<bool>::create(on));  // no re-emit
     analysisPanel_.engineStatus().setAnalyzeModeActive(on);
+}
+
+// ── PROTO-06: live search-overlay View-menu toggles ──────────────────────────
+void MainWindow::onToggleSearchOverlay(bool active)
+{
+    ViewConfig vc = gameState_.viewConfig();
+    if (vc.showSearchOverlay != active) {
+        vc.showSearchOverlay = active;
+        gameState_.setViewConfig(vc);
+        // STATE-02: save() rewrites the whole file — persistGameSetup() passes
+        // every config block, same as onToggleAnalyzeMode().
+        persistGameSetup();
+    }
+    syncSearchOverlayMenu();
+    boardViewModel_.update();
+    boardView_.queueRedraw();
+}
+
+void MainWindow::onToggleSearchWinrate(bool active)
+{
+    ViewConfig vc = gameState_.viewConfig();
+    if (vc.showSearchWinrate != active) {
+        vc.showSearchWinrate = active;
+        gameState_.setViewConfig(vc);
+        persistGameSetup();
+    }
+    syncSearchOverlayMenu();
+    boardViewModel_.update();
+    boardView_.queueRedraw();
+}
+
+void MainWindow::syncSearchOverlayMenu()
+{
+    const auto &v = gameState_.viewConfig();
+    if (searchOverlayAction_)
+        searchOverlayAction_->set_state(Glib::Variant<bool>::create(v.showSearchOverlay));
+    if (searchWinrateAction_)
+        searchWinrateAction_->set_state(Glib::Variant<bool>::create(v.showSearchWinrate));
 }
 
 void MainWindow::scheduleAnalyzeModeRestart(bool force)

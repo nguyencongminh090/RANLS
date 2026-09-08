@@ -99,7 +99,7 @@ void BoardRenderer::draw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int
     drawForbiddenPoints(cr);
     drawDatabaseMarkers(cr);
     drawVariantMarkers(cr);
-    drawCandidateMoves(cr);
+    drawSearchOverlay(cr);
     drawPVHighlight(cr);
     drawHover(cr);
 }
@@ -384,46 +384,86 @@ void BoardRenderer::drawVariantMarkers(const Cairo::RefPtr<Cairo::Context> &cr)
     }
 }
 
-// ── 6. CandidateMoveLayer (MultiPV with HSV winrate coloring) ────────────────
-void BoardRenderer::drawCandidateMoves(const Cairo::RefPtr<Cairo::Context> &cr)
+// ── 6. SearchOverlayLayer (PROTO-06 — live per-cell search feedback) ─────────
+// One mark per empty cell, already resolved single-winner by
+// BoardViewModel::update() (priority tag > lost > best > examined > examining).
+// The winrate tag keeps the HSV heat colour (hue red→cyan by win%, like the
+// reference winrate2colorstr); the other marks use fixed, shape-distinct
+// glyphs so they read without relying on colour alone.
+void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
 {
-    if (vm_.candidateMoves.empty()) return;
+    if (vm_.searchOverlay.empty()) return;
 
-    double r = stoneRadius() * 0.55;
+    using Kind = BoardViewModel::SearchOverlayMark::Kind;
+    const double rTag  = stoneRadius() * 0.55;
+    const double rMark = stoneRadius() * 0.42;
     cr->set_font_size(std::max(8.0, cellSize_ * 0.32));
 
-    for (const auto &m : vm_.candidateMoves) {
+    for (const auto &m : vm_.searchOverlay) {
         if (!m.pos.isValid(vm_.boardSize)) continue;
         double cx = cellCenterX(m.pos.x);
         double cy = cellCenterY(m.pos.y);
 
-        // Draw translucent circle with winrate color (heat map).
-        set_source_from_winrate(cr, m.eval, 0.55);
-        cr->arc(cx, cy, r, 0, 2 * M_PI);
-        cr->fill();
-
-        // Circle outline.
-        set_source_from_winrate(cr, m.eval, 0.8);
-        cr->set_line_width(1.5);
-        cr->arc(cx, cy, r, 0, 2 * M_PI);
-        cr->stroke();
-
-        // Label text (white with shadow for readability).
-        if (!m.label.empty()) {
-            Cairo::TextExtents ext;
-            cr->get_text_extents(m.label, ext);
-            double tx = cx - ext.width / 2.0;
-            double ty = cy + ext.height / 2.0;
-
-            // Shadow.
-            cr->set_source_rgba(0.0, 0.0, 0.0, 0.6);
-            cr->move_to(tx + 1, ty + 1);
-            cr->show_text(m.label);
-
-            // Foreground.
-            cr->set_source_rgba(1.0, 1.0, 1.0, 0.95);
-            cr->move_to(tx, ty);
-            cr->show_text(m.label);
+        switch (m.kind) {
+        case Kind::Tag: {
+            set_source_from_winrate(cr, m.winrate, 0.55);
+            cr->arc(cx, cy, rTag, 0, 2 * M_PI);
+            cr->fill();
+            set_source_from_winrate(cr, m.winrate, 0.8);
+            cr->set_line_width(1.5);
+            cr->arc(cx, cy, rTag, 0, 2 * M_PI);
+            cr->stroke();
+            if (!m.label.empty()) {
+                Cairo::TextExtents ext;
+                cr->get_text_extents(m.label, ext);
+                double tx = cx - ext.width / 2.0;
+                double ty = cy + ext.height / 2.0;
+                cr->set_source_rgba(0.0, 0.0, 0.0, 0.6);
+                cr->move_to(tx + 1, ty + 1);
+                cr->show_text(m.label);
+                cr->set_source_rgba(1.0, 1.0, 1.0, 0.95);
+                cr->move_to(tx, ty);
+                cr->show_text(m.label);
+            }
+            break;
+        }
+        case Kind::Lost: {
+            // Losing root move — red ring + diagonal cross.
+            cr->set_source_rgba(0.80, 0.12, 0.12, 0.85);
+            cr->set_line_width(std::max(1.5, cellSize_ * 0.05));
+            cr->arc(cx, cy, rMark, 0, 2 * M_PI);
+            cr->stroke();
+            double d = rMark * 0.72;
+            cr->move_to(cx - d, cy - d);
+            cr->line_to(cx + d, cy + d);
+            cr->move_to(cx - d, cy + d);
+            cr->line_to(cx + d, cy - d);
+            cr->stroke();
+            break;
+        }
+        case Kind::Best: {
+            // Current best root move — filled cyan disc + ring.
+            cr->set_source_rgba(0.15, 0.75, 0.85, 0.45);
+            cr->arc(cx, cy, rMark, 0, 2 * M_PI);
+            cr->fill();
+            cr->set_source_rgba(0.10, 0.55, 0.70, 0.95);
+            cr->set_line_width(std::max(1.5, cellSize_ * 0.05));
+            cr->arc(cx, cy, rMark, 0, 2 * M_PI);
+            cr->stroke();
+            break;
+        }
+        case Kind::Examined: {
+            cr->set_source_rgba(0.55, 0.55, 0.55, 0.35);
+            cr->arc(cx, cy, rMark * 0.5, 0, 2 * M_PI);
+            cr->fill();
+            break;
+        }
+        case Kind::Examining: {
+            cr->set_source_rgba(0.95, 0.85, 0.30, 0.55);
+            cr->arc(cx, cy, rMark * 0.6, 0, 2 * M_PI);
+            cr->fill();
+            break;
+        }
         }
     }
 }

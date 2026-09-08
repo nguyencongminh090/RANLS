@@ -43,24 +43,48 @@ void BoardViewModel::update()
         variantMarkers.push_back({coord, "", -1.0});
     }
 
-    // ── Candidate moves from engine PV lines (optional, MultiPV) ────────────
-    candidateMoves.clear();
-    for (const auto &pv : state_.pvLines()) {
-        if (!pv.moves.empty()) {
-            Marker m;
-            m.pos  = pv.moves[0];
-            m.eval = pv.score;
+    // ── PROTO-06: live per-cell search overlay (replaces candidateMoves) ────
+    // Live-only: copied into render state ONLY while the engine is analyzing
+    // (matches the original Yixin-Board — the overlay vanishes on search end).
+    // Single-winner priority per empty cell: tag > lost > best > examined >
+    // examining. `showSearchOverlay` is the master switch; `showSearchWinrate`
+    // drops only the text tags, letting the mark below it win instead.
+    searchOverlay.clear();
+    if (state_.isAnalyzing() && viewConfig.showSearchOverlay) {
+        const AnalysisOverlay &ov = state_.analysisOverlay();
+        const bool showTags = viewConfig.showSearchWinrate;
+        auto emptyCell = [&](const Coord &c) {
+            return c.isValid(boardSize) && state_.board().stoneAt(c) == Stone::Empty;
+        };
 
-            // Short label: win rate as percentage.
-            if (pv.mateStep > 0) {
-                m.label = "+M" + std::to_string(pv.mateStep);
-            } else if (pv.mateStep < 0) {
-                m.label = "-M" + std::to_string(-pv.mateStep);
+        for (const auto &[c, cell] : ov.cells) {
+            if (!emptyCell(c)) continue;
+            SearchOverlayMark m;
+            m.pos = c;
+            if (showTags && !cell.tag.empty()) {
+                m.kind    = SearchOverlayMark::Kind::Tag;
+                m.label   = cell.tag;
+                m.winrate = cell.tagWinrate;
+            } else if (cell.lost) {
+                m.kind = SearchOverlayMark::Kind::Lost;
+            } else if (c == ov.bestMove) {
+                m.kind = SearchOverlayMark::Kind::Best;
+            } else if (cell.pos == 1) {
+                m.kind = SearchOverlayMark::Kind::Examined;
+            } else if (cell.pos == 2) {
+                m.kind = SearchOverlayMark::Kind::Examining;
             } else {
-                int pct = static_cast<int>(pv.score * 100.0);
-                m.label = std::to_string(pct) + "%";
+                continue;   // cell carries no currently-visible state
             }
-            candidateMoves.push_back(m);
+            searchOverlay.push_back(m);
+        }
+
+        // BEST may have arrived before any POS/tag for that cell — no map entry.
+        if (emptyCell(ov.bestMove) && ov.cells.find(ov.bestMove) == ov.cells.end()) {
+            SearchOverlayMark m;
+            m.pos  = ov.bestMove;
+            m.kind = SearchOverlayMark::Kind::Best;
+            searchOverlay.push_back(m);
         }
     }
 
