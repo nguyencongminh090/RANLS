@@ -13,6 +13,30 @@ internal tracking files for traceability.
 
 _Nothing yet._
 
+## [0.6.0] - 2026-09-08
+
+Sprint 17 — the analysis display now updates live as the engine searches, instead of only when it
+finishes.
+
+### Added
+
+- During analysis the principal variation, the Multi-PV candidate list and board markers, and the
+  depth / nodes / speed / evaluation readout now refresh on every completed search depth instead
+  of only once at the end, and Multi-PV candidates beyond the first line now appear (PROTO-05).
+- New "Analysis Detail" setting (Settings → Search, 0–3, default 3) controls how much
+  search-progress information the engine is asked to stream back (PROTO-05).
+
+### Changed
+
+- The engine is now started in GUI mode (`YXSHOWINFO`): it produces the fuller progress feed the
+  display needs, and as a side effect no longer prints "unknown command" errors to the Engine Log
+  for commands it does not recognise (PROTO-05).
+
+### Fixed
+
+- The nodes-per-second readout is now filled from the engine's end-of-search summary line; it was
+  previously left blank (PROTO-05).
+
 ## [0.5.0] - 2026-09-07
 
 Sprint 16 — the Engine Log command entry gains an interactive command console: as-you-type
@@ -244,7 +268,8 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/nguyencongminh090/RANLS/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.4.0...v0.4.1
