@@ -29,6 +29,9 @@ EngineController::EngineController(GameState &gameState, EngineProcess &engine)
         // rather than holding it (and blocking every future command) forever.
         pendingStopFlush_ = false;
         pendingActions_.clear();
+        // PROTO-06: the live search overlay is dead too — clear it so the board
+        // returns to bare (Q4: crash clears the whole overlay).
+        gameState_.clearAnalysisOverlay();
         setState(EngineState::Crashed);
     });
 }
@@ -90,6 +93,11 @@ void EngineController::connectProtocolSignals() {
             //     same position instead of being lost.
             gameState_.setAnalyzing(false);
             gameState_.flush();
+            // PROTO-06: search over → the live overlay must vanish (Q4). The
+            // BoardViewModel live-only gate already stops rendering it once
+            // isAnalyzing() is false; this drops the data + repaints so no
+            // stale mark can survive a converged one-shot analyze.
+            gameState_.clearAnalysisOverlay();
         }
 
         // ANLZ-07: an analysis-intent search just completed — capture its
@@ -149,6 +157,15 @@ void EngineController::connectProtocolSignals() {
         // previous position's PV rows onto the new one.
         if (!gameState_.isAnalyzing()) return;
         gameState_.setAnalysisData(pvs, status);
+    });
+
+    // PROTO-06: the live per-cell overlay channel — parallel to signal_analysis
+    // above, never through setAnalysisData (no tree-node / eval-history writes).
+    // Same UI-04 in-flight gate: ignore trailing overlay lines for a finished
+    // search once the user has moved on.
+    protocol_->signal_analysis_overlay.connect([this](const AnalysisOverlay &overlay) {
+        if (!gameState_.isAnalyzing()) return;
+        gameState_.setAnalysisOverlay(overlay);
     });
 
     // UI-04: a position change (move / undo / redo / New Game / load) discards
@@ -458,6 +475,8 @@ void EngineController::stopAnalysis()
         // RT-01: analysis-stopped must emit immediately, not wait for the
         // next throttle tick.
         gameState_.flush();
+        // PROTO-06: an explicit stop ends the overlay too (Q4).
+        gameState_.clearAnalysisOverlay();
     }
 }
 
