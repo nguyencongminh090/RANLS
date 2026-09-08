@@ -233,16 +233,19 @@ rendering, don't change the `YXNBEST` request. Watch STATE-03 mid-round truncati
 re-verify ANLZ-07 convergence under the richer feed.
 [detail](docs/instruction/PROTO-05-enable-incremental-analysis-stream.md)
 
-## PROTO-06 — port-realtime-feed-to-board
+## PROTO-06 — replace-analysis-overlay-with-yixin-board-model
 
-Design gate first — 6 open questions in the detail file (state carrier / throttling / compositing /
-reset / toggle / best-highlight). Recommended: dedicated `RealtimeSearchState` on `GameState`, new
-`signal_realtime` coalesced on the RT-01 tick (**not** via `setAnalysisData`), reference priority
-tag > lost > best > pos, reset on `signal_board_changed` / search-end / stop. Use
-`software-architecture` (adds a 2nd model→ui channel) + `gtk-ui-design` (new `BoardRenderer` layer).
-Match `RefYXB/Yixin-Board/main.c:6408–6460` + `:705–712`. Watch coordinate axis order, redraw rate
-(coalesce, never per-line `queue_draw`), and REFRESH clearing only `pos` not `lost`. Don't touch
-`drawCandidateMoves` semantics or PROTO-05's config.
+Design fully resolved with the user 2026-09-08 — implementation task now. Two source notes are the
+spec: `docs/notes/2026-09-08-refyxb-multipv-rendering.md` + `-rapfi-engine-realtime-output.md`
+(decision (a): implement only what Rapfi emits — `LOST`/`BEST`/`REFRESH` + `INFO PV DONE` winrate
+tags; parse `POS`/`DONE` for the Yixin engine but depend on nothing). **Replaces** `candidateMoves`
+/ `drawCandidateMoves`. New `AnalysisOverlay` struct on `GameState`, `overlayDirty_` emitted from
+the existing `tickAnalysis()` (**never** `setAnalysisData`). Winrate tags come from `onPVDone`
+(not `MESSAGE (n)`) with per-depth stale cleanup on the last PV of a round. One single-winner
+per-cell `BoardRenderer` layer (priority tag > lost > best > pos==1 > pos==2). Live-only (drawn
+only while `isAnalyzing()`). Two persisted `ViewConfig` toggles + View-menu items
+(`showSearchOverlay` / `showSearchWinrate`). Reuse `parseEngineCoord` (no axis special-casing).
+Use `software-architecture` + `gtk-ui-design`.
 [detail](docs/instruction/PROTO-06-port-realtime-feed-to-board.md)
 
 ---

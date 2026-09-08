@@ -29,7 +29,7 @@ _Empty — PROTO-05 merged (PR #32, squash `ffbefb3`), moved to Completed. Sprin
 
 ## Backlog
 
-- 🔲 **PROTO-06.** port the engine `REALTIME` feed (POS / DONE / LOST / REFRESH) to the board as a live "thinking" overlay — PROTO-05 enabled `SHOW_DETAIL 3` so the lines now arrive, but `parseMessage` drops all but BEST/PV/VAL. Reference: `RefYXB/Yixin-Board`. Has open design questions — resolve with the user before implementing. [Model: Sonnet] — [detail](docs/todo/PROTO-06-port-realtime-feed-to-board.md) · [instruction](docs/instruction/PROTO-06-port-realtime-feed-to-board.md)
+- 🔲 **PROTO-06.** replace the analysis board overlay with the Yixin-Board model — per-cell winrate/mate tags fed by `INFO PV DONE` (with per-depth stale cleanup) + the `REALTIME` feed (`LOST`/`BEST`/`REFRESH`; `POS`/`DONE` parsed for Yixin engines), live-only, coalesced on the RT-01 tick; deletes `candidateMoves` / `drawCandidateMoves`; two View toggles. Design resolved with user 2026-09-08 (decision (a): only what Rapfi supports). [Model: Sonnet] — [detail](docs/todo/PROTO-06-port-realtime-feed-to-board.md) · [instruction](docs/instruction/PROTO-06-port-realtime-feed-to-board.md)
 
 New work enters via `docs/notes/` → `features/<slug>/` → `docs/todo/<CODE>-<slug>.md` + a Backlog line.
 
