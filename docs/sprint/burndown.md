@@ -124,5 +124,7 @@ points at sprint start to 0 at the end date.
 
 | 2026-09-08 | 0 / 1 items | — | Sprint 17 closed — PROTO-05 landed on `main` (PR #32 squash `ffbefb3`); archived to `docs/sprint/archive/sprint-17.md`, nothing rolled over. Release `v0.6.0` cut (live per-depth analysis display + Multi-PV + "Analysis Detail" setting). Follow-on PROTO-06 (Yixin-Board-style board overlay) sits in the Backlog with design resolved. Table reset below for Sprint 18. |
 
+| 2026-09-08 | 1 / 1 items | — | Sprint 18 opened (goal "Yixin-Board-style live analysis board overlay"): PROTO-06 pulled from Backlog into Active — see `docs/sprint/current.md`. Backlog now empty. Design fully resolved with the user 2026-09-08 (decision (a)); implementation next via `/implement-task PROTO-06`. |
+
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).

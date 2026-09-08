@@ -1,6 +1,6 @@
 # PROTO-06 — replace the analysis board overlay with the Yixin-Board model (REALTIME feed + per-cell winrate tags)
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** 🔲 OPEN (Active — Sprint 18)
 **Area:** `src/engine/gomocup_protocol.cpp` (`parseMessage` REALTIME branch, `parseInfo`/`onPVDone`, `clearAnalysisState`), a new analysis-overlay model struct (owned by `GameState`), `src/model/game_state.{h,cpp}`, `src/model/board_view_model.{h,cpp}`, `src/ui/board_renderer.{h,cpp}` (delete `drawCandidateMoves`, add one per-cell overlay layer), `src/model/config.h` (`ViewConfig` toggles) + settings persistence + View menu items; regression tests under `tests/`
 **Priority:** P2 (chunky — one cohesive CODE, but touches engine→model→ui + settings + menu; split only if it gets unwieldy)
 **Source:** `docs/notes/2026-09-08-refyxb-multipv-rendering.md` + `docs/notes/2026-09-08-rapfi-engine-realtime-output.md`. User: PROTO-05 shipped but "not reached my expect" — the reference GUI's live board overlay was never ported.

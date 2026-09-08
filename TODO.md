@@ -23,17 +23,16 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 ## Active
 
-No sprint open. Sprint 17 closed 2026-09-08 (release `v0.6.0`) — see `docs/sprint/current.md`.
-Run `/sprint open 18 …` to commit Backlog items into the next sprint.
-
-## Backlog
+Sprint 18 (opened 2026-09-08, goal "Yixin-Board-style live analysis board overlay") — pulled from Backlog:
 
 - 🔲 **PROTO-06.** replace the analysis board overlay with the Yixin-Board model — per-cell winrate/mate tags fed by `INFO PV DONE` (with per-depth stale cleanup) + the `REALTIME` feed (`LOST`/`BEST`/`REFRESH`; `POS`/`DONE` parsed for Yixin engines), live-only, coalesced on the RT-01 tick; deletes `candidateMoves` / `drawCandidateMoves`; two View toggles. Design resolved with user 2026-09-08 (decision (a): only what Rapfi supports). [Model: Sonnet] — [detail](docs/todo/PROTO-06-port-realtime-feed-to-board.md) · [instruction](docs/instruction/PROTO-06-port-realtime-feed-to-board.md)
 
-New work enters via `docs/notes/` → `features/<slug>/` → `docs/todo/<CODE>-<slug>.md` + a Backlog line.
+## Backlog
 
-Filed 2026-09-07 from `docs/notes/2026-09-07-pv-multipv-display-root-cause.md`: PROTO-05 — **pulled into Sprint 17 Active 2026-09-07** (see `docs/sprint/current.md`).
-Filed 2026-09-08 from `docs/notes/2026-09-08-refyxb-multipv-rendering.md`: PROTO-06.
+No open items — PROTO-06 is committed to Sprint 18. New work enters via `docs/notes/` → `features/<slug>/` → `docs/todo/<CODE>-<slug>.md` + a Backlog line.
+
+Filed 2026-09-07 from `docs/notes/2026-09-07-pv-multipv-display-root-cause.md`: PROTO-05 — pulled into Sprint 17 Active 2026-09-07 (shipped, PR #32).
+Filed 2026-09-08 from `docs/notes/2026-09-08-refyxb-multipv-rendering.md`: PROTO-06 — **pulled into Sprint 18 Active 2026-09-08** (see `docs/sprint/current.md`).
 
 ## Completed
 
