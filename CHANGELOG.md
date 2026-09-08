@@ -13,6 +13,26 @@ internal tracking files for traceability.
 
 _Nothing yet._
 
+## [0.7.0] - 2026-09-08
+
+Sprint 18 — the board's engine overlay is now a live, per-cell view of the search, matching the
+original Yixin-Board.
+
+### Added
+
+- While the engine is thinking, each empty point can now show a live marker fed directly by the
+  search: a win-rate / mate tag on the leading candidate of each depth (colour-coded red→cyan by
+  win chance), a distinct mark on root moves the engine has found losing, and a highlight on the
+  current best move. Stale candidate tags clear automatically as the search moves on, and the
+  whole overlay disappears when the engine stops (PROTO-06).
+- Two new View-menu items: "Search overlay" (master on/off) and "Search win-rate tags" (hide just
+  the numbers, keep the marks). Both default on and persist across restarts (PROTO-06).
+
+### Changed
+
+- The board's engine overlay is no longer the post-search Multi-PV heat-map circles — it is the
+  live per-cell view above, drawn only while analysing (PROTO-06).
+
 ## [0.6.0] - 2026-09-08
 
 Sprint 17 — the analysis display now updates live as the engine searches, instead of only when it
@@ -268,7 +288,8 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/nguyencongminh090/RANLS/compare/v0.4.1...v0.4.2

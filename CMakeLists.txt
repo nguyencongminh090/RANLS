@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18.2)
 project(ranls-gui
-    VERSION     0.6.0
+    VERSION     0.7.0
     # C is needed to compile the glib-compile-resources output
     # (generated/ranls_gresource.c, PORT-02); with CXX only, add_executable
     # silently drops the .c and the stylesheet is never bundled.
