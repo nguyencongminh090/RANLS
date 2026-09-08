@@ -14,7 +14,8 @@
 // pins the four acceptance facts from docs/instruction/PROTO-05-*.md:
 //   1. engineStatus().depth increases across the transcript (not set once);
 //   2. pvLines() reaches `multiPV` non-empty entries, each carrying its depth;
-//   3. BoardViewModel::candidateMoves has `multiPV` markers mid-search;
+//   3. the live board overlay (BoardViewModel::searchOverlay, PROTO-06 — was
+//      candidateMoves) has `multiPV` winrate-tag marks mid-search;
 //   4. NPS from the end-of-search "Speed ..." summary line is applied.
 //
 // The line formats are taken verbatim from Rapfi/search/searchoutput.cpp
@@ -42,6 +43,10 @@ struct Harness {
                 if (gs.isAnalyzing())
                     gs.setAnalysisData(pvs, status);
             });
+        proto.signal_analysis_overlay.connect([this](const AnalysisOverlay &ov) {
+            if (gs.isAnalyzing())
+                gs.setAnalysisOverlay(ov);
+        });
         gs.signal_board_changed.connect([this]() { proto.clearAnalysisState(); });
     }
 
@@ -55,8 +60,10 @@ struct Harness {
 // `(n) <eval> | <d>-<sd> | <pv>` line; then the per-depth `Depth ...` summary.
 std::vector<std::string> depthRound(int d, int numPV) {
     const int sd = d + 2;
-    // distinct first move per PV slot so candidateMoves gets `numPV` markers
-    const char *firsts[3] = {"7,7", "7,8", "8,7"};
+    // distinct first move per PV slot so the overlay gets `numPV` tag marks.
+    // PROTO-06: these must be EMPTY cells — the live overlay (like the original
+    // Yixin-Board) only marks empty intersections, and the test plays 7,7 / 8,8.
+    const char *firsts[3] = {"3,3", "3,4", "4,3"};
     std::vector<std::string> out;
     for (int i = 0; i < numPV; ++i) {
         std::string pv = std::string(firsts[i]) + " 8,8 9,9";
@@ -99,10 +106,13 @@ TEST_CASE("PROTO-05: NORMAL + SHOW_DETAIL 3 transcript drives per-depth Multi-PV
         depthsSeen.push_back(h.gs.engineStatus().depth);
 
         if (d == 11) {
-            // (3) candidateMoves reaches multiPV markers mid-search.
+            // (3) the live overlay reaches multiPV winrate-tag marks mid-search.
             BoardViewModel bvm(h.gs);
             bvm.update();
-            CHECK(bvm.candidateMoves.size() == static_cast<size_t>(numPV));
+            size_t tagMarks = 0;
+            for (const auto &mk : bvm.searchOverlay)
+                if (mk.kind == BoardViewModel::SearchOverlayMark::Kind::Tag) ++tagMarks;
+            CHECK(tagMarks == static_cast<size_t>(numPV));
         }
     }
 

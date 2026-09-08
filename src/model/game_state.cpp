@@ -21,6 +21,7 @@ void GameState::resetAnalysisState()
     // adding a redundant signal_engine_analysis emission on every step once
     // the analysis state is already empty.
     bool alreadyEmpty = pvLines_.empty()
+        && analysisOverlay_.empty()
         && engineStatus_.depth == 0 && engineStatus_.selDepth == 0
         && engineStatus_.nodes == 0 && engineStatus_.nps == 0
         && engineStatus_.timeMs == 0 && engineStatus_.winrate == 0.5
@@ -38,6 +39,28 @@ void GameState::resetAnalysisState()
     analysisDirty_ = false;
     invalidateEvalHistoryCache();
     signal_engine_analysis.emit();
+
+    // PROTO-06: a position change wipes the live search overlay too (Q4) —
+    // synchronous, same rationale as the signal_engine_analysis clear above.
+    if (!analysisOverlay_.empty()) {
+        analysisOverlay_.clear();
+        overlayDirty_ = false;
+        signal_analysis_overlay.emit();
+    }
+}
+
+void GameState::setAnalysisOverlay(const AnalysisOverlay &overlay)
+{
+    analysisOverlay_ = overlay;
+    overlayDirty_ = true;
+}
+
+void GameState::clearAnalysisOverlay()
+{
+    overlayDirty_ = false;
+    if (analysisOverlay_.empty()) return;
+    analysisOverlay_.clear();
+    signal_analysis_overlay.emit();
 }
 
 void GameState::newGame(int boardSize)
@@ -359,24 +382,38 @@ void GameState::setAnalysisData(std::vector<PVLine> pvs, EngineStatus status)
 
 bool GameState::tickAnalysis()
 {
-    if (!analysisDirty_) return false;
-    analysisDirty_ = false;
-    signal_engine_analysis.emit();
-    if (treeDirty_) {
-        treeDirty_ = false;
-        signal_tree_updated.emit();
+    if (!analysisDirty_ && !overlayDirty_) return false;
+    if (analysisDirty_) {
+        analysisDirty_ = false;
+        signal_engine_analysis.emit();
+        if (treeDirty_) {
+            treeDirty_ = false;
+            signal_tree_updated.emit();
+        }
+    }
+    // PROTO-06: same coalescing point (RT-01 tick) for the overlay channel — a
+    // burst of REALTIME/INFO-PV-DONE lines collapses to one repaint.
+    if (overlayDirty_) {
+        overlayDirty_ = false;
+        signal_analysis_overlay.emit();
     }
     return true;
 }
 
 void GameState::flush()
 {
-    if (!analysisDirty_) return;
-    analysisDirty_ = false;
-    signal_engine_analysis.emit();
-    if (treeDirty_) {
-        treeDirty_ = false;
-        signal_tree_updated.emit();
+    if (!analysisDirty_ && !overlayDirty_) return;
+    if (analysisDirty_) {
+        analysisDirty_ = false;
+        signal_engine_analysis.emit();
+        if (treeDirty_) {
+            treeDirty_ = false;
+            signal_tree_updated.emit();
+        }
+    }
+    if (overlayDirty_) {
+        overlayDirty_ = false;
+        signal_analysis_overlay.emit();
     }
 }
 

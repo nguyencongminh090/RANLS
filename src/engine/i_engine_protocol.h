@@ -68,6 +68,13 @@ public:
     /// Emitted when the engine provides ongoing analysis updates (PVs, Depth, Eval, NPS).
     sigc::signal<void(const std::vector<PVLine>&, const EngineStatus&)> signal_analysis;
 
+    /// PROTO-06: emitted when the live per-cell search overlay changes — a
+    /// REALTIME pos/lost/best/refresh line, or an `INFO PV DONE` winrate tag.
+    /// Coalesced downstream exactly like signal_analysis (GameState dirty flag
+    /// + tick). Independent of signal_analysis: it never routes through
+    /// GameState::setAnalysisData (no tree-node / eval-history writes).
+    sigc::signal<void(const AnalysisOverlay&)> signal_analysis_overlay;
+
     /// Emitted when a single database record is parsed.
     sigc::signal<void(const DatabaseEntry&)> signal_database_entry;
 

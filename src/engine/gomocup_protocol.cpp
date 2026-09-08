@@ -183,6 +183,19 @@ static int64_t parseTimeTextMs(const std::string &text, int64_t fallback = 0) {
     }
 }
 
+/// PROTO-06: the per-cell overlay tag text for a completed PV — mirrors the
+/// original Yixin-Board `tag` encoding (main.c): "+M<n>" / "-M<n>" for a mate,
+/// "D" for a forced draw, otherwise the winrate as an integer percent capped
+/// to 1..99 (matching `winrate2colorstr`'s cap).
+static std::string overlayTagText(const PVLine &pv) {
+    if (pv.mateStep > 0) return "+M" + std::to_string(pv.mateStep);
+    if (pv.mateStep < 0) return "-M" + std::to_string(-pv.mateStep);
+    if (pv.evalText == "D" || pv.evalText == "0") return "D";
+    int pct = static_cast<int>(std::lround(std::clamp(pv.score, 0.0, 1.0) * 100.0));
+    pct = std::clamp(pct, 1, 99);
+    return std::to_string(pct) + "%";
+}
+
 static std::vector<Coord> parseMoveTokens(const std::string &movesText, int boardSize) {
     std::vector<Coord> moves;
     std::istringstream ss(movesText);
@@ -291,7 +304,15 @@ void GomocupProtocol::clearAnalysisState() {
     currentPVIndex_  = 0;
     currentNumPV_    = 0;
     currentBestLine_.clear();
+    // PROTO-06: the live per-cell overlay is per-think too — drop it here so a
+    // stale REALTIME/tag cell can't survive a position change or a fresh
+    // analyze. GameState clears its own copy + repaints (resetAnalysisState).
+    overlay_.clear();
     resetCurrentPVState();
+}
+
+void GomocupProtocol::emitOverlay() {
+    signal_analysis_overlay.emit(overlay_);
 }
 
 std::vector<std::string> GomocupProtocol::generateAnalyzeRequest(const std::vector<Coord>& path, int multiPV) {
@@ -477,7 +498,11 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
             Coord best = parseEngineCoord(sub.substr(5), boardSize_);
             if (best.isValid(boardSize_)) {
                 currentStatus_.bestMove = best;
+                // PROTO-06: distinct current-best-root-move highlight (Yixin-Board
+                // f=8), separate from pos/lost.
+                overlay_.bestMove = best;
                 signal_analysis.emit(currentPVs_, currentStatus_);
+                emitOverlay();
             }
         } else if (sub.rfind("PV ", 0) == 0) {
             parseRealtimePV(sub.substr(3));
@@ -488,6 +513,27 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
                 currentStatus_.mateStep = 0;
                 currentStatus_.evalText.clear();
             } catch (...) {}
+        } else if (sub.rfind("POS ", 0) == 0) {
+            // PROTO-06: cell the engine is currently examining. Stock Rapfi does
+            // not emit this (aspiration window on) — real for the Yixin engine /
+            // Rapfi with aspiration_window=false. No feature depends on it.
+            Coord c = parseEngineCoord(sub.substr(4), boardSize_);
+            if (c.isValid(boardSize_)) { overlay_.cells[c].pos = 2; emitOverlay(); }
+        } else if (sub.rfind("DONE ", 0) == 0) {
+            // PROTO-06: cell the engine has finished examining (see POS above).
+            Coord c = parseEngineCoord(sub.substr(5), boardSize_);
+            if (c.isValid(boardSize_)) { overlay_.cells[c].pos = 1; emitOverlay(); }
+        } else if (sub.rfind("LOST ", 0) == 0) {
+            // PROTO-06: a losing root move — persists until search end / position
+            // change (never cleared by REFRESH).
+            Coord c = parseEngineCoord(sub.substr(5), boardSize_);
+            if (c.isValid(boardSize_)) { overlay_.cells[c].lost = true; emitOverlay(); }
+        } else if (sub.rfind("REFRESH", 0) == 0) {
+            // PROTO-06: new depth iteration — clear only the examining/examined
+            // marks (Rapfi emits this once per PV per depth; cheap, keep lost/
+            // tag/bestMove).
+            overlay_.clearPos();
+            emitOverlay();
         }
         return;
     }
@@ -924,6 +970,31 @@ void GomocupProtocol::onPVDone() {
     }
 
     signal_analysis.emit(currentPVs_, currentStatus_);
+
+    // PROTO-06: stamp this PV's first move with a winrate/mate tag + the root
+    // depth it was written at (Yixin-Board main.c:6544). The MESSAGE "(n)" path
+    // still feeds pvLines_/PVView unchanged — only the *board* overlay is fed
+    // from here.
+    if (!pv.moves.empty() && pv.moves.front().isValid(boardSize_)) {
+        AnalysisOverlayCell &cell = overlay_.cells[pv.moves.front()];
+        cell.tag        = overlayTagText(pv);
+        cell.tagDepth   = currentStatus_.depth;
+        cell.tagWinrate = pv.mateStep > 0 ? 1.0 : (pv.mateStep < 0 ? 0.0 : pv.score);
+    }
+    // On the last PV of this depth round, drop tags that were written at an
+    // earlier depth — those cells are no longer top-N candidates (main.c:6549).
+    // currentStatus_.depth stays the right round depth even on the YXNBEST
+    // (printRootMoves) path, which omits INFO DEPTH: it is maintained from the
+    // MESSAGE "(n)" SD field / other INFO lines.
+    if (currentNumPV_ > 0 && currentPVIndex_ + 1 == currentNumPV_) {
+        for (auto &kv : overlay_.cells) {
+            if (!kv.second.tag.empty() && kv.second.tagDepth < currentStatus_.depth) {
+                kv.second.tag.clear();
+                kv.second.tagDepth = 0;
+            }
+        }
+    }
+    emitOverlay();
 }
 
 static std::string decodeLabel(int val) {

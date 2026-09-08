@@ -47,6 +47,11 @@ private:
     void onPVDone();
     void tryExtensionReply(const std::string &line);
 
+    /// PROTO-06: push the current accumulated overlay out on
+    /// signal_analysis_overlay. Called per mutating REALTIME line and from
+    /// onPVDone(); the downstream (GameState) coalesces to the RT-01 tick.
+    void emitOverlay();
+
     std::shared_ptr<protoext::ExtensionTable> ext_;
 
     int boardSize_ = 15;
@@ -65,4 +70,9 @@ private:
     int     currentPvMateStep_ = 0;
     std::string currentPvEvalText_;
     std::vector<Coord> currentBestLine_;
+
+    // PROTO-06: accumulated live per-cell search overlay for the current think.
+    // Fed by parseMessage()'s REALTIME branch + onPVDone(); cleared by
+    // clearAnalysisState() (analysis start / position change).
+    AnalysisOverlay overlay_;
 };

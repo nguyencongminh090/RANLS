@@ -68,6 +68,18 @@ public:
     bool makeMove(Coord pos);
     const EngineStatus        &engineStatus() const { return engineStatus_; }
 
+    // ── PROTO-06: live per-cell search overlay ──────────────────────────────
+    /// The current live board overlay (REALTIME pos/lost/best + INFO PV DONE
+    /// winrate tags). View state only — never touched by setAnalysisData().
+    const AnalysisOverlay &analysisOverlay() const { return analysisOverlay_; }
+    /// Store a fresh overlay snapshot and mark it dirty. Does NOT emit —
+    /// coalesced onto tickAnalysis()/flush(), exactly like setAnalysisData().
+    void setAnalysisOverlay(const AnalysisOverlay &overlay);
+    /// Clear the whole overlay and emit signal_analysis_overlay synchronously
+    /// (search end / engine stop / crash — the overlay is live-only). No-op if
+    /// already empty.
+    void clearAnalysisOverlay();
+
     /// Stores the latest engine analysis data and marks it dirty. Does NOT
     /// emit signal_engine_analysis synchronously (see RT-01) — that would
     /// mean one full UI rebuild per parsed engine line (up to 8x with
@@ -107,6 +119,10 @@ public:
     // ── Signals ─────────────────────────────────────────────────────────────
     sigc::signal<void()>    signal_board_changed;
     sigc::signal<void()>    signal_engine_analysis;
+    /// PROTO-06: coalesced live-overlay update (see setAnalysisOverlay). A
+    /// second model→ui channel parallel to signal_engine_analysis, deliberately
+    /// NOT folded into it — the overlay is pure view state.
+    sigc::signal<void()>    signal_analysis_overlay;
     sigc::signal<void()>    signal_tree_updated;
     /// NAV-01: emitted once at the end of gotoMove() with the resulting
     /// history index, whether or not the position actually changed (e.g. a
@@ -131,6 +147,11 @@ private:
     std::vector<PVLine> pvLines_;
     EngineStatus        engineStatus_;
     bool                analyzing_ = false;
+
+    /// PROTO-06: live per-cell search overlay + its coalescing dirty flag
+    /// (consumed by tickAnalysis()/flush() alongside analysisDirty_).
+    AnalysisOverlay     analysisOverlay_;
+    bool                overlayDirty_ = false;
 
     /// True when pvLines_/engineStatus_ have changed since the last
     /// signal_engine_analysis emission. Consumed by tickAnalysis()/flush().

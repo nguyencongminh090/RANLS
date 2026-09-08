@@ -29,6 +29,14 @@ struct ViewConfig {
     bool     showDatabase    = true;
     WinGraphMode winGraphMode = WinGraphMode::BothSide;
 
+    /// PROTO-06: master on/off for the live per-cell search overlay (winrate
+    /// tags + lost/best/examined marks) drawn on the board while analyzing.
+    /// Mirrors the original Yixin-Board `showanalysis`.
+    bool     showSearchOverlay = true;
+    /// PROTO-06: when false, hide only the winrate/mate *text tags* — the
+    /// lost/best/examined marks stay. Mirrors Yixin-Board `showanalysiswinrate`.
+    bool     showSearchWinrate = true;
+
     /// ANLZ-01: continuous background analysis. When true, MainWindow restarts
     /// the engine's analysis on the new current position after every position
     /// change (move / undo / redo / jump) so the WinGraph gains a real point

@@ -53,7 +53,10 @@ private:
     void drawLastMove(const Cairo::RefPtr<Cairo::Context> &cr);
     void drawDatabaseMarkers(const Cairo::RefPtr<Cairo::Context> &cr);
     void drawVariantMarkers(const Cairo::RefPtr<Cairo::Context> &cr);
-    void drawCandidateMoves(const Cairo::RefPtr<Cairo::Context> &cr);
+    /// PROTO-06: one single-winner-per-cell live search overlay layer
+    /// (replaces the old drawCandidateMoves). Walks vm_.searchOverlay, already
+    /// resolved by BoardViewModel to one mark per cell.
+    void drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr);
     void drawPVHighlight(const Cairo::RefPtr<Cairo::Context> &cr);
     void drawHover(const Cairo::RefPtr<Cairo::Context> &cr);
     /// UI-03: draws vm_.forbiddenPoints (already computed by the model --
