@@ -43,7 +43,7 @@ the reference Yixin-Board.
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| PROTO-06 | replace the analysis board overlay with the Yixin-Board model (per-cell winrate tags + REALTIME feed) | PROTO-05 (shipped) | — | 🔲 Not started |
+| PROTO-06 | replace the analysis board overlay with the Yixin-Board model (per-cell winrate tags + REALTIME feed) | PROTO-05 (shipped) | — | ✅ Done (PR #33, squash `ae4dfbd`) |
 
 Points not yet estimated (consistent with Sprints 3–17).
 

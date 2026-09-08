@@ -25,7 +25,7 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 Sprint 18 (opened 2026-09-08, goal "Yixin-Board-style live analysis board overlay") — pulled from Backlog:
 
-- ✅ **PROTO-06.** replace the analysis board overlay with the Yixin-Board model — per-cell winrate/mate tags fed by `INFO PV DONE` (with per-depth stale cleanup) + the `REALTIME` feed (`LOST`/`BEST`/`REFRESH`; `POS`/`DONE` parsed for Yixin engines), live-only, coalesced on the RT-01 tick; deletes `candidateMoves` / `drawCandidateMoves`; two View toggles. Design resolved with user 2026-09-08 (decision (a): only what Rapfi supports). [Model: Sonnet] — [detail](docs/todo/PROTO-06-port-realtime-feed-to-board.md) · [instruction](docs/instruction/PROTO-06-port-realtime-feed-to-board.md)
+No open items — PROTO-06 landed on `main` (PR #33). Sprint 18 ready to close.
 
 ## Backlog
 
@@ -102,3 +102,7 @@ Shipped in Sprints 1–16 (all archived in `docs/sprint/archive/`):
 Sprint 17:
 
 - ✅ **PROTO-05.** enable engine incremental analysis stream (YXSHOWINFO + configurable `INFO SHOW_DETAIL`) — [detail](docs/todo/PROTO-05-enable-incremental-analysis-stream.md) · [instruction](docs/instruction/PROTO-05-enable-incremental-analysis-stream.md)
+
+Sprint 18:
+
+- ✅ **PROTO-06.** replace the analysis board overlay with the Yixin-Board live per-cell model (winrate/mate tags from `INFO PV DONE` + `REALTIME` `LOST`/`BEST`/`REFRESH`, live-only, two View toggles; deletes `candidateMoves` / `drawCandidateMoves`) — [detail](docs/todo/PROTO-06-port-realtime-feed-to-board.md) · [instruction](docs/instruction/PROTO-06-port-realtime-feed-to-board.md)
