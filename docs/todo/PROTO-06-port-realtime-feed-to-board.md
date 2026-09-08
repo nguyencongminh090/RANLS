@@ -1,6 +1,51 @@
 # PROTO-06 — replace the analysis board overlay with the Yixin-Board model (REALTIME feed + per-cell winrate tags)
 
-**Status:** 🔲 OPEN (Active — Sprint 18)
+**Status:** ✅ DONE (2026-09-08, branch `proto-06/port-realtime-feed-to-board` — not merged; orchestrator drives the PR)
+
+Implemented per decision (a) — only what a stock Rapfi emits drives real features; `POS`/`DONE`
+are parsed (for the Yixin engine) but nothing depends on them; Rapfi search config untouched.
+
+- **`AnalysisOverlay` / `AnalysisOverlayCell`** in `src/engine/engine_types.h` — per-empty-cell
+  `tag` / `tagDepth` / `tagWinrate` / `pos` (0/1/2) / `lost`, plus one `bestMove`.
+- **`GomocupProtocol`** — `parseMessage` REALTIME branch now handles `POS`/`DONE`/`LOST`/`REFRESH`
+  (+ `BEST` also feeds `overlay_.bestMove`); `onPVDone` stamps `pv.moves[0]` with
+  `overlayTagText(pv)` + `currentStatus_.depth`, and on the last PV of a round
+  (`currentPVIndex_+1 == currentNumPV_`) clears tags with `tagDepth < currentStatus_.depth`.
+  `REFRESH` clears `pos` only. All coords via `parseEngineCoord` (no axis special-casing).
+  `clearAnalysisState()` also clears `overlay_`. New `signal_analysis_overlay(const AnalysisOverlay&)`
+  on `IEngineProtocol`, emitted per mutating line via `emitOverlay()`.
+- **`GameState`** — owns `analysisOverlay_` + `overlayDirty_`; `setAnalysisOverlay()` (dirty flag
+  only, never through `setAnalysisData`), `clearAnalysisOverlay()` (synchronous emit),
+  `signal_analysis_overlay`. `tickAnalysis()`/`flush()` coalesce the overlay channel on the same
+  RT-01 75 ms point. `resetAnalysisState()` clears the overlay on position change.
+- **`EngineController`** — forwards `protocol_->signal_analysis_overlay` → `setAnalysisOverlay`
+  (UI-04 in-flight gate); `clearAnalysisOverlay()` on search-completion coordinate, `stopAnalysis()`,
+  and process death.
+- **`BoardViewModel`** — `candidateMoves` deleted; new `searchOverlay` (`SearchOverlayMark` with
+  `Kind` Tag/Lost/Best/Examined/Examining), resolved single-winner per cell
+  (`tag > lost > best > pos==1 > pos==2`) in `update()` ONLY while `isAnalyzing()` and
+  `viewConfig.showSearchOverlay`; `showSearchWinrate` drops just the tag layer.
+- **`BoardRenderer`** — `drawCandidateMoves` → `drawSearchOverlay` (same pipeline slot); winrate
+  tag keeps the HSV heat colour, other marks use fixed shape-distinct glyphs.
+- **`ViewConfig`** — `showSearchOverlay` + `showSearchWinrate` (both default on), persisted as
+  `show_search_overlay` / `show_search_winrate` in `SettingsStorage`, one View-menu checkbox each
+  (`win.show-search-overlay` / `win.show-search-winrate`), synced by `syncSearchOverlayMenu()`.
+
+**Verification:** `tests/test_proto06_analysis_overlay.cpp` (6 cases, `ranls-gui-ui-tests`) —
+INFO tag/tagDepth + per-round stale cleanup; REALTIME LOST/BEST/POS/DONE/REFRESH; reset via
+`signal_board_changed` + `clearAnalysisOverlay`; burst-coalescing (N lines → 1 emit); a YXNBEST
+block with no `INFO DEPTH` still cleans stale tags at the right round depth; BoardViewModel
+live-only gate + both toggles. `test_proto05_incremental_stream.cpp` updated (candidateMoves →
+searchOverlay tag count; fixture first-moves moved to empty cells). Release build clean;
+`ctest` 4/4 green (`port02`, `rel02`, `ranls-gui-tests`, `ranls-gui-ui-tests` — incl.
+`test_rt01_throttle`, `test_proto05_*`, `test_ui04_*`, `test_ui07_*`, `test_anlz06`/`07`,
+`test_game_state`). Debug build in a `/run/media/...` worktree trips `port02` on the `__FILE__`
+path regex — pre-existing artifact of Debug + worktree path, not a PROTO-06 regression (Release
+passes). Manual live-engine run against Rapfi is human-owed (no engine/display on build host).
+
+---
+
+**Original scoping (kept for reference):** 🔲 OPEN (Active — Sprint 18)
 **Area:** `src/engine/gomocup_protocol.cpp` (`parseMessage` REALTIME branch, `parseInfo`/`onPVDone`, `clearAnalysisState`), a new analysis-overlay model struct (owned by `GameState`), `src/model/game_state.{h,cpp}`, `src/model/board_view_model.{h,cpp}`, `src/ui/board_renderer.{h,cpp}` (delete `drawCandidateMoves`, add one per-cell overlay layer), `src/model/config.h` (`ViewConfig` toggles) + settings persistence + View menu items; regression tests under `tests/`
 **Priority:** P2 (chunky — one cohesive CODE, but touches engine→model→ui + settings + menu; split only if it gets unwieldy)
 **Source:** `docs/notes/2026-09-08-refyxb-multipv-rendering.md` + `docs/notes/2026-09-08-rapfi-engine-realtime-output.md`. User: PROTO-05 shipped but "not reached my expect" — the reference GUI's live board overlay was never ported.
