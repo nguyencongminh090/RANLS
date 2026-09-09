@@ -35,7 +35,7 @@
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
 | PROTO-07 | native `!yxAnalz` console command — analyze an explicit root-move allow-list | — | — | ✅ Done — merged to `main` 2026-09-09 (PR #34, squash `2a912fe`) |
-| CONS-03 | `!help` should document `!yxAnalz` / YXANALZ as an engine-protocol extension | PROTO-07 | — | 🔲 Not started |
+| CONS-03 | `!help` should document `!yxAnalz` / YXANALZ as an engine-protocol extension | PROTO-07 | — | ✅ Done — merged to `main` 2026-09-09 (PR #35, squash `4c5519b`) |
 
 Points not yet estimated (consistent with Sprints 3–18).
 

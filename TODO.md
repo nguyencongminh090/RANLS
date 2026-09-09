@@ -25,7 +25,7 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 Sprint 19 (opened 2026-09-09, goal "YXANALZ — native `!yxAnalz`: analyze an explicit root-move allow-list") — pulled from Backlog:
 
-- ✅ **CONS-03.** `!help` should document `!yxAnalz` / YXANALZ as an engine-protocol extension (needs a supporting engine; real interruptible search; places no stone; alphabetic move text only). Help-text only, no behaviour change. Follow-on to PROTO-07, pulled into Active mid-sprint 2026-09-09. [Model: haiku] — [detail](docs/todo/CONS-03-help-doc-yxanalz-protocol-extension.md) · [instruction](docs/instruction/CONS-03-help-doc-yxanalz-protocol-extension.md)
+CONS-03 (pulled into Active mid-sprint 2026-09-09) — ✅ shipped to `main` 2026-09-09 (PR #35, squash `4c5519b`); moved to Completed.
 
 PROTO-07 (Sprint 19's original commitment) — ✅ shipped to `main` 2026-09-09 (PR #34, squash `2a912fe`); moved to Completed.
 
@@ -114,3 +114,4 @@ Sprint 18:
 Sprint 19:
 
 - ✅ **PROTO-07.** native `!yxAnalz` console command — analyze an explicit allow-list of root moves (Rapfi `YXANALZ`). First-class feature (not `.ptc`). Alphabetic move text only (numeric `x,y` deferred — `parseMovesText` out of bounds to change). — [detail](docs/todo/PROTO-07-yxanalz-root-move-allowlist.md) · [instruction](docs/instruction/PROTO-07-yxanalz-root-move-allowlist.md)
+- ✅ **CONS-03.** `!help` documents `!yxAnalz` / YXANALZ as an engine-protocol extension (needs a supporting engine; real interruptible search; places no stone; alphabetic move text only). Help-text only, no behaviour change. Follow-on to PROTO-07. — [detail](docs/todo/CONS-03-help-doc-yxanalz-protocol-extension.md) · [instruction](docs/instruction/CONS-03-help-doc-yxanalz-protocol-extension.md)
