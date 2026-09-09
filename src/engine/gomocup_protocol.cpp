@@ -330,6 +330,37 @@ std::vector<std::string> GomocupProtocol::generateAnalyzeRequest(const std::vect
     return cmds;
 }
 
+std::vector<std::string> GomocupProtocol::generateAnalyzeMovesRequest(const std::vector<Coord>& path,
+                                                                      const std::vector<Coord>& moves) {
+    std::vector<std::string> cmds;
+
+    // Same fresh-think reset as generateAnalyzeRequest(): a YXANALZ run is a
+    // full search that repopulates currentPVs_/overlay_ from scratch (UI-04).
+    clearAnalysisState();
+
+    // Position block first — identical shape/colour alternation to
+    // generateAnalyzeRequest(): YXBOARD sets the position for analysis only,
+    // it never starts a search of its own.
+    cmds.push_back("YXBOARD");
+    for (size_t i = 0; i < path.size(); ++i) {
+        int color = (i % 2 == 0) ? 1 : 2;
+        cmds.push_back(coordToEngine(path[i]) + "," + std::to_string(color));
+    }
+    cmds.push_back("DONE");
+
+    // PROTO-07: then the explicit root-move allow-list. Rapfi reads the
+    // coordinate tokens one at a time (`std::cin >> token`), so one coordinate
+    // per line is legal and keeps arbitrarily long lists off a single line.
+    // Every coordinate goes through the same coordToEngine() conversion as the
+    // path above — no axis special-casing here.
+    cmds.push_back("YXANALZ");
+    for (const auto& m : moves) {
+        cmds.push_back(coordToEngine(m));
+    }
+    cmds.push_back("DONE");
+    return cmds;
+}
+
 std::vector<std::string> GomocupProtocol::generateMoveRequest(const std::vector<Coord>& path) {
     std::vector<std::string> cmds;
 

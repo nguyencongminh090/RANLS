@@ -1,6 +1,38 @@
 # PROTO-07 — native `!yxAnalz` console command: analyze an explicit root-move allow-list
 
-**Status:** 🔲 OPEN (Backlog) — design resolved 2026-09-09, ready to pull into a sprint
+**Status:** ✅ DONE — implemented 2026-09-09 on branch `proto-07/yxanalz-root-move-allowlist`
+(Sprint 19). New `IEngineProtocol::generateAnalyzeMovesRequest(path, moves)` (impl. in
+`GomocupProtocol`) emits `YXBOARD` / `<coord>,<color>` … / `DONE` / `YXANALZ` / `<coord>` … /
+`DONE`, position block byte-identical to `generateAnalyzeRequest`'s and every coordinate through
+`coordToEngine()`; new `EngineController::analyzeMoves(moves)` with exactly `analyze()`'s
+`SearchIntent::Analysis` / `setAnalyzing(true)` / `EngineState::Analyzing` bookkeeping inside the
+PROTO-04 `sendOrDefer()` gate (differences: empty list never sent; a running search is stopped
+first instead of early-returning); `CommandDispatcher` registers `!yxAnalz <moveText...>` in the
+`analysis` group with the three no-send refusals (Analyze Mode ON / empty / all off-board or
+occupied). Scope items 3 and 5 needed **no new code**, as predicted: the existing ANLZ-06
+`SearchIntent` gate already discards the completion coordinate, and the multi-PV panel + PROTO-06
+overlay gate on `isAnalyzing()` (`board_view_model.cpp:53`, `main_window.cpp:489`), not on
+`analyze()` — no genuine gating bug to fix, so none was invented.
+
+**Verification:** Release build clean (144 targets, no new warnings); `ctest` 4/4 green —
+`ranls-gui-tests` 227 cases / 2610 assertions (was 218 cases), `ranls-gui-ui-tests` 52 / 391, 0
+skipped (was 45), plus `port02` and `rel02`. PROTO-04/05/06 and ANLZ-05/06/07 suites unregressed.
+New: `tests/test_proto07_yxanalz.cpp` (9 cases — wire shape, colour alternation, `DONE`
+termination, size-independence, controller state, **inbound** completion coordinate emitting no
+`signal_engine_move` and placing no stone, empty list never sent, stop-then-queue, and a following
+`analyze()` still emitting a plain `YXNBEST`) and `tests/test_proto07_yxanalz_console.cpp`
+(7 cases — registration/`!help`, `!yxAnalz h3 h2 h9` → `12,7`/`13,7`/`6,7` on the real wire, and
+all three refusals asserted against `EngineProcess::signal_line_sent`). Live smoke against a real
+Rapfi_V2 is a **human step** — the build host has no engine binary and no display.
+
+**Deviation from the "Resolved design §1 / acceptance criteria" wording:** the *numeric* coordinate
+form (`7,7`) is **not** accepted at the console. `CommandDispatcher::parseMovesText`, which this
+task must call and must not change, only recognises `<letter><digits>` move text — it has never
+parsed `x,y` tokens. Alphabetic input only; the `y,x` conversion itself is covered at the protocol
+layer. Raised for the user rather than silently extended (would require editing or forking
+`parseMovesText`, both out of bounds).
+
+Detail: [`../fix-log/2026-09-09-proto-07-yxanalz.md`](../fix-log/2026-09-09-proto-07-yxanalz.md)
 **Area:** `src/command/command_dispatcher.{cpp,h}`, `src/engine/engine_controller.{cpp,h}`, `src/engine/gomocup_protocol.{cpp,h}` (send helper only), reuses `parseMovesText` + the analyze/`SearchIntent` pipeline
 **Priority:** P2
 **Source:** User request 2026-09-09 — port Rapfi_V2's `YXANALZ` extension (`Rapfi_V2/rapfi/Rapfi/docs/rules/YXANALZ-user-root-candidates.md`) to YixinBoard. Feasibility + sequence + code-mapping discussion held in this session (see "Design" below).

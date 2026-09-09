@@ -359,6 +359,62 @@ void CommandDispatcher::registerBuiltins()
             ctx_.controller.analyze();
         });
 
+    // PROTO-07: analyze an explicit allow-list of root moves (YXANALZ) — one
+    // PV line per listed move. Console-only, by design (resolved design §8):
+    // no button/context-menu affordance.
+    registerCommand(
+        {"analysis", "yxanalz", "!yxAnalz <moveText...>",
+         "Analyze only the listed root moves (YXANALZ), e.g. !yxAnalz h3 h2 h9"},
+        [this](const Command &c) {
+            if (!ctx_.engine.isRunning()) {
+                printError("Engine not running. Use: !engine start");
+                return;
+            }
+
+            // Resolved design §8: refused, not suspended, while continuous
+            // Analyze Mode owns the search loop (ANLZ-01/05). One guard,
+            // before anything is sent — no suspend/resume path.
+            if (ctx_.gameState.viewConfig().analyzeMode) {
+                printError("Turn off Analyze Mode first (!yxAnalz needs exclusive use of the engine).");
+                return;
+            }
+
+            if (c.tail.empty()) {
+                printError("Usage: !yxAnalz <moveText...>  (e.g. !yxAnalz h3 h2 h9)");
+                return;
+            }
+
+            // Shared with !pos / !play — alphabetic move text, display
+            // orientation, off-board tokens already dropped here.
+            auto parsed = parseMovesText(c.tail, ctx_.gameState.boardSize());
+            if (parsed.empty()) {
+                printError("No valid analyze move parsed from: " + c.tail);
+                return;
+            }
+
+            // Drop occupied points: the engine rejects them per-coord anyway
+            // ("ERROR Coord is not valid..."), but there is no reason to spend
+            // a round-trip on a move that provably cannot be a root move.
+            const auto &board = ctx_.gameState.board();
+            std::vector<Coord> moves;
+            moves.reserve(parsed.size());
+            for (const auto &m : parsed) {
+                if (board.stoneAt(m) != Stone::Empty) continue;
+                moves.push_back(m);
+            }
+            if (moves.empty()) {
+                printError("No valid analyze move: every listed point is off-board or occupied.");
+                return;
+            }
+            if (moves.size() != parsed.size()) {
+                printInfo("Skipped " + std::to_string(parsed.size() - moves.size())
+                          + " occupied point(s).");
+            }
+
+            revertEnginePlaysIfEnginesTurn();  // ENG-02, same as !analyze
+            ctx_.controller.analyzeMoves(moves);
+        });
+
     registerCommand(
         {"analysis", "stop", "!stop", "Stop analysis (STOP)"},
         [this](const Command &) { ctx_.controller.stopAnalysis(); });

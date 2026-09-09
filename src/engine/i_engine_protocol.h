@@ -29,6 +29,17 @@ public:
     /// Generate commands to send the current board state and start analysis.
     virtual std::vector<std::string> generateAnalyzeRequest(const std::vector<Coord>& path, int multiPV) = 0;
 
+    /// PROTO-07: generate commands that set `path` as the position and start a
+    /// `YXANALZ` search restricted to an explicit allow-list of root moves —
+    /// the inverse of `YXBLOCK`. Same `YXBOARD … DONE` position block as
+    /// generateAnalyzeRequest(), followed by `YXANALZ` / one coordinate per
+    /// line / `DONE`. The engine searches exactly `moves` (one PV line each)
+    /// and finishes with a bare best-move coordinate, which the caller treats
+    /// as search-completion only (the ANLZ-06 SearchIntent gate). The whitelist
+    /// is one-shot engine-side — no client mirror state.
+    virtual std::vector<std::string> generateAnalyzeMovesRequest(const std::vector<Coord>& path,
+                                                                 const std::vector<Coord>& moves) = 0;
+
     /// Generate commands that set the given position and ask the engine to
     /// produce (and commit to) a single move for the side to move — as opposed
     /// to generateAnalyzeRequest(), which only asks for analysis. UI-06 uses

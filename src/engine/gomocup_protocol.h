@@ -30,6 +30,8 @@ public:
     std::vector<std::string> generateRule(GameRule rule) override;
     std::vector<std::string> generateConfig(const EngineConfig& cfg) override;
     std::vector<std::string> generateAnalyzeRequest(const std::vector<Coord>& path, int multiPV) override;
+    std::vector<std::string> generateAnalyzeMovesRequest(const std::vector<Coord>& path,
+                                                         const std::vector<Coord>& moves) override;
     std::vector<std::string> generateMoveRequest(const std::vector<Coord>& path) override;
     std::string generateStop() override;
     void clearAnalysisState() override;
