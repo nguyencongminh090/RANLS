@@ -222,6 +222,14 @@ raw command gets "corrected" into a desync. `！` fullwidth bang already handled
 — don't double-handle.
 [detail](docs/instruction/CONS-02-console-syntax-autocorrect.md)
 
+## CONS-03 — help-doc-yxanalz-protocol-extension
+
+Help text only — enrich the `!yxAnalz` `CommandSpec` `summary` (prefer) and/or add one
+`printHelp()` preamble line: YXANALZ is an engine-specific protocol extension, real interruptible
+search, no stone placed, alphabetic move text. Prefer touching `summary` not `usage` —
+`test_proto07_yxanalz_console.cpp` pins `commandUsage("yxanalz")` exactly. No behaviour change.
+[detail](docs/instruction/CONS-03-help-doc-yxanalz-protocol-extension.md)
+
 ## PROTO-05 — enable-incremental-analysis-stream
 
 Root cause is the output-config commands, not the parser: GUI hardcodes `INFO SHOW_DETAIL 0` and

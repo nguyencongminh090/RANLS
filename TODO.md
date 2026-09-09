@@ -29,11 +29,12 @@ No open items — PROTO-07 shipped to `main` 2026-09-09 (PR #34, squash `2a912fe
 
 ## Backlog
 
-No open items — PROTO-07 pulled into Sprint 19 Active 2026-09-09.
+- 🔲 **CONS-03.** `!help` should document `!yxAnalz` / YXANALZ as an engine-protocol extension (needs a supporting engine; real interruptible search; places no stone; alphabetic move text only). Help-text only, no behaviour change. [Model: haiku] — [detail](docs/todo/CONS-03-help-doc-yxanalz-protocol-extension.md) · [instruction](docs/instruction/CONS-03-help-doc-yxanalz-protocol-extension.md)
 
 Filed 2026-09-07 from `docs/notes/2026-09-07-pv-multipv-display-root-cause.md`: PROTO-05 — pulled into Sprint 17 Active 2026-09-07 (shipped, PR #32).
 Filed 2026-09-08 from `docs/notes/2026-09-08-refyxb-multipv-rendering.md`: PROTO-06 — **pulled into Sprint 18 Active 2026-09-08** (see `docs/sprint/current.md`).
 Filed 2026-09-09 from this session's YXANALZ feasibility discussion (Rapfi_V2 `docs/rules/YXANALZ-user-root-candidates.md`): PROTO-07 — design resolved 2026-09-09 (8 questions), **pulled into Sprint 19 Active 2026-09-09** (see `docs/sprint/current.md`).
+Filed 2026-09-09 from this session (user request right after PROTO-07 merged): CONS-03 — `!help` doc for `!yxAnalz` / YXANALZ.
 
 ## Completed
 
