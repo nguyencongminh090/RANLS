@@ -23,9 +23,9 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 ## Active
 
-Sprint 19 (opened 2026-09-09, goal "YXANALZ — native `!yxAnalz`: analyze an explicit root-move allow-list") — pulled from Backlog:
+Sprint 19 (opened 2026-09-09, goal "YXANALZ — native `!yxAnalz`: analyze an explicit root-move allow-list").
 
-- ✅ **PROTO-07.** native `!yxAnalz` console command — analyze an explicit allow-list of root moves (Rapfi `YXANALZ`). First-class feature (not `.ptc`); design resolved 2026-09-09. [Model: high] — [detail](docs/todo/PROTO-07-yxanalz-root-move-allowlist.md) · [instruction](docs/instruction/PROTO-07-yxanalz-root-move-allowlist.md)
+No open items — PROTO-07 shipped to `main` 2026-09-09 (PR #34, squash `2a912fe`); see Completed.
 
 ## Backlog
 
@@ -107,3 +107,7 @@ Sprint 17:
 Sprint 18:
 
 - ✅ **PROTO-06.** replace the analysis board overlay with the Yixin-Board live per-cell model (winrate/mate tags from `INFO PV DONE` + `REALTIME` `LOST`/`BEST`/`REFRESH`, live-only, two View toggles; deletes `candidateMoves` / `drawCandidateMoves`) — [detail](docs/todo/PROTO-06-port-realtime-feed-to-board.md) · [instruction](docs/instruction/PROTO-06-port-realtime-feed-to-board.md)
+
+Sprint 19:
+
+- ✅ **PROTO-07.** native `!yxAnalz` console command — analyze an explicit allow-list of root moves (Rapfi `YXANALZ`). First-class feature (not `.ptc`). Alphabetic move text only (numeric `x,y` deferred — `parseMovesText` out of bounds to change). — [detail](docs/todo/PROTO-07-yxanalz-root-move-allowlist.md) · [instruction](docs/instruction/PROTO-07-yxanalz-root-move-allowlist.md)
