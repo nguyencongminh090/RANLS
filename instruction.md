@@ -233,6 +233,18 @@ rendering, don't change the `YXNBEST` request. Watch STATE-03 mid-round truncati
 re-verify ANLZ-07 convergence under the richer feed.
 [detail](docs/instruction/PROTO-05-enable-incremental-analysis-stream.md)
 
+## PROTO-07 — yxanalz-root-move-allowlist
+
+Feature, **not** a `.ptc` command (PROTO-03 can't do the display, the analysis state, or
+alphabetic coords). Resolve the open design questions in the detail file with the user first.
+Route A: `EngineController::analyzeMoves()` mirrors `analyze()` (`EngineState` + `SearchIntent`);
+new `GomocupProtocol::generateAnalyzeMovesRequest` sends `YXBOARD <path> DONE` + `YXANALZ <moves>
+DONE` via `coordToEngine` for every coord; `!yxAnalz` parses args with the shared `parseMovesText`
+(alphabetic + numeric); completion coordinate handled by the ANLZ-06 `SearchIntent` gate (no stray
+move). Rendering reuses PROTO-05/06 unchanged. Don't touch `parseLine` ordering, `parseMovesText`,
+`protocol_extension.*`, or the `YXNBEST` path.
+[detail](docs/instruction/PROTO-07-yxanalz-root-move-allowlist.md)
+
 ## PROTO-06 — replace-analysis-overlay-with-yixin-board-model
 
 Design fully resolved with the user 2026-09-08 — implementation task now. Two source notes are the

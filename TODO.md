@@ -29,10 +29,11 @@ No open items — PROTO-06 landed on `main` (PR #33). Sprint 18 ready to close.
 
 ## Backlog
 
-No open items — PROTO-06 is committed to Sprint 18. New work enters via `docs/notes/` → `features/<slug>/` → `docs/todo/<CODE>-<slug>.md` + a Backlog line.
+- 🔲 **PROTO-07.** native `!yxAnalz` console command — analyze an explicit allow-list of root moves (Rapfi `YXANALZ`). First-class feature (not `.ptc`); route + console syntax gated on a design pass with the user. [Model: high] — [detail](docs/todo/PROTO-07-yxanalz-root-move-allowlist.md) · [instruction](docs/instruction/PROTO-07-yxanalz-root-move-allowlist.md)
 
 Filed 2026-09-07 from `docs/notes/2026-09-07-pv-multipv-display-root-cause.md`: PROTO-05 — pulled into Sprint 17 Active 2026-09-07 (shipped, PR #32).
 Filed 2026-09-08 from `docs/notes/2026-09-08-refyxb-multipv-rendering.md`: PROTO-06 — **pulled into Sprint 18 Active 2026-09-08** (see `docs/sprint/current.md`).
+Filed 2026-09-09 from this session's YXANALZ feasibility discussion (Rapfi_V2 `docs/rules/YXANALZ-user-root-candidates.md`): PROTO-07 — Backlog, design not yet formalized.
 
 ## Completed
 
