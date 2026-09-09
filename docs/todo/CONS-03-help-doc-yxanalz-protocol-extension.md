@@ -1,6 +1,6 @@
 # CONS-03 — `!help` should document `!yxAnalz` / YXANALZ as an engine-protocol extension
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** 🔲 OPEN (Active — Sprint 19, pulled mid-sprint 2026-09-09)
 **Area:** `src/command/command_dispatcher.cpp` (`printHelp` preamble and/or the `!yxAnalz`
 `CommandSpec` usage/summary registered in `registerBuiltins`); `tests/test_proto07_yxanalz_console.cpp`
 (the `commandUsage`/`!help` assertions if the usage string changes)

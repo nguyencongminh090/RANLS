@@ -22,9 +22,20 @@
   `onPVDone`. No `systematic-debugging` needed (new feature, not a bug). Regression tests per
   `docs/instruction/PROTO-07-*.md` "Verification before done".
 
+- **CONS-03** (pulled into Active mid-sprint 2026-09-09, follow-on to PROTO-07) —
+  `src/command/command_dispatcher.cpp` only. Help text: enrich the `!yxAnalz` `CommandSpec`
+  `summary` (prefer over `usage` — `test_proto07_yxanalz_console.cpp` pins
+  `commandUsage("yxanalz")` exactly) and/or one `printHelp()` preamble line, so `!help` conveys
+  that `YXANALZ` is an engine-specific protocol extension, a real interruptible search, places no
+  stone, and takes alphabetic move text only. No behaviour change: `parseMovesText`,
+  `analyzeMoves`, `generateAnalyzeMovesRequest`, the raw-passthrough path — all untouched. No new
+  command / group / `README.md` reference / numeric-coord support. No `systematic-debugging`
+  (doc change). Verify per `docs/instruction/CONS-03-*.md`.
+
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
 | PROTO-07 | native `!yxAnalz` console command — analyze an explicit root-move allow-list | — | — | ✅ Done — merged to `main` 2026-09-09 (PR #34, squash `2a912fe`) |
+| CONS-03 | `!help` should document `!yxAnalz` / YXANALZ as an engine-protocol extension | PROTO-07 | — | 🔲 Not started |
 
 Points not yet estimated (consistent with Sprints 3–18).
 
