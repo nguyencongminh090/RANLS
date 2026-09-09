@@ -415,6 +415,42 @@ void EngineController::analyze()
     });
 }
 
+void EngineController::analyzeMoves(const std::vector<Coord> &moves)
+{
+    // Never put an empty allow-list on the wire: the engine would answer
+    // "ERROR No valid analyze move" for a request we can reject for free. The
+    // console layer rejects this case with a message before we get here; this
+    // is the defence-in-depth copy for every other caller.
+    if (moves.empty()) return;
+
+    // Unlike analyze(), which simply early-returns while a search runs, this
+    // is an explicit user command naming a new root-move list — stop the
+    // running search first. PROTO-04's pendingStopFlush_ gate then keeps the
+    // new block queued behind the aborted search's trailing coordinate, so
+    // nothing races the teardown on the wire.
+    if (state_ == EngineState::Analyzing) stopAnalysis();
+    if (state_ != EngineState::Idle) return;
+
+    auto path = gameState_.currentPath();
+
+    // PROTO-04: same deferral (and the same reason) as analyze() — the
+    // intent/state bookkeeping must flip only when the block actually goes
+    // out, or a still-in-flight coordinate from the previous search would be
+    // misattributed to this one.
+    sendOrDefer([this, path, moves]() {
+        for (const auto& cmd : protocol_->generateAnalyzeMovesRequest(path, moves)) {
+            engine_.sendLine(cmd);
+        }
+        // ANLZ-06: a YXANALZ search ends in a bare best-move coordinate just
+        // like YXNBEST. It is search-completion only — the Analysis intent
+        // makes the signal_move handler discard it instead of placing a stone
+        // (PROTO-07 resolved design §4/§5).
+        searchIntent_ = SearchIntent::Analysis;
+        gameState_.setAnalyzing(true);
+        setState(EngineState::Analyzing);
+    });
+}
+
 void EngineController::requestEngineMove()
 {
     if (state_ != EngineState::Idle) return;

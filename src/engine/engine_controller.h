@@ -52,6 +52,18 @@ public:
     /// Send the current board position and request analysis.
     void analyze();
 
+    /// PROTO-07: send the current board position and start a `YXANALZ` search
+    /// restricted to `moves` — an explicit allow-list of depth-0 root moves,
+    /// one PV line per listed move. State bookkeeping is identical to
+    /// analyze(): SearchIntent::Analysis, so the search's trailing best-move
+    /// coordinate is discarded rather than played (ANLZ-06), and the existing
+    /// INFO/REALTIME rendering path is reused unchanged. A search already in
+    /// progress is stopped first (analyze() instead early-returns; this is a
+    /// deliberate user-initiated command, and PROTO-04's sendOrDefer() gate
+    /// keeps the new block behind the aborted search's teardown). No client
+    /// mirror of the whitelist is kept — it is one-shot engine-side.
+    void analyzeMoves(const std::vector<Coord> &moves);
+
     /// UI-06: send the current board position and ask the engine to produce a
     /// single move for the side to move. No-op unless the engine is Idle. The
     /// engine's reply is delivered through signal_engine_move, exactly like a
