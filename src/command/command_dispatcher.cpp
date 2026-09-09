@@ -364,7 +364,7 @@ void CommandDispatcher::registerBuiltins()
     // no button/context-menu affordance.
     registerCommand(
         {"analysis", "yxanalz", "!yxAnalz <moveText...>",
-         "Analyze only the listed root moves (YXANALZ), e.g. !yxAnalz h3 h2 h9"},
+         "Analyze listed root moves (YXANALZ protocol extension—requires compatible engine); interruptible; no stone; alphabetic moves"},
         [this](const Command &c) {
             if (!ctx_.engine.isRunning()) {
                 printError("Engine not running. Use: !engine start");
