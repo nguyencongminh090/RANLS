@@ -2,8 +2,8 @@
 
 ## Approach
 
-Feature, **not** a `.ptc` command. Resolve the open design questions in
-`docs/todo/PROTO-07-*.md` with the user *first* (fold answers in place). Then, Route A:
+Feature, **not** a `.ptc` command. Design resolved 2026-09-09 — see
+`docs/todo/PROTO-07-*.md` "Resolved design" (8 points). Route A:
 
 - New `EngineController::analyzeMoves(std::vector<Coord>)` mirrors `analyze()` — same
   `EngineState` transition, same `SearchIntent`, same `stopAnalysis()`-before-send guard.
@@ -39,13 +39,16 @@ Feature, **not** a `.ptc` command. Resolve the open design questions in
 - **Whitelist lifetime.** `rootMovesWhitelist` is one-shot engine-side; the next
   `TURN`/`YXNBEST`/`BOARD` clears it. YixinBoard must hold no mirror state — a following
   `!analyze` or engine move must work unchanged. Don't add a "last analyze-moves list" member.
-- **Continuous Analyze Mode (ANLZ-01/05).** `!yxAnalz` is one-shot. If analyze-mode's restart loop
-  is active it will re-issue a plain `analyze()` right after — needs the same
-  `stopAnalysis()`-first discipline and likely a bail in `maybeStart…`/`scheduleAnalyzeModeRestart`
-  while a `yxAnalz` search is the active intent. Check against ANLZ-05's `MainWindow` guards.
-- **Empty / all-invalid list.** The engine answers `ERROR No valid analyze move` and does not
-  search — but YixinBoard should reject *before* sending (no engine round-trip for an obviously
-  empty list). Still surface a real engine `ERROR` line if one slips through.
+- **Continuous Analyze Mode (ANLZ-01/05) — blocked, not suspended.** Resolved decision: `!yxAnalz`
+  is refused with a console error while `gameState_.viewConfig().analyzeMode` is true. Do **not**
+  build a suspend/resume path or touch `scheduleAnalyzeModeRestart` / `maybeStartAutoMove` — the
+  guard is one `if` in the `!yxAnalz` handler, before any send.
+- **Empty / all-invalid list.** Reject *before* sending (no engine round-trip). The engine's own
+  `ERROR No valid analyze move` is the fallback if something slips through — it already reaches the
+  console log as `Error`, no extra handling.
+- **Completion coordinate — discard.** Resolved decision: no stone placed. Under
+  `SearchIntent::Analysis` the existing ANLZ-06 gate already suppresses `signal_engine_move`;
+  expect to add *no* new code here, just a regression test feeding an inbound coord line.
 - **STATE-01 / UI-04 position reset.** A `YXANALZ` run changes no position, but if the user
   navigates mid-search the existing reset path must still disarm the overlay/PV — verify it keys
   off `isAnalyzing()` / the search-state the new path sets, not off `analyze()` specifically.

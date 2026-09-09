@@ -1,10 +1,10 @@
 # PROTO-07 — native `!yxAnalz` console command: analyze an explicit root-move allow-list
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** 🔲 OPEN (Backlog) — design resolved 2026-09-09, ready to pull into a sprint
 **Area:** `src/command/command_dispatcher.{cpp,h}`, `src/engine/engine_controller.{cpp,h}`, `src/engine/gomocup_protocol.{cpp,h}` (send helper only), reuses `parseMovesText` + the analyze/`SearchIntent` pipeline
 **Priority:** P2
 **Source:** User request 2026-09-09 — port Rapfi_V2's `YXANALZ` extension (`Rapfi_V2/rapfi/Rapfi/docs/rules/YXANALZ-user-root-candidates.md`) to YixinBoard. Feasibility + sequence + code-mapping discussion held in this session (see "Design" below).
-**Design:** No `features/yxanalz/` folder — worked through inline this session (user opted to file the task directly). Route decision below is **provisional, resolve with the user before implementing.**
+**Design:** No `features/yxanalz/` folder — worked through inline this session; the 8 open questions were resolved with the user 2026-09-09 (see "Resolved design" below). Route A confirmed.
 **Depends on / relates to:** PROTO-03 (`.ptc` extension — established this is *not* the right vehicle: no `group="analysis"`, single-line `on_reply` only, numeric-coord-only `repeat(coord)`), PROTO-05 / PROTO-06 (the `INFO PV` / `REALTIME` render pipeline this reuses), ANLZ-06 (`SearchIntent` gate on the search-completion coordinate — the pattern this must follow), CONS-01/02 (console command registry this registers into)
 
 ## Problem
@@ -38,78 +38,83 @@ The good news: YXANALZ emits the **same wire lines** PROTO-05/06 already parse a
 rendering mostly exists — the gap is a *native command + search-state coordination* gap, not a
 parsing gap.
 
-## Provisional route (confirm before implementing)
+## Route (confirmed 2026-09-09)
 
-**Route A — first-class console command** (recommended in-session): a native `!yxAnalz` in
-`CommandDispatcher` that parses its args with the existing `parseMovesText` (alphabetic **and**
-numeric coords), hands the `std::vector<Coord>` to a new `EngineController::analyzeMoves(list)`
-which sends the `YXANALZ … DONE` block **and** sets `EngineState` / `SearchIntent` the way
-`analyze()` does, reuses the existing `INFO`/`REALTIME` rendering, and handles the trailing
-completion coordinate via the ANLZ-06 `SearchIntent` gate (search-completion only, not a played
-move — or a deliberate "engine advanced its board" if the user wants that; open question).
+**Route A — first-class console command.** Native `!yxAnalz` in `CommandDispatcher` parses its
+args with the existing `parseMovesText` (alphabetic **and** numeric coords), hands the
+`std::vector<Coord>` to a new `EngineController::analyzeMoves(list)` which sends the `YXBOARD …
+DONE` + `YXANALZ … DONE` blocks **and** sets `EngineState` / `SearchIntent::Analysis` the way
+`analyze()` does, reuses the existing `INFO`/`REALTIME` rendering, and treats the trailing
+completion coordinate as search-completion only via the ANLZ-06 `SearchIntent` gate.
 
 Route B (lift PROTO-03 Q8 + Q9 to support `group = "analysis"` `.ptc` commands) is explicitly
 **not** chosen — PROTO-03's planning defers it as risky surgery on the PROTO-04/ANLZ-06 state
 machine, and this input would still need C++ changes for both display and alphabetic input.
 
-## Open design questions (resolve with the user first)
+## Resolved design (2026-09-09, with the user)
 
-- **Console syntax.** `!yxAnalz h3 h2 h9` (space-separated, like `!pos`'s move text) vs a
-  `done`-terminated session (`PosSession`-style) for long lists. Recommend space-separated inline,
-  no session.
-- **Coordinate orientation.** `parseMovesText` yields display-orientation `Coord{x,y}`; the wire
-  wants the engine's `x,y` via `coordToEngine()` (which already honours Rapfi's
-  `coord_conversion_mode`). Confirm `coordToEngine` is the single conversion point — no
-  axis special-casing in the new path (same rule PROTO-06 followed).
-- **Position sent.** YXANALZ analyses "whatever position is current" — the new command must send
-  `YXBOARD <currentPath> DONE` first (same block as `generateAnalyzeRequest`), then
-  `YXANALZ … DONE`. Confirm it uses `GameState::currentPath()` and does not mutate game state.
-- **Completion coordinate.** Discard as search-completion-only (safest, matches ANLZ-06 for
-  `analyze()`), or optionally play it on YixinBoard's board to mirror the engine's internal board
-  (Rapfi plays it internally). Recommend discard for v1; note the divergence.
-- **`SearchIntent`.** Does this need a new `SearchIntent::AnalysisMoves` value, or does
-  `SearchIntent::Analysis` suffice? (The completion-coord handling is identical to `analyze()`, so
-  `Analysis` likely suffices.)
-- **Multi-PV / whitelist lifetime.** `YXANALZ`'s `rootMovesWhitelist` is one-shot on the engine
-  side (cleared by the next `TURN`/`YXNBEST`/`BOARD`). YixinBoard must not assume it persists — a
-  later `analyze()` or engine move request works unchanged. Confirm no client-side state needed.
-- **Validation echo.** The engine emits `ERROR …` per rejected coord and `ERROR No valid analyze
-  move` when nothing survives. These already reach `signal_log` as `Error` — confirm that surfacing
-  is enough (no special toast/inline-banner handling required).
-- **Interaction with continuous Analyze Mode (ANLZ-01/05).** `!yxAnalz` is a one-shot request;
-  confirm it does not fight the analyze-mode restart loop (likely needs the same
-  `stopAnalysis()`-before-send discipline).
+1. **Console syntax — inline, space-separated.** `!yxAnalz h3 h2 h9` (and numeric `7,7`), one
+   line, parsed by the shared `CommandDispatcher::parseMovesText(blob, boardSize())`. **No
+   `done`-terminated session.**
+2. **Coordinate orientation — `coordToEngine()` is the single conversion point.** `parseMovesText`
+   yields display-orientation `Coord{x,y}`; every coordinate that goes on the wire (the `YXBOARD`
+   path *and* the `YXANALZ` move list) is converted through `coordToEngine()`, which already
+   honours Rapfi's `coord_conversion_mode`. No axis special-casing (same rule PROTO-06 followed).
+3. **Position sent — `YXBOARD <currentPath> DONE` then `YXANALZ <moves> DONE`.** From
+   `GameState::currentPath()`; the command mutates no game state. Same block shape as
+   `generateAnalyzeRequest`.
+4. **Completion coordinate — discarded (analysis only).** The trailing best-move `x,y` is
+   search-completion only; **no stone is placed** on YixinBoard's board. The per-move PVs stay on
+   screen for the user to act on. (Matches ANLZ-06's handling of `analyze()`; YixinBoard's board
+   is the user's, distinct from the engine's internal board.)
+5. **`SearchIntent` — reuse `SearchIntent::Analysis`.** Completion-coord handling is identical to
+   `analyze()`, so no new intent value; the existing ANLZ-06 gate already does the right thing.
+6. **Whitelist lifetime — no client-side state.** `YXANALZ`'s `rootMovesWhitelist` is one-shot
+   engine-side (cleared by the next `TURN`/`YXNBEST`/`BOARD`). YixinBoard holds no mirror; a
+   following `!analyze` / engine move request behaves exactly as before.
+7. **Validation echo — engine `ERROR` lines via `signal_log` are sufficient.** Per-coord
+   `ERROR Coord is not valid…` and `ERROR No valid analyze move` already reach the console log as
+   `Error`. No special toast/inline-banner. The client additionally rejects an empty / all-invalid
+   list **before sending** (no engine round-trip).
+8. **Analyze Mode — `!yxAnalz` is refused while Analyze Mode is ON.** If
+   `gameState_.viewConfig().analyzeMode`, the console prints a clear error ("Turn off Analyze Mode
+   first") and nothing is sent. No suspend/resume interaction with the ANLZ-01/05 restart loop is
+   built.
+
+Command group: registered under `analysis` in `!help` (it is a real search).
 
 ## Scope (in order)
 
-1. Resolve the open design questions above with the user; record the resolutions in this file
-   (fold-in-place, like `features/*/planning.md`).
-2. `EngineController::analyzeMoves(const std::vector<Coord>& moves)` — send `YXBOARD <currentPath>
-   DONE` + `YXANALZ <moves> DONE` (new `GomocupProtocol::generateAnalyzeMovesRequest` helper,
-   reusing `coordToEngine`), set `EngineState` + `SearchIntent` exactly as `analyze()` does.
-3. Completion-coordinate handling through the existing `SearchIntent` gate (ANLZ-06 pattern) —
-   no stray move played (per the resolved question).
-4. `CommandDispatcher`: register `!yxAnalz` (group `analysis` or `engine` — decide), parse args
-   with `parseMovesText`, reject empty / all-invalid lists with a clear console error, forward to
-   `analyzeMoves`.
-5. Confirm the multi-PV panel + PROTO-06 board overlay render the `YXANALZ` stream unchanged
-   (they should — same wire lines); fix only genuine gating bugs (e.g. overlay drawn only while
-   `isAnalyzing()`).
+1. `GomocupProtocol::generateAnalyzeMovesRequest(path, moves)` — returns the line vector
+   `YXBOARD` / `<path coord>,<color>` … / `DONE` / `YXANALZ` / `<move coord>` … / `DONE`, every
+   coordinate via `coordToEngine()`. Colour alternates on the path like `generateAnalyzeRequest`.
+2. `EngineController::analyzeMoves(const std::vector<Coord>& moves)` — send the block via the new
+   helper, set `EngineState` + `SearchIntent::Analysis` exactly as `analyze()` does.
+   `stopAnalysis()` first if a search is already running (the `analyze()` early-return rule).
+3. Completion-coordinate handling: no new code expected — verify the existing `SearchIntent`
+   gate treats the inbound coord under `Analysis` intent as completion-only (ANLZ-06).
+4. `CommandDispatcher`: register `!yxAnalz` (group `analysis`); parse args with `parseMovesText`;
+   reject (a) Analyze Mode ON, (b) empty list, (c) all coords off-board/occupied — each with a
+   clear console message and **no send**; otherwise forward the `vector<Coord>` to `analyzeMoves`.
+5. Verify the multi-PV panel + PROTO-06 board overlay render the `YXANALZ` stream unchanged (same
+   wire lines as `YXNBEST`); fix only genuine gating bugs (e.g. overlay keyed off `isAnalyzing()`).
 6. Regression tests (see Scope boundary for the harness): `generateAnalyzeMovesRequest` wire
-   output (alphabetic + numeric in, correct `x,y` out, `YXBOARD` block precedes `YXANALZ`);
-   `analyzeMoves` sets the search state; inbound completion coordinate does **not** emit
-   `signal_engine_move` under the analysis intent; empty / all-invalid arg list rejected at the
-   console layer.
+   output (alphabetic + numeric in → correct engine `x,y` out, `YXBOARD` block precedes `YXANALZ`,
+   both `DONE`-terminated); `analyzeMoves` sets `EngineState`/`SearchIntent`; **inbound**
+   completion coordinate does not emit `signal_engine_move` under the analysis intent; console
+   layer rejects Analyze-Mode-ON / empty / all-invalid without sending.
 
 ## Acceptance criteria
 
-- `!yxAnalz h3 h2 h9` (and the numeric equivalent) on a running engine sends a `YXBOARD … DONE`
-  block for the current position followed by `YXANALZ 2,12 … DONE` (engine orientation), and the
-  engine's per-move PV stream renders in the multi-PV panel + board overlay like a normal analyze.
+- `!yxAnalz h3 h2 h9` (and the numeric equivalent) on a running engine, Analyze Mode OFF, sends a
+  `YXBOARD … DONE` block for the current position followed by `YXANALZ <x,y> … DONE` in engine
+  orientation, and the engine's per-move PV stream renders in the multi-PV panel + board overlay
+  like a normal analyze.
 - While the `YXANALZ` search runs, YixinBoard shows its normal "analyzing" state and Stop / `!stop`
   cancels it (prints the current best move, like any search).
-- The trailing best-move coordinate is treated as search-completion only — no stray stone is
-  placed on YixinBoard's board (matches ANLZ-06 for `analyze()`).
+- The trailing best-move coordinate places **no** stone on YixinBoard's board.
+- With Analyze Mode ON, `!yxAnalz …` prints "Turn off Analyze Mode first" (or similar) and sends
+  nothing.
 - An empty arg list, or one where every coord is off-board / occupied, is rejected at the console
   with a clear message and **nothing is sent to the engine**.
 - A subsequent `!analyze` / engine move request behaves exactly as before (no leaked whitelist
