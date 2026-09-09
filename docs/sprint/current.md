@@ -24,7 +24,7 @@
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| PROTO-07 | native `!yxAnalz` console command — analyze an explicit root-move allow-list | — | — | 🔲 Not started |
+| PROTO-07 | native `!yxAnalz` console command — analyze an explicit root-move allow-list | — | — | ✅ Done (2026-09-09, branch `proto-07/yxanalz-root-move-allowlist`, not yet merged) |
 
 Points not yet estimated (consistent with Sprints 3–18).
 

@@ -11,7 +11,14 @@ internal tracking files for traceability.
 
 ## [Unreleased]
 
-_Nothing yet._
+### Added
+
+- New console command `!yxAnalz <moves>` (e.g. `!yxAnalz h3 h2 h9`): analyse only the moves you
+  list, instead of letting the engine pick its own candidates. Each listed move gets its own PV
+  line in the analysis panel and on the board overlay, exactly like a normal analysis, and Stop
+  cancels it the same way. The result is analysis only — no stone is ever placed on your board.
+  Refused with a message (and nothing sent to the engine) while continuous Analyze Mode is on, or
+  when none of the listed points is a legal empty point (PROTO-07).
 
 ## [0.7.0] - 2026-09-08
 

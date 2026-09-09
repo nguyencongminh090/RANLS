@@ -25,7 +25,7 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 Sprint 19 (opened 2026-09-09, goal "YXANALZ — native `!yxAnalz`: analyze an explicit root-move allow-list") — pulled from Backlog:
 
-- 🔲 **PROTO-07.** native `!yxAnalz` console command — analyze an explicit allow-list of root moves (Rapfi `YXANALZ`). First-class feature (not `.ptc`); design resolved 2026-09-09. [Model: high] — [detail](docs/todo/PROTO-07-yxanalz-root-move-allowlist.md) · [instruction](docs/instruction/PROTO-07-yxanalz-root-move-allowlist.md)
+- ✅ **PROTO-07.** native `!yxAnalz` console command — analyze an explicit allow-list of root moves (Rapfi `YXANALZ`). First-class feature (not `.ptc`); design resolved 2026-09-09. [Model: high] — [detail](docs/todo/PROTO-07-yxanalz-root-move-allowlist.md) · [instruction](docs/instruction/PROTO-07-yxanalz-root-move-allowlist.md)
 
 ## Backlog
 
