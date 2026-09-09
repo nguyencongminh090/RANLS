@@ -11,6 +11,12 @@ internal tracking files for traceability.
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.8.0] - 2026-09-10
+
+Sprint 19 — analyse a hand-picked set of root moves instead of the engine's own candidates.
+
 ### Added
 
 - New console command `!yxAnalz <moves>` (e.g. `!yxAnalz h3 h2 h9`): analyse only the moves you
@@ -295,7 +301,8 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.4.2...v0.5.0

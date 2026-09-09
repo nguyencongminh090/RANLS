@@ -23,11 +23,9 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 ## Active
 
-Sprint 19 (opened 2026-09-09, goal "YXANALZ — native `!yxAnalz`: analyze an explicit root-move allow-list") — pulled from Backlog:
-
-CONS-03 (pulled into Active mid-sprint 2026-09-09) — ✅ shipped to `main` 2026-09-09 (PR #35, squash `4c5519b`); moved to Completed.
-
-PROTO-07 (Sprint 19's original commitment) — ✅ shipped to `main` 2026-09-09 (PR #34, squash `2a912fe`); moved to Completed.
+No active sprint. Sprint 19 closed 2026-09-10 (PROTO-07 + CONS-03 shipped; archived to
+`docs/sprint/archive/sprint-19.md`, release `v0.8.0`). Run `/sprint open 20 "<goal>" <CODE...>` to
+start Sprint 20.
 
 ## Backlog
 
