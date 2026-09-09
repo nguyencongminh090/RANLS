@@ -42,6 +42,7 @@ add_executable(ranls-gui-tests
     test_anlz05_stop_then_move.cpp
     test_anlz06_search_intent_gate.cpp
     test_proto04_stop_flush_race.cpp
+    test_proto07_yxanalz.cpp
     test_ui02_tree_row_highlight.cpp
     test_ui03_renju_forbidden.cpp
     test_ui03_standard_overline.cpp
@@ -146,6 +147,7 @@ add_executable(ranls-gui-ui-tests
     test_anlz07_analyze_restart_convergence.cpp
     test_proto05_incremental_stream.cpp
     test_proto06_analysis_overlay.cpp
+    test_proto07_yxanalz_console.cpp
     test_eng03_close_request.cpp
     test_rdb02_save_open.cpp
     test_rdb03_ui_node_analysis.cpp
