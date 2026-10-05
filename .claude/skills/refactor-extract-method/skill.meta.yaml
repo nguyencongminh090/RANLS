@@ -1,0 +1,12 @@
+name: refactor-extract-method
+description: "Extract Method refactoring to break up long functions"
+domain: architecture-backend
+tags: refactoring,extract-method,long-method
+apply_when: "a function is too long or mixes several steps"
+scope: global
+project: ""
+language: en
+knowledge: cleancode-code-smells,cleancode-refactoring-triggers
+conflicts: ""
+source: "https://github.com/helmedeiros/clean-code-skills/tree/b9805c9/skills/refactor-extract-method"
+last_reviewed: 2026-09-26

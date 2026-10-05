@@ -18,6 +18,16 @@ don't duplicate them here.
 This repo has a `.codegraph/` index (see `/home/ngmint/.claude/CLAUDE.md` for usage) — prefer
 `codegraph_explore` / `codegraph explore` over grep/find for locating or understanding code.
 
+## Knowledge base: use it when reasoning
+
+`docs/knowledge/` holds reference notes (architecture styles/layering, quality trade-offs, storage and
+schema evolution, UX heuristics/a11y, SOLID, code smells, design patterns). When reasoning about
+architecture, UI/UX, data/storage, or design-pattern choices, **consult the relevant note first** and
+ground the decision in it, rather than reasoning from scratch. Read only the matching file(s), not the
+whole folder. Cite the note when it drives a design/audit conclusion. Notes are generic reference —
+project rules in this file and the project skills win on conflict (e.g. prefer dependency injection
+over the singleton pattern note).
+
 ## Process model: Agile Scrum + tracking-file discipline
 
 Work flows through four stages, each with its own artifact. Don't skip a stage or perform

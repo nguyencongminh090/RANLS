@@ -1,0 +1,12 @@
+name: solid-dependency-inversion
+description: "Dependency Inversion Principle: depend on abstractions, keep high-level modules independent of details"
+domain: architecture-backend
+tags: solid,dip,dependency-inversion,abstractions
+apply_when: "high-level code depends directly on low-level implementations"
+scope: global
+project: ""
+language: en
+knowledge: principle-solid-overview,style-hexagonal
+conflicts: ""
+source: "https://github.com/helmedeiros/clean-code-skills/tree/b9805c9/skills/solid-dependency-inversion"
+last_reviewed: 2026-09-26

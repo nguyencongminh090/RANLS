@@ -1,0 +1,12 @@
+name: solid-single-responsibility
+description: "Single Responsibility Principle: one reason to change per class or module"
+domain: architecture-backend
+tags: solid,srp,separation-of-concerns
+apply_when: "a class or module does too much"
+scope: global
+project: ""
+language: en
+knowledge: principle-solid-overview,principle-separation-of-concerns
+conflicts: ""
+source: "https://github.com/helmedeiros/clean-code-skills/tree/b9805c9/skills/solid-single-responsibility"
+last_reviewed: 2026-09-26

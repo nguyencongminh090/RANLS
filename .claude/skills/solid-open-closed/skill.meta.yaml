@@ -1,0 +1,12 @@
+name: solid-open-closed
+description: "Open-Closed Principle: extend behavior without modifying existing code"
+domain: architecture-backend
+tags: solid,ocp,extensibility
+apply_when: "new features keep forcing edits to stable code"
+scope: global
+project: ""
+language: en
+knowledge: pattern-strategy,principle-composition-over-inheritance,principle-solid-overview,style-microkernel
+conflicts: ""
+source: "https://github.com/helmedeiros/clean-code-skills/tree/b9805c9/skills/solid-open-closed"
+last_reviewed: 2026-09-26

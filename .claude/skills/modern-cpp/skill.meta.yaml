@@ -1,0 +1,12 @@
+name: modern-cpp
+description: "Move C++ to modern idioms (C++20/23/26): smart pointers, concepts, std::print, std::expected"
+domain: architecture-backend
+tags: cpp,modern-cpp,cpp20,cpp23,safety
+apply_when: "writing new C++ or modernising legacy C++"
+scope: global
+project: ""
+language: en
+knowledge: 
+conflicts: ""
+source: "https://github.com/trailofbits/skills/tree/123037e/plugins/modern-cpp/skills/modern-cpp"
+last_reviewed: 2026-09-26

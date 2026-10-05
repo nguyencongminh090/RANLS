@@ -1,0 +1,12 @@
+name: clean-code-detect-smells
+description: "Find code smells and technical debt with a systematic code quality assessment"
+domain: architecture-backend
+tags: clean-code,code-smells,technical-debt,review
+apply_when: "reviewing code quality or looking for problematic patterns"
+scope: global
+project: ""
+language: en
+knowledge: cleancode-code-smells,cleancode-refactoring-triggers
+conflicts: ""
+source: "https://github.com/helmedeiros/clean-code-skills/tree/b9805c9/skills/clean-code-detect-smells"
+last_reviewed: 2026-09-26

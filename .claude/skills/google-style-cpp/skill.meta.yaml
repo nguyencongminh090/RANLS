@@ -1,0 +1,12 @@
+name: google-style-cpp
+description: "Google C++ style guide: headers, naming, formatting, classes, memory, RAII, smart pointers"
+domain: architecture-backend
+tags: google-style,cpp,style-guide
+apply_when: "writing or reviewing C++ in a project that follows Google style"
+scope: global
+project: ""
+language: en
+knowledge: pattern-singleton
+conflicts: "pattern-singleton: suggests singletons for mutable globals; dependency injection is the default"
+source: "https://github.com/testdino-hq/google-styleguides-skills/tree/8674a2a/cpp"
+last_reviewed: 2026-09-26

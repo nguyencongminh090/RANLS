@@ -13,6 +13,7 @@ See `/CLAUDE.md` ("Process model") for the workflow this layout supports. Quick 
 | `docs/audit.md` + `docs/audit/<date>-<slug>.md` | Reviews/decisions (architecture, security, protocol compat) |
 | `docs/fix-log.md` + `docs/fix-log/<date>-<slug>.md` | Bug-fix log, append-only |
 | `docs/notes/<date>-<slug>.md` | Freeform brainstorm/discussion, no fixed structure |
+| `docs/knowledge/*.md` | Reference notes copied from SKILLS_TREE (architecture, UI/UX, data, patterns); read-only reference, not project decisions |
 
 `../features/<slug>/` (repo root, not under `docs/`) holds pre-implementation design discussion —
 see `/CLAUDE.md`.
