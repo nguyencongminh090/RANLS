@@ -22,7 +22,7 @@ Project dir is always `.` (YixinBoard keeps `TODO.md` / `instruction.md` / `docs
 
 Every sprint transition in this repo is several coordinated edits across `docs/sprint/current.md`,
 `docs/sprint/archive/`, `docs/sprint/burndown.md`, `TODO.md`, `CHANGELOG.md`, `CMakeLists.txt`, a
-git tag, and GitHub (milestone / labels / board). `/CLAUDE.md` "Sprint cadence" and the `github`
+git tag, and GitHub (milestone / labels / board). `.claude/rules/sprint-cadence.md` and the `github`
 skill describe all of it, but done by hand a step gets dropped (Sprint 7 shipped with no milestone
 or labels at all — see the `github` skill retro). This command runs the same steps every time.
 
@@ -132,7 +132,7 @@ Points not yet estimated (consistent with Sprints 3–…).
 `docs/sprint/archive/sprint-<N-1>.md` most relevant to these CODEs — keep the strongest 1–3.>
 
 See `docs/sprint/burndown.md` for the daily remaining-points table, and `docs/sprint/archive/` for
-closed sprints. Starting the next sprint = one edit per `/CLAUDE.md` ("Sprint cadence").
+closed sprints. Starting the next sprint = one edit per `.claude/rules/sprint-cadence.md`.
 ```
 
 ### 3. Burndown row

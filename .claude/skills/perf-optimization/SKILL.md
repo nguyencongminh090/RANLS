@@ -12,7 +12,7 @@ views redraw or rebuild on every engine `INFO` line, which can arrive fast).
 ## Known main-thread blocking points — verify before assuming these are still live
 
 These were found by reading the code, not by profiling — confirm against current behavior before
-reporting them as active bugs, per this repo's audit convention (`/CLAUDE.md` "Audit").
+reporting them as active bugs, per this repo's audit convention (`.claude/rules/tracking-files.md`, audit section).
 
 - **`EngineController::stopEngine()`** (`src/engine/engine_controller.cpp:81-94`) calls
   `g_usleep(500000)` — a flat 500ms sleep — after sending `YXSAVEDATABASE`/`END`, "to wait for the

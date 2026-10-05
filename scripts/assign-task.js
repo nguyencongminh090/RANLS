@@ -2,7 +2,7 @@
 'use strict';
 
 // Moves one TODO.md item from Backlog to Active (sprint commitment) and stamps
-// it with an owner/model tag. See CLAUDE.md "Sprint cadence" and AGENTS.md
+// it with an owner/model tag. See .claude/rules/sprint-cadence.md and AGENTS.md
 // "Model tiers by task shape" for what belongs in --model.
 //
 // Usage:
