@@ -44,25 +44,11 @@ same fact and must never be updated one without the other:
 
 ### Automated enforcement
 
-`scripts/check-tracking-sync.js` exists and works, but is **not yet wired as a `Stop` hook** — a
-prior attempt to add it to `.claude/settings.local.json` was blocked by the auto-mode permission
-classifier (editing hook config needs explicit user action). To audit the backlog manually, run:
+`scripts/check-tracking-sync.js` is wired as a `Stop` hook in `.claude/settings.local.json`: it blocks
+ending a turn if a newly-✅-marked `TODO.md` item's detail file has no completion marker (only checks
+drift introduced since the last commit). To audit the whole backlog manually:
 ```
 node scripts/check-tracking-sync.js --full
-```
-To enable automatic enforcement (blocks ending a turn if a newly-✅-marked `TODO.md` item's detail
-file has no completion marker — only checks drift introduced since the last commit), add this to
-`.claude/settings.local.json` yourself:
-```json
-{
-  "hooks": {
-    "Stop": [
-      { "hooks": [ { "type": "command",
-        "command": "node \"${CLAUDE_PROJECT_DIR}/scripts/check-tracking-sync.js\" --hook",
-        "timeout": 15 } ] }
-    ]
-  }
-}
 ```
 
 `instruction.md` ↔ `docs/instruction/*.md` has no done/not-done marker (execution guidance, not a
@@ -84,9 +70,10 @@ status tracker) — nothing to sync there beyond "read the matching entry before
 - **Before reasoning about a design/protocol/build decision, search the audit trail:**
   `python3.13 scripts/audit-search.py "<plain-English need>" [-k N] [--scope all] [--all-status]`
   (Whoosh BM25F; needs `python3.13 -m pip install -r scripts/requirements.txt`; hides superseded entries by default; English queries only — no translation; index cached in git-ignored `.cache/`).
-- Optional auto-lookup (not wired — add to `.claude/settings.local.json` yourself): a
-  `UserPromptSubmit` hook with command `python3.13 "${CLAUDE_PROJECT_DIR}/scripts/audit-search.py" --hook`
-  prints the top active hits (BM25F score ≥ `--min-score`, default 12) as context.
+- Auto-lookup is wired: a `UserPromptSubmit` hook in `.claude/settings.local.json` runs
+  `audit-search.py --hook` and prints the top active hits (BM25F score ≥ `--min-score`, default 12) as
+  context. It prints nothing below the threshold, and errors are swallowed (`2>/dev/null || true`), so
+  silence is normal — and English-only, so Vietnamese prompts rarely score.
 
 ## Templates
 
