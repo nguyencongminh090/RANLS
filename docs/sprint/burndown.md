@@ -138,6 +138,7 @@ points at sprint start to 0 at the end date.
 
 | 2026-09-10 | 0 / 2 items | — | Sprint 19 **closed** — PROTO-07 (PR #34 squash `2a912fe`) + CONS-03 (PR #35 squash `4c5519b`) landed on `main`; archived to `docs/sprint/archive/sprint-19.md`, nothing rolled over. Release **`v0.8.0`** cut (MINOR — `!yxAnalz` is a new user-visible console command): `CHANGELOG.md` `[Unreleased]` → `[0.8.0] - 2026-09-10`, CMake `project(VERSION)` 0.7.0 → 0.8.0, tag `v0.8.0` pushed. Milestone `Sprint 19` closed. Table reset below for Sprint 20. **Outstanding:** live-engine run of `!yxAnalz` against a real Rapfi_V2 (per-move PVs render, Stop cancels, no stone placed, refused in Analyze Mode) is a human step (no engine binary / no display on the build host); numeric `x,y` console input deferred (new `CODE` if wanted). |
 | 2026-10-05 | 2 / 2 items | 5 pts | Sprint 20 opened (goal "Fix the model↔engine layering violation and narrow CommandContext (architecture review follow-ups)"): ARCH-01, ARCH-03 pulled from Backlog into Active — see docs/sprint/current.md. Backlog now has 1 item (ARCH-02, needs design) |
+| 2026-10-05 | 1 / 2 items | 3 pts | ARCH-01 done — PR #41 squash `2874af3`: analysis domain types moved to `model/analysis_types.h`, `src/model` has no `engine/` includes, new `arch01-model-no-engine-includes` ctest. ARCH-03 remains |
 
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).
