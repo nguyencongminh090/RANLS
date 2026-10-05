@@ -30,7 +30,7 @@
 ## Knowledge
 
 <Notes/skills that ground the decision, cited by path: `docs/knowledge/<note>.md`, `.claude/skills/<skill>`,
-audit entries (`node scripts/audit-search.js "<need>"`). Write "none applicable" if truly none.>
+audit entries (`python3.13 scripts/audit-search.py "<need>"`). Write "none applicable" if truly none.>
 
 ## Acceptance criteria
 

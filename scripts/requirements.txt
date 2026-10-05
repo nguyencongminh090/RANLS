@@ -1,0 +1,2 @@
+# Python deps for scripts/ (Python 3.13)
+whoosh>=2.7.4

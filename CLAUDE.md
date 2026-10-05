@@ -43,7 +43,7 @@ schema evolution, UX heuristics/a11y, SOLID, code smells, design patterns). For 
 data/storage or pattern decisions, **read the matching note first** (only that file, not the folder) and
 cite it when it drives a conclusion. Notes are generic; this file and the project skills win on
 conflict (e.g. prefer dependency injection over the singleton note). Before a design/protocol/build
-decision also search past decisions: `node scripts/audit-search.js "<need>"`.
+decision also search past decisions: `python3.13 scripts/audit-search.py "<need>"`.
 
 ## Process model: Agile Scrum + tracking-file discipline
 
@@ -86,4 +86,4 @@ this" / "fix it". This triages *new* work; it doesn't re-litigate tasks assigned
 | Index+detail layout, status markers, templates, task size, audit Status/Supersedes/search | `.claude/rules/tracking-files.md`; `docs/templates/` |
 | GitHub model (Scrumban; local files are the source of truth), PR lifecycle, labels, milestones | `github` skill |
 | Agent/model tier per task, `/implement-task` dispatch | `AGENTS.md` |
-| Past decisions | `docs/audit.md`, `node scripts/audit-search.js "<need>"` |
+| Past decisions | `docs/audit.md`, `python3.13 scripts/audit-search.py "<need>"` |

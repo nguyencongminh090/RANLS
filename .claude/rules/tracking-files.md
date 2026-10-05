@@ -82,11 +82,11 @@ status tracker) — nothing to sync there beyond "read the matching entry before
   `Superseded by <ref>`). Old entries are never edited to change status: a correcting entry adds
   `**Supersedes:** <ref>[, <ref>]` (file basename without `.md`, or a substring of a digest heading).
 - **Before reasoning about a design/protocol/build decision, search the audit trail:**
-  `node scripts/audit-search.js "<plain-English need>" [-k N] [--scope all] [--all-status]`
-  (BM25 ranking; hides superseded entries by default; English queries only — no translation).
+  `python3.13 scripts/audit-search.py "<plain-English need>" [-k N] [--scope all] [--all-status]`
+  (Whoosh BM25F; needs `python3.13 -m pip install -r scripts/requirements.txt`; hides superseded entries by default; English queries only — no translation; index cached in git-ignored `.cache/`).
 - Optional auto-lookup (not wired — add to `.claude/settings.local.json` yourself): a
-  `UserPromptSubmit` hook with command `node "${CLAUDE_PROJECT_DIR}/scripts/audit-search.js" --hook`
-  prints the top active hits (score ≥ 4) as context.
+  `UserPromptSubmit` hook with command `python3.13 "${CLAUDE_PROJECT_DIR}/scripts/audit-search.py" --hook`
+  prints the top active hits (BM25F score ≥ `--min-score`, default 12) as context.
 
 ## Templates
 
@@ -100,7 +100,7 @@ sections; closed legacy files are not re-linted (append-only history).
 ## Task size: classify first, then pick the artifact
 
 Classify every task **before** writing any tracking artifact. Not every task earns an audit entry —
-an audit trail that records everything is noisy and hurts retrieval (`scripts/audit-search.js`).
+an audit trail that records everything is noisy and hurts retrieval (`scripts/audit-search.py`).
 
 | Size | Test (all must hold) | Artifact |
 |---|---|---|
@@ -117,4 +117,4 @@ Rules:
   deleted. A note about a decision that turns out to matter is promoted, not left to rot.
 - A note's size can be re-classified upward at any time; never downward after code ships behind a
   decision others depend on.
-- Notes are searchable: `node scripts/audit-search.js "<need>" --scope all`.
+- Notes are searchable: `python3.13 scripts/audit-search.py "<need>" --scope all`.
