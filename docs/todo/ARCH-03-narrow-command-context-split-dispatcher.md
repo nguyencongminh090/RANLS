@@ -1,6 +1,6 @@
 # ARCH-03 — Narrow CommandContext and split registerBuiltins()
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** ✅ DONE
 **Area:** `src/command/command_dispatcher.{h,cpp}`
 **Priority:** P3
 **Source:** architecture review, 2026-10-05 — [docs/audit/2026-10-05-architecture-review.md](../audit/2026-10-05-architecture-review.md)
@@ -34,3 +34,9 @@ Handlers should depend on the controller, not the raw process (DIP). Rejected: a
 ## Scope boundary
 
 - No new commands; no handler behavior change.
+
+## Outcome (2026-10-06)
+
+- `registerBuiltins()` split into seven per-help-group registrars; `EngineProcess&` removed from `CommandContext` (handlers use new `EngineController::isRunning()`); `grep -rn EngineProcess src/command` empty. No abstract interface, no new commands, no handler behaviour change.
+- Verification: new `tests/test_arch03_help_pinned.cpp` pins `!help` + registered names/usage (golden from pre-refactor code); Release ctest 5/5; `ranls-gui-tests` 228/2625 (= main); `ranls-gui-ui-tests` 54/393 (main 52/391, +2); `test_cons*` and `test_proto07_yxanalz_console` green.
+- Deviation: registration order inside `specs_` is now grouped (was interleaved); unobservable, covered by the pinned test. Fix-log: [2026-10-06-arch-03-narrow-command-context](../fix-log/2026-10-06-arch-03-narrow-command-context.md).
