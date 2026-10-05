@@ -268,6 +268,21 @@ only while `isAnalyzing()`). Two persisted `ViewConfig` toggles + View-menu item
 Use `software-architecture` + `gtk-ui-design`.
 [detail](docs/instruction/PROTO-06-port-realtime-feed-to-board.md)
 
+## ARCH-01 — break-model-engine-include-cycle
+
+Pure header move; do this first. Grep `src/model` for `engine/` to confirm done.
+[detail](docs/instruction/ARCH-01-break-model-engine-include-cycle.md)
+
+## ARCH-02 — extract-analysis-coordination-from-mainwindow
+
+Design in `features/<slug>/` first; characterization tests before extracting; one responsibility per step.
+[detail](docs/instruction/ARCH-02-extract-analysis-coordination-from-mainwindow.md)
+
+## ARCH-03 — narrow-command-context-split-dispatcher
+
+After ARCH-01. No handler behavior change; `!help` output must stay identical.
+[detail](docs/instruction/ARCH-03-narrow-command-context-split-dispatcher.md)
+
 ---
 
 _Items without an entry here (RT-02/03/04, STATE-02/03, PROTO-02, NAV-01, UI-01/02/03, UX-01…04,

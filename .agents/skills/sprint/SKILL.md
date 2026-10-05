@@ -3,7 +3,7 @@ name: sprint
 description: >-
   Sprint-lifecycle trigger for YixinBoard's tracking files — open a sprint, close
   a sprint (with release cut), or scaffold + file a new task. Doc-only bookkeeping
-  that lands straight on main; mirrors CLAUDE.md "Sprint cadence" + the github skill
+  that lands straight on main; mirrors .claude/rules/sprint-cadence.md + the github skill
   so the ceremony actually happens. Never implements a CODE (that is /implement-task).
 ---
 

@@ -17,7 +17,7 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 `ENG` engine lifecycle · `NAV` navigation · `UI` display logic · `UX` usability · `TEST` harness ·
 `CLEAN` hygiene · `IO` game persistence · `DOC` documentation · `TOOL` repo tooling ·
 `REL` release/versioning · `PORT` cross-platform portability · `ANLZ` analyze mode ·
-`RDB` `.rdb` save format · `NAME` app naming · `CONS` engine-log command console.
+`RDB` `.rdb` save format · `NAME` app naming · `CONS` engine-log command console · `ARCH` architecture/layering refactors.
 
 ---
 
@@ -29,7 +29,12 @@ start Sprint 20.
 
 ## Backlog
 
-No open items — CONS-03 pulled into Sprint 19 Active 2026-09-09.
+No open items except the architecture refactors below.
+
+Filed 2026-10-05 from [architecture review audit](docs/audit/2026-10-05-architecture-review.md):
+- 🔲 **ARCH-01.** Break the model ↔ engine include cycle (move analysis data types into `model/`) [2 pts] — [detail](docs/todo/ARCH-01-break-model-engine-include-cycle.md)
+- 🔲 **ARCH-02.** Extract analyze/auto-move orchestration out of `MainWindow` [8 pts, needs design] — [detail](docs/todo/ARCH-02-extract-analysis-coordination-from-mainwindow.md)
+- 🔲 **ARCH-03.** Narrow `CommandContext` + split `registerBuiltins()` [3 pts] — [detail](docs/todo/ARCH-03-narrow-command-context-split-dispatcher.md)
 
 Filed 2026-09-07 from `docs/notes/2026-09-07-pv-multipv-display-root-cause.md`: PROTO-05 — pulled into Sprint 17 Active 2026-09-07 (shipped, PR #32).
 Filed 2026-09-08 from `docs/notes/2026-09-08-refyxb-multipv-rendering.md`: PROTO-06 — **pulled into Sprint 18 Active 2026-09-08** (see `docs/sprint/current.md`).
@@ -113,3 +118,4 @@ Sprint 19:
 
 - ✅ **PROTO-07.** native `!yxAnalz` console command — analyze an explicit allow-list of root moves (Rapfi `YXANALZ`). First-class feature (not `.ptc`). Alphabetic move text only (numeric `x,y` deferred — `parseMovesText` out of bounds to change). — [detail](docs/todo/PROTO-07-yxanalz-root-move-allowlist.md) · [instruction](docs/instruction/PROTO-07-yxanalz-root-move-allowlist.md)
 - ✅ **CONS-03.** `!help` documents `!yxAnalz` / YXANALZ as an engine-protocol extension (needs a supporting engine; real interruptible search; places no stone; alphabetic move text only). Help-text only, no behaviour change. Follow-on to PROTO-07. — [detail](docs/todo/CONS-03-help-doc-yxanalz-protocol-extension.md) · [instruction](docs/instruction/CONS-03-help-doc-yxanalz-protocol-extension.md)
+- ✅ **DOC-02.** standardize `CLAUDE.md` — hard-rules section, GTK4 fix, bug-fix/sprint workflows moved to path-scoped `.claude/rules/`, GitHub model to the `github` skill (filed + done 2026-10-05, no sprint) — [detail](docs/todo/DOC-02-standardize-claude-md.md)
