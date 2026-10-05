@@ -1,7 +1,6 @@
 #include "command_dispatcher.h"
 
 #include "command_completer.h"
-#include "engine/engine_process.h"
 #include "engine/engine_controller.h"
 
 #include <algorithm>
@@ -167,7 +166,7 @@ bool CommandDispatcher::executeLine(const std::string &line)
     }
 
     // External/raw protocol line.
-    if (!ctx_.engine.isRunning()) {
+    if (!ctx_.controller.isRunning()) {
         printError("Engine not running. Use: !engine start");
         return true;
     }
@@ -260,7 +259,7 @@ void CommandDispatcher::registerInfoCommands()
     registerCommand(
         {"info", "about", "!about", "Send ABOUT to the engine"},
         [this](const Command &) {
-            if (!ctx_.engine.isRunning()) {
+            if (!ctx_.controller.isRunning()) {
                 printError("Engine not running. Use: !engine start");
                 return;
             }
@@ -399,7 +398,7 @@ void CommandDispatcher::registerAnalysisCommands()
     registerCommand(
         {"analysis", "analyze", "!analyze [n]", "Start analysis (optional n = MultiPV)"},
         [this](const Command &c) {
-            if (!ctx_.engine.isRunning()) {
+            if (!ctx_.controller.isRunning()) {
                 printError("Engine not running. Use: !engine start");
                 return;
             }
@@ -432,7 +431,7 @@ void CommandDispatcher::registerAnalysisCommands()
         {"analysis", "yxanalz", "!yxAnalz <moveText...>",
          "Analyze listed root moves (YXANALZ protocol extension—requires compatible engine); interruptible; no stone; alphabetic moves"},
         [this](const Command &c) {
-            if (!ctx_.engine.isRunning()) {
+            if (!ctx_.controller.isRunning()) {
                 printError("Engine not running. Use: !engine start");
                 return;
             }
@@ -488,7 +487,7 @@ void CommandDispatcher::registerAnalysisCommands()
     registerCommand(
         {"analysis", "play", "!play <moveText...>", "Load moves then start analysis"},
         [this](const Command &c) {
-            if (!ctx_.engine.isRunning()) {
+            if (!ctx_.controller.isRunning()) {
                 printError("Engine not running. Use: !engine start");
                 return;
             }
@@ -562,7 +561,7 @@ void CommandDispatcher::registerEngineCommands()
                 printError("Usage: send <raw engine line>");
                 return;
             }
-            if (!ctx_.engine.isRunning()) {
+            if (!ctx_.controller.isRunning()) {
                 printError("Engine not running. Use: !engine start");
                 return;
             }
@@ -733,7 +732,7 @@ void CommandDispatcher::syncExtensionCommands()
         };
         std::string cmdName = name;
         registerCommand(std::move(spec), [this, cmdName](const Command &c) {
-            if (!ctx_.engine.isRunning()) {
+            if (!ctx_.controller.isRunning()) {
                 printError("Engine not running. Use: !engine start");
                 return;
             }

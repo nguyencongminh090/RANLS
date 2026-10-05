@@ -11,13 +11,11 @@
 #include <unordered_map>
 #include <vector>
 
-class EngineProcess;
 class EngineController;
 
 /// Execution environment for a command handler.
 struct CommandContext {
     GameState &gameState;
-    EngineProcess &engine;
     EngineController &controller;
 
     // UI hooks (implemented by MainWindow via BottomPanel).
