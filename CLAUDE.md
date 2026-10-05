@@ -33,8 +33,7 @@ skills (loaded on demand) — don't duplicate them here.
    `features/`, root tracking `.md`) may land straight on `main`. Details: `github` skill.
 8. **Dependency rule:** `ui → command/engine → model`; `model/` must not include gtk or `engine/`
    (`software-architecture` skill; `docs/knowledge/principle-layering-dependency-rule.md`).
-   **Currently violated** by `model/game_state.h` and `model/board_view_model.h` including
-   `engine/engine_types.h` — tracked as ARCH-01; don't add new violations.
+   Enforced for `engine/` includes by the `arch01-model-no-engine-includes` ctest.
 
 ## Knowledge base: use it when reasoning
 

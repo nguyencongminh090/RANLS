@@ -116,6 +116,13 @@ add_test(NAME rel02-version-single-source
         -P ${CMAKE_CURRENT_SOURCE_DIR}/check_version.cmake
 )
 
+# ── ARCH-01: src/model must not include engine/ (layer rule) ────────────────
+add_test(NAME arch01-model-no-engine-includes
+    COMMAND ${CMAKE_COMMAND}
+        -DMODEL_DIR=${PROJECT_SOURCE_DIR}/src/model
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/arch01_check_model_includes.cmake
+)
+
 # ── Second target: widget-level UI tests (DOES link gtkmm) ──────────────────
 #
 # UI-07 (second pass) proved that a defect can live entirely inside a widget's

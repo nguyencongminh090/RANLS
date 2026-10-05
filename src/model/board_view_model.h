@@ -2,7 +2,7 @@
 
 #include "board_state.h"
 #include "config.h"
-#include "engine/engine_types.h"   // AnalysisOverlay (PROTO-06)
+#include "model/analysis_types.h"   // AnalysisOverlay (PROTO-06)
 
 #include <string>
 #include <vector>

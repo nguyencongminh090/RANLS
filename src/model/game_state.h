@@ -4,7 +4,7 @@
 #include "move_history.h"
 #include "variation_tree.h"
 #include "config.h"
-#include "engine/engine_types.h"
+#include "model/analysis_types.h"
 
 #include <sigc++/sigc++.h>
 #include <vector>
