@@ -118,10 +118,29 @@ function checkInstruction(problems, todoCodes) {
   }
 }
 
+
+// Open todo files must follow docs/templates/todo.md. Closed (legacy) files are not re-linted.
+const REQUIRED_OPEN_SECTIONS = ['Problem', 'Scope', 'Scope boundary', 'Reasoning', 'Knowledge', 'Acceptance criteria'];
+const STATUS_CLOSED_SET = /^\*\*Status:\*\*\s*(?:🔲|🚧|✅|⛔)?\s*(OPEN|ACTIVE|DONE|FIXED|CLOSED|VERIFIED|SUPERSEDED)\b/m;
+
+function checkOpenTemplate(problems) {
+  for (const f of listMdFiles(TODO_DIR)) {
+    const text = fs.readFileSync(path.join(TODO_DIR, f), 'utf8');
+    const first = (text.match(/^\*\*Status:\*\*.*$/m) || [''])[0]; // first Status line only (later ones are history)
+    if (!/^\*\*Status:\*\*\s*(?:🔲|🚧)?\s*(OPEN|ACTIVE)\b/.test(first)) continue;
+    const heads = new Set((text.match(/^##\s+(.+?)\s*(?:\(.*\))?\s*$/gm) || [])
+      .map(h => h.replace(/^##\s+/, '').replace(/\s*\(.*\)\s*$/, '').trim()));
+    for (const sec of REQUIRED_OPEN_SECTIONS)
+      if (!heads.has(sec)) problems.push(`docs/todo/${f}: open item missing "## ${sec}" (see docs/templates/todo.md)`);
+    if (!STATUS_CLOSED_SET.test(first)) problems.push(`docs/todo/${f}: Status not in the closed set`);
+  }
+}
+
 function main() {
   const problems = [];
   const todoCodes = checkTodo(problems);
   checkInstruction(problems, todoCodes);
+  checkOpenTemplate(problems);
 
   if (problems.length === 0) {
     console.log('OK: TODO.md / instruction.md structure is consistent.');

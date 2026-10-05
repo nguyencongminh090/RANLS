@@ -12,7 +12,7 @@ Project dir is always `.` (YixinBoard keeps `TODO.md` / `instruction.md` / `docs
 
 - `open <N> "<goal>" <CODE...>` — open Sprint `N` with `<goal>` and pull the listed `CODE`s from
   `TODO.md` **Backlog** into **Active**.
-- `close [version]` — close the current sprint: archive it, roll over unfinished items, cut the
+- `close [version]` — close the current sprint: triage expiring `S` notes in `docs/notes/` (promote or delete, see `.claude/rules/tracking-files.md` "Task size"), archive it, roll over unfinished items, cut the
   release (`version` = explicit `0.N.P`; omitted → derive per rule below), reset for the next sprint.
 - `add-task <CODE> "<summary>" [--active]` — scaffold `docs/todo/` + (optional) `docs/instruction/`
   + the `TODO.md` line for a new `CODE`. Lands in **Backlog** unless `--active` (which also performs
@@ -59,37 +59,10 @@ touches `src/`. Implementing a `CODE` is `/implement-task`, not this.
 
 ### 2. Scaffold the detail file
 
-Write `docs/todo/<CODE>-<slug>.md`:
+Write `docs/todo/<CODE>-<slug>.md` by copying `docs/templates/todo.md` (sections: Problem, Scope,
+Scope boundary, Reasoning, Knowledge, Acceptance criteria; one-line Status from the closed set).
 
-```markdown
-# <CODE> — <summary>
-
-**Status:** 🔲 OPEN (<Backlog | Active — Sprint N>)
-**Area:** <files/dirs this will touch — best guess, one line>
-**Priority:** <P1 | P2 | P3>
-**Source:** <who asked / which note or feature folder — today's date 2026-…>
-**Design:** <features/<slug>/ if one exists, else "none — scoped directly">
-**Depends on / relates to:** <other CODEs, or "—">
-
-## Problem
-
-<1–3 short paragraphs: what is wrong / missing and why it matters. From the user's words + the
-source note — do not invent scope.>
-
-## Scope (in order)
-
-1. …
-
-## Acceptance criteria
-
-- …
-
-## Scope boundary
-
-- Do not …
-```
-
-Fill `Problem` / `Scope` / `Acceptance` from the source note or the user's request only — if there
+Fill `Problem` / `Scope` / `Reasoning` / `Knowledge` / `Acceptance` from the source note or the user's request only — if there
 is not enough to write real acceptance criteria, stop and ask rather than guessing.
 
 ### 3. Optional instruction file

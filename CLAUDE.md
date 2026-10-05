@@ -72,6 +72,14 @@ Before a new feature idea becomes tracked work, work it through `features/<slug>
   (Backlog section) and `docs/instruction/<CODE>-<slug>.md` + `instruction.md` *before* writing code.
 - Doc-only — can be written/updated straight on `main`, no branch needed.
 
+## Task size: small tasks get a temporary note, not an audit
+
+Classify each task S/M/L first (rules + table in `.claude/rules/tracking-files.md` → "Task size").
+**S** (≤ ~2 files, one layer, no design decision, reversible) → a short `docs/notes/` note from
+`docs/templates/note.md`, expiring at sprint close. **M** → todo (audit only if a real decision was
+made). **L** (cross-layer / protocol / format / toolchain / process / hard to reverse) → feature
+folder → todo → audit. Bug fixes always get a fix-log regardless. When unsure, pick the larger size.
+
 ## New requirements/tasks: stack, don't perform directly
 
 When the user raises a new requirement/feature/task mid-conversation (not an explicit "do this now"):
@@ -151,7 +159,8 @@ a layer boundary. `systematic-debugging` references `superpowers:test-driven-dev
 `docs/audit.md` + `docs/audit/<date>-<slug>.md` record reviews and non-bug decisions: architecture
 choices, security reviews, protocol-compatibility checks against Rapfi/Yixin-protocol changes,
 build/toolchain decisions. Same index+detail, append-only shape as the fix log — a wrong past entry
-gets a new correcting entry, not a rewrite.
+gets a new correcting entry (`**Supersedes:**`), not a rewrite. Search it before design decisions:
+`node scripts/audit-search.js "<need>"`; short entries go in the monthly `docs/audit/<YYYY-MM>-log.md`.
 
 ## GitHub project management
 
