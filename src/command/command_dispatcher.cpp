@@ -250,7 +250,8 @@ void CommandDispatcher::printHelp() const
     }
 }
 
-void CommandDispatcher::registerBuiltins()
+// Help group "info".
+void CommandDispatcher::registerInfoCommands()
 {
     registerCommand(
         {"info", "help", "!help", "Show this help (grouped)"},
@@ -265,7 +266,11 @@ void CommandDispatcher::registerBuiltins()
             }
             ctx_.controller.sendRawCommand("ABOUT");
         });
+}
 
+// Help group "board".
+void CommandDispatcher::registerBoardCommands()
+{
     registerCommand(
         {"board", "start", "!start <size>", "New game with board size; sync engine if running"},
         [this](const Command &c) {
@@ -330,6 +335,67 @@ void CommandDispatcher::registerBuiltins()
             printInfo("OK");
         });
 
+    registerCommand(
+        {"board", "loadpos", "!loadpos", "Load position from move text (end with: done)"},
+        [this](const Command &) { beginPosSession(); });
+
+    registerCommand(
+        {"board", "pos", "!pos <moveText...> | !pos (then lines, end with: done)", "Position input helper"},
+        [this](const Command &c) {
+            if (c.args.empty()) {
+                beginPosSession();
+                return;
+            }
+            // One-liner: pos <text...>
+            beginPosSession();
+            for (const auto &a : c.args) {
+                handlePosSessionLine(a);
+            }
+            finalizePosSession();
+        });
+
+    registerCommand(
+        {"board", "getpos", "!getpos", "Print current position as y,x,color lines"},
+        [this](const Command &) {
+            const int boardSize = ctx_.gameState.boardSize();
+            const auto &board = ctx_.gameState.board();
+            std::vector<std::string> lines;
+            lines.reserve(boardSize * boardSize);
+
+            int blackCount = 0;
+            int whiteCount = 0;
+            for (int y = 0; y < boardSize; ++y) {
+                for (int x = 0; x < boardSize; ++x) {
+                    Stone s = board.stoneAt(Coord{x, y});
+                    if (s == Stone::Empty) continue;
+                    int color = (s == Stone::Black) ? 1 : 2;
+                    if (s == Stone::Black) ++blackCount;
+                    else ++whiteCount;
+                    lines.push_back(std::to_string(y) + "," + std::to_string(x) + "," + std::to_string(color));
+                }
+            }
+
+            printInfo("POS_BEGIN");
+            for (const auto &line : lines) printInfo(line);
+            printInfo("DONE");
+
+            std::string moveText;
+            for (int i = 0; i < ctx_.gameState.history().moveCount(); ++i) {
+                moveText += coordToMoveText(ctx_.gameState.history().moves()[i], boardSize);
+            }
+            std::ostringstream summary;
+            summary << "POS_SUMMARY size=" << boardSize
+                    << " ply=" << ctx_.gameState.history().moveCount()
+                    << " black=" << blackCount
+                    << " white=" << whiteCount
+                    << " moves=" << moveText;
+            printInfo(summary.str());
+        });
+}
+
+// Help group "analysis".
+void CommandDispatcher::registerAnalysisCommands()
+{
     registerCommand(
         {"analysis", "analyze", "!analyze [n]", "Start analysis (optional n = MultiPV)"},
         [this](const Command &c) {
@@ -420,6 +486,44 @@ void CommandDispatcher::registerBuiltins()
         [this](const Command &) { ctx_.controller.stopAnalysis(); });
 
     registerCommand(
+        {"analysis", "play", "!play <moveText...>", "Load moves then start analysis"},
+        [this](const Command &c) {
+            if (!ctx_.engine.isRunning()) {
+                printError("Engine not running. Use: !engine start");
+                return;
+            }
+            if (c.tail.empty()) {
+                printError("Usage: !play <moveText...>  (e.g. !play h7h8h12)");
+                return;
+            }
+
+            auto moves = parseMovesText(c.tail, ctx_.gameState.boardSize());
+            if (moves.empty()) {
+                printError("No moves parsed.");
+                return;
+            }
+
+            std::vector<std::pair<Coord, Stone>> stones;
+            stones.reserve(moves.size());
+            for (size_t i = 0; i < moves.size(); ++i) {
+                stones.push_back({moves[i], (i % 2 == 0) ? Stone::Black : Stone::White});
+            }
+
+            ctx_.controller.stopAnalysis();
+            if (!ctx_.gameState.loadPosition(stones)) {
+                printError("Failed to load position (invalid/duplicate or analyzing).");
+                return;
+            }
+            ctx_.controller.sendConfig();
+            revertEnginePlaysIfEnginesTurn();  // ENG-02
+            ctx_.controller.analyze();
+        });
+}
+
+// Help group "engine".
+void CommandDispatcher::registerEngineCommands()
+{
+    registerCommand(
         {"engine", "engine", "!engine <start|stop|reload>", "Engine lifecycle"},
         [this](const Command &c) {
             if (c.args.size() != 1) {
@@ -464,7 +568,11 @@ void CommandDispatcher::registerBuiltins()
             }
             ctx_.controller.sendRawCommand(c.tail);
         });
+}
 
+// Help group "config".
+void CommandDispatcher::registerConfigCommands()
+{
     registerCommand(
         {"config", "info", "!info set <key> <value>", "Edit engine config and sendConfig"},
         [this](const Command &c) {
@@ -484,104 +592,21 @@ void CommandDispatcher::registerBuiltins()
             std::string value = joinArgs(c.args, 2);
             setEngineConfigKey(key, value);
         });
+}
 
-    registerCommand(
-        {"board", "loadpos", "!loadpos", "Load position from move text (end with: done)"},
-        [this](const Command &) { beginPosSession(); });
-
-    registerCommand(
-        {"board", "pos", "!pos <moveText...> | !pos (then lines, end with: done)", "Position input helper"},
-        [this](const Command &c) {
-            if (c.args.empty()) {
-                beginPosSession();
-                return;
-            }
-            // One-liner: pos <text...>
-            beginPosSession();
-            for (const auto &a : c.args) {
-                handlePosSessionLine(a);
-            }
-            finalizePosSession();
-        });
-
-    registerCommand(
-        {"board", "getpos", "!getpos", "Print current position as y,x,color lines"},
-        [this](const Command &) {
-            const int boardSize = ctx_.gameState.boardSize();
-            const auto &board = ctx_.gameState.board();
-            std::vector<std::string> lines;
-            lines.reserve(boardSize * boardSize);
-
-            int blackCount = 0;
-            int whiteCount = 0;
-            for (int y = 0; y < boardSize; ++y) {
-                for (int x = 0; x < boardSize; ++x) {
-                    Stone s = board.stoneAt(Coord{x, y});
-                    if (s == Stone::Empty) continue;
-                    int color = (s == Stone::Black) ? 1 : 2;
-                    if (s == Stone::Black) ++blackCount;
-                    else ++whiteCount;
-                    lines.push_back(std::to_string(y) + "," + std::to_string(x) + "," + std::to_string(color));
-                }
-            }
-
-            printInfo("POS_BEGIN");
-            for (const auto &line : lines) printInfo(line);
-            printInfo("DONE");
-
-            std::string moveText;
-            for (int i = 0; i < ctx_.gameState.history().moveCount(); ++i) {
-                moveText += coordToMoveText(ctx_.gameState.history().moves()[i], boardSize);
-            }
-            std::ostringstream summary;
-            summary << "POS_SUMMARY size=" << boardSize
-                    << " ply=" << ctx_.gameState.history().moveCount()
-                    << " black=" << blackCount
-                    << " white=" << whiteCount
-                    << " moves=" << moveText;
-            printInfo(summary.str());
-        });
-
-    registerCommand(
-        {"analysis", "play", "!play <moveText...>", "Load moves then start analysis"},
-        [this](const Command &c) {
-            if (!ctx_.engine.isRunning()) {
-                printError("Engine not running. Use: !engine start");
-                return;
-            }
-            if (c.tail.empty()) {
-                printError("Usage: !play <moveText...>  (e.g. !play h7h8h12)");
-                return;
-            }
-
-            auto moves = parseMovesText(c.tail, ctx_.gameState.boardSize());
-            if (moves.empty()) {
-                printError("No moves parsed.");
-                return;
-            }
-
-            std::vector<std::pair<Coord, Stone>> stones;
-            stones.reserve(moves.size());
-            for (size_t i = 0; i < moves.size(); ++i) {
-                stones.push_back({moves[i], (i % 2 == 0) ? Stone::Black : Stone::White});
-            }
-
-            ctx_.controller.stopAnalysis();
-            if (!ctx_.gameState.loadPosition(stones)) {
-                printError("Failed to load position (invalid/duplicate or analyzing).");
-                return;
-            }
-            ctx_.controller.sendConfig();
-            revertEnginePlaysIfEnginesTurn();  // ENG-02
-            ctx_.controller.analyze();
-        });
-
+// Help group "debug".
+void CommandDispatcher::registerDebugCommands()
+{
     registerCommand(
         {"debug", "clear", "!clear", "Clear the console log"},
         [this](const Command &) {
             if (ctx_.clearConsole) ctx_.clearConsole();
         });
+}
 
+// Help group "database".
+void CommandDispatcher::registerDatabaseCommands()
+{
     registerCommand(
         {"database", "db", "!db <query|load|save|on|off|label|comment|delete>", "Database commands"},
         [this](const Command &c) {
@@ -669,6 +694,17 @@ void CommandDispatcher::registerBuiltins()
                 printError("Unknown database subcommand: " + sub);
             }
         });
+}
+
+void CommandDispatcher::registerBuiltins()
+{
+    registerInfoCommands();
+    registerBoardCommands();
+    registerAnalysisCommands();
+    registerEngineCommands();
+    registerConfigCommands();
+    registerDebugCommands();
+    registerDatabaseCommands();
 }
 
 void CommandDispatcher::syncExtensionCommands()

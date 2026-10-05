@@ -75,6 +75,14 @@ private:
     using Handler = std::function<void(const Command &)>;
 
     void registerBuiltins();
+    // ARCH-03: one registrar per help group, called from registerBuiltins().
+    void registerInfoCommands();
+    void registerBoardCommands();
+    void registerAnalysisCommands();
+    void registerEngineCommands();
+    void registerConfigCommands();
+    void registerDebugCommands();
+    void registerDatabaseCommands();
     void registerCommand(CommandSpec spec, Handler handler);
 
     void printError(const std::string &msg) const;
