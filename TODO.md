@@ -23,18 +23,17 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 ## Active
 
-No active sprint. Sprint 19 closed 2026-09-10 (PROTO-07 + CONS-03 shipped; archived to
-`docs/sprint/archive/sprint-19.md`, release `v0.8.0`). Run `/sprint open 20 "<goal>" <CODE...>` to
-start Sprint 20.
+Sprint 20 (opened 2026-10-05, goal "Fix the model↔engine layering violation and narrow CommandContext (architecture review follow-ups)") — pulled from Backlog:
+
+- 🔲 **ARCH-01.** Break the model ↔ engine include cycle (move analysis data types into `model/`) [2 pts] — [detail](docs/todo/ARCH-01-break-model-engine-include-cycle.md)
+- 🔲 **ARCH-03.** Narrow `CommandContext` + split `registerBuiltins()` [3 pts] — [detail](docs/todo/ARCH-03-narrow-command-context-split-dispatcher.md)
 
 ## Backlog
 
-No open items except the architecture refactors below.
+No open items except ARCH-02 below.
 
-Filed 2026-10-05 from [architecture review audit](docs/audit/2026-10-05-architecture-review.md):
-- 🔲 **ARCH-01.** Break the model ↔ engine include cycle (move analysis data types into `model/`) [2 pts] — [detail](docs/todo/ARCH-01-break-model-engine-include-cycle.md)
+Filed 2026-10-05 from [architecture review audit](docs/audit/2026-10-05-architecture-review.md) — ARCH-01 and ARCH-03 **pulled into Sprint 20 Active 2026-10-05** (see `docs/sprint/current.md`); ARCH-02 remains (needs design):
 - 🔲 **ARCH-02.** Extract analyze/auto-move orchestration out of `MainWindow` [8 pts, needs design] — [detail](docs/todo/ARCH-02-extract-analysis-coordination-from-mainwindow.md)
-- 🔲 **ARCH-03.** Narrow `CommandContext` + split `registerBuiltins()` [3 pts] — [detail](docs/todo/ARCH-03-narrow-command-context-split-dispatcher.md)
 
 Filed 2026-09-07 from `docs/notes/2026-09-07-pv-multipv-display-root-cause.md`: PROTO-05 — pulled into Sprint 17 Active 2026-09-07 (shipped, PR #32).
 Filed 2026-09-08 from `docs/notes/2026-09-08-refyxb-multipv-rendering.md`: PROTO-06 — **pulled into Sprint 18 Active 2026-09-08** (see `docs/sprint/current.md`).
