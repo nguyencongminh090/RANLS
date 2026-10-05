@@ -279,6 +279,31 @@ TEST_CASE("GomocupProtocol: well-formed INFO PV n / PV DONE sequence is unchange
     CHECK(rec.lastPVs[0].moves[1] == Coord{8, 8});
 }
 
+TEST_CASE("GomocupProtocol: INFO visual-search lines are parsed but not echoed to the Engine Log") {
+    // The engine's live "INFO ..." feed (DEPTH/NODES/SPEED/PV/BESTLINE/…) is
+    // consumed into the analysis widgets but must not flood the Engine Log —
+    // parseLine() routes it to parseInfo() and returns before signal_log.
+    SignalRecorder rec;
+    const char *feed[] = {
+        "INFO PV 0",        "INFO NUMPV 1",       "INFO DEPTH 26",
+        "INFO SELDEPTH 43", "INFO NODES 902590",  "INFO TOTALNODES 10147330",
+        "INFO TOTALTIME 9859", "INFO SPEED 1029245", "INFO EVAL 6",
+        "INFO WINRATE 0.512887",
+        "INFO BESTLINE 9,9 10,9 11,8 12,10 10,10",
+        "INFO PV DONE",
+    };
+    for (const char *line : feed)
+        CHECK_NOTHROW(rec.proto.parseLine(line));
+
+    CHECK(rec.logCount == 0);
+    // …but the feed still reached the analysis pipeline.
+    CHECK(rec.analysisCount >= 1);
+
+    // A normal (non-INFO) line is still logged.
+    rec.proto.parseLine("MESSAGE hello");
+    CHECK(rec.logCount == 1);
+}
+
 // ── UI-06: generateMoveRequest asks the engine to actually move ───────────
 //
 // The "Engine plays <side>" auto-move feature needs a request that STARTS A

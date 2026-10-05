@@ -413,6 +413,18 @@ void GomocupProtocol::parseLine(const std::string& line) {
         return;
     }
 
+    // "INFO ..." lines are the engine's live visual-search feed
+    // (DEPTH/NODES/SPEED/PV/BESTLINE/…). They are consumed here into
+    // EngineStatus/PVLine for the analysis widgets, but echoing every one into
+    // the Engine Log just floods it with noise, so parse them and return
+    // without emitting a log line. Genuine warnings raised while parsing (e.g.
+    // an out-of-range NUMPV) still reach the log from parseInfo() itself.
+    if (line.rfind("INFO", 0) == 0) {
+        if (line.size() > 5)
+            parseInfo(line.substr(5));
+        return;
+    }
+
     EngineMessageType type = EngineMessageType::Output;
 
     if (line.size() >= 3 && std::isdigit(static_cast<unsigned char>(line[0])) && line.find(',') != std::string::npos) {
@@ -440,13 +452,6 @@ void GomocupProtocol::parseLine(const std::string& line) {
     if (type == EngineMessageType::Message) {
         if (line.size() > 8) {
             parseMessage(line.substr(8));
-        }
-        return;
-    }
-
-    if (line.rfind("INFO ", 0) == 0 || line.rfind("INFO", 0) == 0) {
-        if (line.size() > 5) {
-            parseInfo(line.substr(5));
         }
         return;
     }
