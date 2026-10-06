@@ -299,6 +299,12 @@ Marks stack only on empty cells; Best is a flag, HSV stays, DB shows eval text o
 renderer second, visual check last; reuse the UI-16/17 render-test pattern. UX-08 is separate.
 [detail](docs/instruction/UX-07-board-mark-visual-language.md)
 
+## UX-08 — board-hover-crosshair-and-tooltips
+
+Tooltip text comes from a GTK-free `BoardViewModel::tooltipFor`; `hasComment` is a flag only (no text).
+Crosshair below stones, margin labels highlighted. After UX-07; no keyboard nav, no new settings.
+[detail](docs/instruction/UX-08-board-hover-crosshair-and-tooltips.md)
+
 ---
 
 _Items without an entry here (RT-02/03/04, STATE-02/03, PROTO-02, NAV-01, UI-01/02/03, UX-01…04,

@@ -37,6 +37,8 @@ default: UX-08 starts by checking how `hasComment` is populated; the tooltip sho
 resolves to a `VariationTree` node, else just "has comment" — no `DatabaseEntry` model change without a
 new decision. Decisions of record: Q1/Q4/Q5/Q11 per the partial resolution above; the rest per defaults.
 
+**Q12 resolved 2026-10-06 (investigation):** `hasComment` is only a flag parsed from the engine's `DATABASE` row; comment text is never sent and `VariationTree` comments are unrelated user annotations. Tooltip says "has comment" only; no `DatabaseEntry` change.
+
 ## Open questions
 
 | # | Question | Proposed default | Alternatives |
