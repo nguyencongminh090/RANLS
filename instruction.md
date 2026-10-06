@@ -293,6 +293,12 @@ Tests only; pin current analyze/auto-move behaviour before ARCH-02. No `src/` ch
 GTK-free save/load logic only; dialogs and messages unchanged. After ARCH-02.
 [detail](docs/instruction/ARCH-05-extract-game-file-service.md)
 
+## UX-07 — board-mark-visual-language
+
+Marks stack only on empty cells; Best is a flag, HSV stays, DB shows eval text only. Model first,
+renderer second, visual check last; reuse the UI-16/17 render-test pattern. UX-08 is separate.
+[detail](docs/instruction/UX-07-board-mark-visual-language.md)
+
 ---
 
 _Items without an entry here (RT-02/03/04, STATE-02/03, PROTO-02, NAV-01, UI-01/02/03, UX-01…04,
