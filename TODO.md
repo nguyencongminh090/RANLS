@@ -25,7 +25,6 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 Sprint 22 (opened 2026-10-06, goal "Board mark visual language: stacked engine/database/variant marks, best ring, hover tooltips") — pulled from Backlog:
 
-- ✅ **UX-07.** redesign board mark language (engine / database / variant / best) — size L, design gate `features/board-marks/` first — [detail](docs/todo/UX-07-board-mark-visual-language.md)
 - 🔲 **UX-08.** board hover crosshair, margin highlight, mark tooltips (after UX-07) — [detail](docs/todo/UX-08-board-hover-crosshair-and-tooltips.md)
 
 ## Backlog
@@ -136,3 +135,7 @@ Shipped 2026-10-06 outside a sprint (bug fixes from the board marks review, PRs 
 - ✅ **UI-16.** hover and PV ghost stones draw over occupied cells — [detail](docs/todo/UI-16-hover-and-pv-ghost-draw-over-occupied-cells.md)
 - ✅ **UI-17.** BoardRenderer layers leak Cairo state (font face) — [detail](docs/todo/UI-17-renderer-cairo-state-leak.md)
 - ✅ **UI-18.** best-move mark hidden whenever a winrate tag is shown — [detail](docs/todo/UI-18-best-move-mark-hidden-by-winrate-tag.md)
+
+Sprint 22:
+
+- ✅ **UX-07.** redesign board mark language (engine / database / variant / best) — size L, design gate `features/board-marks/` first — [detail](docs/todo/UX-07-board-mark-visual-language.md) (PR #49)
