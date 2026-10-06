@@ -275,13 +275,23 @@ Pure header move; do this first. Grep `src/model` for `engine/` to confirm done.
 
 ## ARCH-02 — extract-analysis-coordination-from-mainwindow
 
-Design in `features/<slug>/` first; characterization tests before extracting; one responsibility per step.
+Design resolved (`features/extract-mainwindow-orchestration/`). After ARCH-04. Inject `postIdle`; keep ANLZ-05/07 guard order.
 [detail](docs/instruction/ARCH-02-extract-analysis-coordination-from-mainwindow.md)
 
 ## ARCH-03 — narrow-command-context-split-dispatcher
 
 After ARCH-01. No handler behavior change; `!help` output must stay identical.
 [detail](docs/instruction/ARCH-03-narrow-command-context-split-dispatcher.md)
+
+## ARCH-04 — characterize-analyze-autoplay-behavior
+
+Tests only; pin current analyze/auto-move behaviour before ARCH-02. No `src/` changes.
+[detail](docs/instruction/ARCH-04-characterize-analyze-autoplay-behavior.md)
+
+## ARCH-05 — extract-game-file-service
+
+GTK-free save/load logic only; dialogs and messages unchanged. After ARCH-02.
+[detail](docs/instruction/ARCH-05-extract-game-file-service.md)
 
 ---
 

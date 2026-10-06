@@ -23,16 +23,17 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 ## Active
 
-No active sprint. Sprint 20 closed 2026-10-06 (ARCH-01 + ARCH-03 shipped; archived to
-`docs/sprint/archive/sprint-20.md`, release `v0.8.1`). Run `/sprint open 21 "<goal>" <CODE...>` to
-start Sprint 21.
+Sprint 21 (opened 2026-10-06, goal "Extract MainWindow's analyze/auto-move/file orchestration into GTK-free, unit-tested classes (ARCH-02 split, characterization first)") — pulled from Backlog / filed from the resolved ARCH-02 design:
+
+- 🔲 **ARCH-04.** Characterization tests for analyze / auto-move behavior (tests only, before any extraction) [2 pts] — [detail](docs/todo/ARCH-04-characterize-analyze-autoplay-behavior.md) · [instruction](docs/instruction/ARCH-04-characterize-analyze-autoplay-behavior.md)
+- 🔲 **ARCH-02.** Extract `AnalysisCoordinator` (analyze-restart / auto-move / ENG-02 revert) out of `MainWindow` into `src/engine/` [4 pts] — [detail](docs/todo/ARCH-02-extract-analysis-coordination-from-mainwindow.md) · [instruction](docs/instruction/ARCH-02-extract-analysis-coordination-from-mainwindow.md)
+- 🔲 **ARCH-05.** Extract GTK-free `GameFileService` (save/load logic) out of `MainWindow` [2 pts] — [detail](docs/todo/ARCH-05-extract-game-file-service.md) · [instruction](docs/instruction/ARCH-05-extract-game-file-service.md)
 
 ## Backlog
 
-No open items except ARCH-02 below (needs a `features/` design first).
+No open items.
 
-Filed 2026-10-05 from [architecture review audit](docs/audit/2026-10-05-architecture-review.md) — ARCH-01 and ARCH-03 **pulled into Sprint 20 Active 2026-10-05** (see `docs/sprint/current.md`); ARCH-02 remains (needs design):
-- 🔲 **ARCH-02.** Extract analyze/auto-move orchestration out of `MainWindow` [8 pts, needs design] — [detail](docs/todo/ARCH-02-extract-analysis-coordination-from-mainwindow.md)
+Filed 2026-10-05 from [architecture review audit](docs/audit/2026-10-05-architecture-review.md) — ARCH-01 and ARCH-03 **pulled into Sprint 20 Active 2026-10-05** (see `docs/sprint/current.md`). ARCH-02 design resolved 2026-10-06 (`features/extract-mainwindow-orchestration/`); split into ARCH-04 / ARCH-02 / ARCH-05 and **pulled into Sprint 21 Active 2026-10-06** (see `docs/sprint/current.md`).
 
 Filed 2026-09-07 from `docs/notes/2026-09-07-pv-multipv-display-root-cause.md`: PROTO-05 — pulled into Sprint 17 Active 2026-09-07 (shipped, PR #32).
 Filed 2026-09-08 from `docs/notes/2026-09-08-refyxb-multipv-rendering.md`: PROTO-06 — **pulled into Sprint 18 Active 2026-09-08** (see `docs/sprint/current.md`).

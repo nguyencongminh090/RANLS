@@ -2,12 +2,23 @@
 
 See [user_story.md](user_story.md) · [diagram/flow.md](diagram/flow.md).
 
-**Status: DRAFT 2026-10-06 — open questions below are UNRESOLVED.** Nothing here authorises code. Resolve
-them with the user, then update `docs/todo/ARCH-02-*.md` / `docs/instruction/ARCH-02-*.md` and
-`TODO.md` (design gate, `CLAUDE.md` rule 4). The "Proposed default" column is a recommendation, not a
-decision of record.
+**Status: RESOLVED 2026-10-06** — see "Resolution" below. (Draft text kept as history; the
+"Proposed default" column is the decision of record only where the Resolution says so.)
 
-## Open questions
+## Resolution — 2026-10-06 (user)
+
+The user answered the three decisions that shape the work; the remaining questions take their proposed
+defaults (stated to the user as such when asking).
+
+- **Q1 → `src/engine/`** (GTK-free `AnalysisCoordinator`; no change to rule 8).
+- **Q2 → injected `postIdle`** (coordinator owns coalescing flags + guard order; `MainWindow` supplies the Glib idle adapter; tests use a manual queue).
+- **Q5 → yes, `GameFileService`** as its own task.
+- **Q3, Q4, Q6, Q7, Q8 → proposed defaults** (menu sync, persistence and graceful close stay in `MainWindow`; one `AnalysisCoordinator`; existing friend probes kept as the safety net).
+
+Task split (CODE format forbids `ARCH-02a`): **ARCH-04** characterization tests (first, tests only) →
+**ARCH-02** `AnalysisCoordinator` (rescoped to just this) → **ARCH-05** `GameFileService`. One PR each.
+
+## Open questions (draft, as proposed)
 
 | # | Question | Proposed default | Alternatives |
 |---|---|---|---|
