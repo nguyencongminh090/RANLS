@@ -4,7 +4,7 @@
 **Area:** src/model/board_view_model.{h,cpp}, src/ui/board_renderer.{h,cpp}, tests/
 **Priority:** P2
 **Source:** User board-UI task + [board marks review audit](../audit/2026-10-06-board-marks-ux-review.md) — 2026-10-06
-**Design:** features/board-marks/ — TO CREATE (size L: design gate before code; CLAUDE.md rule 4)
+**Design:** [features/board-marks/](../../features/board-marks/planning.md) — created 2026-10-06, planning.md RESOLVED 2026-10-06 (design gate passed; instruction entry still to write)
 **Depends on / relates to:** UI-18, UX-08
 
 ## Problem
@@ -13,9 +13,9 @@ Engine tags, database markers and variant dots collide or hide each other; heat 
 
 ## Scope (in order)
 
-1. Create `features/board-marks/` (user_story, Mermaid diagram, planning.md); resolve open questions with the user (palette, DB badge vs outline, variant count, toggles).
+1. ~~Create `features/board-marks/`~~ done 2026-10-06; planning.md questions resolved 2026-10-06 (palette, DB badge vs outline, variant count, toggles).
 2. Then `docs/instruction/UX-07-*.md` + this todo's scope refined.
-3. Implement: engine disc + best ring over tag; outlined DB diamond / corner badge; ring+dot variants with count; perceptual colour ramp + text; index map for move numbers; per-layer `save()/restore()`.
+3. Implement: engine disc + best ring over tag; outlined DB diamond / corner badge; ring+dot variants with count; (HSV kept — Q5; no on-board bound/comment glyphs — Q4); index map for move numbers; per-layer `save()/restore()`.
 
 ## Scope boundary
 

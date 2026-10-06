@@ -13,7 +13,7 @@ No tooltip on marks (winrate/depth/DB value/source) and no hover crosshair or co
 
 ## Scope (in order)
 
-1. Settle in `features/board-marks/planning.md` (with UX-07).
+1. Settled in `features/board-marks/planning.md` (resolved 2026-10-06). First step: investigate where `DatabaseEntry::hasComment` comes from (Q12) — tooltip shows comment text if it maps to a `VariationTree` node, else "has comment".
 2. `query-tooltip` on BoardView reading model data; hover crosshair + margin label highlight.
 
 ## Scope boundary
