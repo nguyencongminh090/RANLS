@@ -45,6 +45,8 @@ struct RanlsAnlz07Probe {
     EngineProcess    &eng()  { return w.engine_; }
     EngineController &ctrl() { return w.controller_; }
     void scheduleAnalyzeModeRestart(bool force) { w.scheduleAnalyzeModeRestart(force); }
+    // ARCH-04: read-only view of the idle-coalescing latch (characterization).
+    bool analyzeModeScheduled() const { return w.analyzeModeScheduled_; }
 };
 
 namespace {
@@ -250,6 +252,104 @@ TEST_CASE("ANLZ-07: a real position change always restarts, even matching a diff
     // silently swallowed as "unchanged".
     feedCompletedAnalysis(p.eng(), at(7, 7));
     REQUIRE(pumpUntil([&] { return countPrefix(wire, "YXNBEST") == 4; }));
+
+    p.ctrl().stopEngine([] {});
+    pumpUntil([&] { return !p.eng().isRunning(); });
+    std::remove(SettingsStorage::settingsFilePath().string().c_str());
+}
+
+// ── ARCH-04: characterization tests (no behaviour change; pin current rules) ─
+
+TEST_CASE("ARCH-04: the force latch is not downgraded by a later non-forced call")
+{
+    if (!gtkReady()) return;
+
+    std::remove(SettingsStorage::settingsFilePath().string().c_str());
+
+    MainWindow window;
+    RanlsAnlz07Probe p{window};
+
+    EngineConfig ec = p.gs().engineConfig();
+    ec.enginePath = kFakeEngine;
+    p.gs().setEngineConfig(ec);
+
+    p.ctrl().startEngine();
+    REQUIRE(p.ctrl().engineState() == EngineController::EngineState::Idle);
+
+    ViewConfig vc = p.gs().viewConfig();
+    vc.analyzeMode = true;
+    p.gs().setViewConfig(vc);
+
+    std::vector<std::string> wire;
+    p.eng().signal_line_sent.connect([&](const std::string &l) { wire.push_back(l); });
+
+    // Reach the converged state exactly like the first ANLZ-07 test.
+    p.scheduleAnalyzeModeRestart(/*force=*/true);
+    REQUIRE(pumpUntil([&] { return countPrefix(wire, "YXNBEST") == 1; }));
+    feedCompletedAnalysis(p.eng(), at(7, 7));
+    REQUIRE(pumpUntil([&] { return countPrefix(wire, "YXNBEST") == 2; }));
+    feedCompletedAnalysis(p.eng(), at(7, 7));
+    REQUIRE(pumpUntil([&] { return p.ctrl().engineState() == EngineController::EngineState::Idle; }));
+    REQUIRE(p.ctrl().analysisConverged());
+    pumpFor(150);
+    REQUIRE(countPrefix(wire, "YXNBEST") == 2);
+
+    // Control: a lone non-forced call is skipped by the converged check.
+    p.scheduleAnalyzeModeRestart(/*force=*/false);
+    pumpFor(150);
+    CHECK(countPrefix(wire, "YXNBEST") == 2);
+    REQUIRE(p.ctrl().analysisConverged());
+
+    // Latch: forced, then non-forced, both before the idle runs. The pending
+    // callback must still bypass analysisConverged() -> a 3rd search starts.
+    p.scheduleAnalyzeModeRestart(/*force=*/true);
+    p.scheduleAnalyzeModeRestart(/*force=*/false);
+    REQUIRE(p.analyzeModeScheduled());
+    REQUIRE(pumpUntil([&] { return countPrefix(wire, "YXNBEST") == 3; }));
+    CHECK(p.ctrl().engineState() == EngineController::EngineState::Analyzing);
+
+    p.ctrl().stopEngine([] {});
+    pumpUntil([&] { return !p.eng().isRunning(); });
+    std::remove(SettingsStorage::settingsFilePath().string().c_str());
+}
+
+TEST_CASE("ARCH-04: a burst of signal_board_changed yields exactly one analyze restart")
+{
+    if (!gtkReady()) return;
+
+    std::remove(SettingsStorage::settingsFilePath().string().c_str());
+
+    MainWindow window;
+    RanlsAnlz07Probe p{window};
+
+    EngineConfig ec = p.gs().engineConfig();
+    ec.enginePath = kFakeEngine;
+    p.gs().setEngineConfig(ec);
+
+    p.ctrl().startEngine();
+    REQUIRE(p.ctrl().engineState() == EngineController::EngineState::Idle);
+
+    ViewConfig vc = p.gs().viewConfig();
+    vc.analyzeMode = true;
+    p.gs().setViewConfig(vc);
+
+    std::vector<std::string> wire;
+    p.eng().signal_line_sent.connect([&](const std::string &l) { wire.push_back(l); });
+
+    REQUIRE_FALSE(p.analyzeModeScheduled());
+    // Synchronous burst, as a game load / undoAll produces. The latch is the
+    // direct observable for "one idle callback queued" (a 2nd callback would
+    // bail on the non-Idle state and be invisible on the wire).
+    for (int i = 0; i < 5; ++i) p.gs().signal_board_changed.emit();
+    CHECK(p.analyzeModeScheduled());
+
+    REQUIRE(pumpUntil([&] { return countPrefix(wire, "YXNBEST") >= 1; }));
+    pumpFor(150);
+    CHECK(countPrefix(wire, "YXNBEST") == 1);
+    CHECK(countPrefix(wire, "YXBOARD") == 1);
+    CHECK(countPrefix(wire, "STOP") == 1);   // the single restart's stopAnalysis()
+    CHECK_FALSE(p.analyzeModeScheduled());
+    CHECK(p.ctrl().engineState() == EngineController::EngineState::Analyzing);
 
     p.ctrl().stopEngine([] {});
     pumpUntil([&] { return !p.eng().isRunning(); });

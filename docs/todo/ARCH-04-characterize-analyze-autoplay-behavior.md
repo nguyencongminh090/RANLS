@@ -1,6 +1,6 @@
 # ARCH-04 — Characterization tests for analyze / auto-move behavior
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** ✅ DONE
 **Area:** `tests/` only (no `src/` change)
 **Priority:** P2
 **Source:** `features/extract-mainwindow-orchestration/planning.md` "Characterization first" — 2026-10-06; split from ARCH-02
@@ -36,3 +36,20 @@ Characterize before refactoring so "no behaviour change" is a test result. Rejec
 
 - Every bullet in Scope step 2 is covered by a passing test, new or pre-existing, and the report says which.
 - `RUN_TESTS=1 ./build.sh` green; no `src/` file changed.
+
+## Outcome (2026-10-06)
+
+Test-only; `git diff --stat main` touches no `src/` file. Six new passing cases (all `ranls-gui-ui-tests`, real `MainWindow` + `mock_engine`), added by extending the existing probes (no probe retired; only read-only latch accessors added to `RanlsAnlz05Probe` / `RanlsAnlz07Probe`):
+
+| # | Behaviour | Status | Test |
+|---|---|---|---|
+| a | auto-move only on engine's turn AND Idle | happy path already covered; negatives (Off, not its turn, not Idle) **new** | `ARCH-04: auto-move fires only on the engine's turn AND when the engine is Idle` (`test_anlz05_no_automove_action.cpp`); happy path also `ANLZ-05: Analyze Mode blocks auto-move...` Scenario B; predicate in `test_eng02_revert_predicate.cpp` |
+| b | auto-move suppressed in Analyze Mode on engine's turn | **already covered** | `ANLZ-05: Analyze Mode blocks auto-move and analyses the engine's-turn position` Scenario A |
+| c | burst of `signal_board_changed` -> one check / one restart | **new** (auto-move + analyze) | `ARCH-04: a burst of signal_board_changed yields one auto-move check` (05 file); `ARCH-04: a burst of signal_board_changed yields exactly one analyze restart` (07 file) |
+| d | force-latch not downgraded (ANLZ-07) | **new** | `ARCH-04: the force latch is not downgraded by a later non-forced call` (07 file; includes a non-forced-alone control) |
+| e | Analyze Mode off -> `stopAnalysis()`, `enginePlays` untouched | **new** (ANLZ-01 action test only checked the checkbox state) | `ARCH-04: toggling Analyze Mode off stops the search and leaves enginePlays untouched` |
+| f | ENG-02 revert -> Off in GameState, not persisted | **new** (`test_eng03_close_request` only covers the close path) | `ARCH-04: the ENG-02 revert sets enginePlays Off in GameState and is not persisted` (via the `stop` and `analyze` actions; positive control shows `onSetEnginePlays` writes the file; settings file bytes compared against a snapshot) |
+
+Observation notes: (c) the wire count alone cannot distinguish one idle callback from two (a second bails on non-Idle), so the tests also assert the `autoMoveScheduled_` / `analyzeModeScheduled_` latch (read via the probe). (f) is observable without a production seam because `SettingsStorage::settingsFilePath()` is a plain file. Uncovered gap: none for the six bullets. Not characterized (outside them): the "engine not running" bail of the two idle callbacks and `onStartAnalysis`'s engine-not-running / empty-path branch.
+
+Verification: Release `RUN_TESTS=1 ./build.sh` clean; ctest 5/5; `ranls-gui-tests` 228 cases / 2625 assertions (unchanged); `ranls-gui-ui-tests` 60 cases / 460 assertions (was 54 / 393; +6 / +67). All six new cases executed individually (display available on the host, none skipped).

@@ -25,7 +25,7 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 Sprint 21 (opened 2026-10-06, goal "Extract MainWindow's analyze/auto-move/file orchestration into GTK-free, unit-tested classes (ARCH-02 split, characterization first)") — pulled from Backlog / filed from the resolved ARCH-02 design:
 
-- 🔲 **ARCH-04.** Characterization tests for analyze / auto-move behavior (tests only, before any extraction) [2 pts] — [detail](docs/todo/ARCH-04-characterize-analyze-autoplay-behavior.md) · [instruction](docs/instruction/ARCH-04-characterize-analyze-autoplay-behavior.md)
+- ✅ **ARCH-04.** Characterization tests for analyze / auto-move behavior (tests only, before any extraction) [2 pts] — [detail](docs/todo/ARCH-04-characterize-analyze-autoplay-behavior.md) · [instruction](docs/instruction/ARCH-04-characterize-analyze-autoplay-behavior.md)
 - 🔲 **ARCH-02.** Extract `AnalysisCoordinator` (analyze-restart / auto-move / ENG-02 revert) out of `MainWindow` into `src/engine/` [4 pts] — [detail](docs/todo/ARCH-02-extract-analysis-coordination-from-mainwindow.md) · [instruction](docs/instruction/ARCH-02-extract-analysis-coordination-from-mainwindow.md)
 - 🔲 **ARCH-05.** Extract GTK-free `GameFileService` (save/load logic) out of `MainWindow` [2 pts] — [detail](docs/todo/ARCH-05-extract-game-file-service.md) · [instruction](docs/instruction/ARCH-05-extract-game-file-service.md)
 
