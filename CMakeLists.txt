@@ -87,6 +87,7 @@ set(GUI_SOURCES
     src/model/renju_rule.cpp
     src/model/settings_storage.cpp
     src/model/game_io.cpp
+    src/model/game_file_service.cpp
 
     # RDB-01: .rdb binary save format — container, codec, DTO, CBOR, convert
     src/model/rdb/compressor.cpp
