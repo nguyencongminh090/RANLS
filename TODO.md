@@ -29,7 +29,13 @@ start Sprint 22.
 
 ## Backlog
 
-No open items.
+- 🔲 **UI-16.** hover and PV ghost stones draw over occupied cells — [detail](docs/todo/UI-16-hover-and-pv-ghost-draw-over-occupied-cells.md)
+- 🔲 **UI-17.** BoardRenderer layers leak Cairo state (font face) — [detail](docs/todo/UI-17-renderer-cairo-state-leak.md)
+- 🔲 **UI-18.** best-move mark hidden whenever a winrate tag is shown — [detail](docs/todo/UI-18-best-move-mark-hidden-by-winrate-tag.md)
+- 🔲 **UX-07.** redesign board mark language (engine / database / variant / best) — size L, design gate `features/board-marks/` first — [detail](docs/todo/UX-07-board-mark-visual-language.md)
+- 🔲 **UX-08.** board hover crosshair, margin highlight, mark tooltips (after UX-07) — [detail](docs/todo/UX-08-board-hover-crosshair-and-tooltips.md)
+
+Filed 2026-10-06 from [board marks review audit](docs/audit/2026-10-06-board-marks-ux-review.md).
 
 Filed 2026-10-05 from [architecture review audit](docs/audit/2026-10-05-architecture-review.md) — ARCH-01 and ARCH-03 **pulled into Sprint 20 Active 2026-10-05** (see `docs/sprint/current.md`). ARCH-02 design resolved 2026-10-06 (`features/extract-mainwindow-orchestration/`); split into ARCH-04 / ARCH-02 / ARCH-05 and **pulled into Sprint 21 Active 2026-10-06** (see `docs/sprint/current.md`).
 
