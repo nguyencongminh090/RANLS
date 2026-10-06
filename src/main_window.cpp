@@ -1,6 +1,5 @@
 #include "main_window.h"
-#include "model/rdb/game_archive.h"
-#include "model/rdb/game_graph_convert.h"
+#include "model/game_file_service.h"
 #include "model/settings_storage.h"
 #include "ui/about_dialog.h"
 #include "ui/settings_dialog.h"
@@ -855,15 +854,9 @@ void MainWindow::onLoadGame()
                 return; // user cancelled
             }
 
-            auto        reader = rdb::archiveReaderFor(path);
-            std::string err;
-            auto        graph = reader->load(path, &err);
-            if (!graph) {
-                showErrorDialog("Could not load game", err);
-                return;
-            }
-            if (!rdb::applyGameGraphToState(gameState_, *graph, &err)) {
-                showErrorDialog("Could not load game", err);
+            const auto res = GameFileService::load(gameState_, path);
+            if (!res.ok) {
+                showErrorDialog("Could not load game", res.error);
                 return;
             }
             controller_.sendConfig();
@@ -899,41 +892,11 @@ void MainWindow::onSaveGame()
             return; // user cancelled
         }
 
-        // A path with no extension defaults to `.rdb`.
-        std::filesystem::path fsPath(path);
-        if (fsPath.extension().empty())
-            fsPath.replace_extension(".rdb");
-
-        auto writer = rdb::archiveWriterFor(fsPath);
-        if (!writer) {
-            showErrorDialog("Could not save game",
-                            "RANLS only saves games in the .rdb format.");
-            return;
-        }
-
-        rdb::GraphMeta meta;
-        meta.generator = kAppDisplayName;
-        // RDB-03: one display-only engine entry from the current EngineConfig.
-        // Referenced by per-node analysis (engineRef); never affects load
-        // behaviour, and a missing/empty list must not fail a load.
-        {
-            const auto &ec = gameState_.engineConfig();
-            if (!ec.enginePath.empty()) {
-                rdb::EngineInfo ei;
-                ei.id     = 0;
-                ei.name   = std::filesystem::path(ec.enginePath).filename().string();
-                ei.params = "threads=" + std::to_string(ec.threads)
-                            + " hash=" + std::to_string(ec.hashSizeMB) + "MB";
-                meta.engines.push_back(std::move(ei));
-            }
-        }
-        const auto graph = rdb::toGameGraph(gameState_.tree(),
-                                            gameState_.boardSize(),
-                                            gameState_.rule(), meta);
-
-        std::string err;
-        if (!writer->save(fsPath, graph, &err))
-            showErrorDialog("Could not save game", err);
+        // ARCH-05: default extension, writer lookup, meta and write all live
+        // in GameFileService; this callback only surfaces the error.
+        const auto res = GameFileService::save(gameState_, path, kAppDisplayName);
+        if (!res.ok)
+            showErrorDialog("Could not save game", res.error);
     });
 }
 
