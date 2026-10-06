@@ -42,6 +42,21 @@ BoardView::BoardView(BoardViewModel &viewModel)
             queue_draw();
         });
     add_controller(motionCtrl);
+
+    // ── Tooltip (UX-08) ─────────────────────────────────────────────────────
+    // Text is built by the view model; empty -> no tooltip. x/y are
+    // widget-relative, same space as the mouse controllers above.
+    set_has_tooltip(true);
+    signal_query_tooltip().connect(
+        [this](int x, int y, bool /*keyboard*/, const Glib::RefPtr<Gtk::Tooltip> &tooltip) {
+            Coord c = pixelToCoord(x, y, get_width(), get_height());
+            if (!c.isValid(vm_.boardSize)) return false;
+            std::string text = vm_.tooltipFor(c);
+            if (text.empty()) return false;
+            tooltip->set_text(text);
+            return true;
+        },
+        false);
 }
 
 void BoardView::queueRedraw()

@@ -13,7 +13,10 @@ static constexpr double kGridR  = 0.20, kGridG  = 0.20, kGridB  = 0.18;
 // setCoordinateColor() each frame (see BoardRenderer::coordR_/G_/B_). The
 // earlier UX-03 fix assumed the labels sat on the wood; they never did.
 static constexpr double kLastR  = 0.85, kLastG  = 0.20, kLastB  = 0.20;
-static constexpr double kHoverAlpha   = 0.4;
+// UX-08: hover crosshair + emphasised margin labels.
+static constexpr double kCrossR = 0.10, kCrossG = 0.25, kCrossB = 0.55, kCrossAlpha = 0.28;
+static constexpr double kLabelHotR = 0.15, kLabelHotG = 0.50, kLabelHotB = 0.90;
+static constexpr double kHoverAlpha  = 0.4;
 static constexpr double kGhostAlpha   = 0.35;
 static constexpr double kMarkerAlpha  = 0.7;
 static constexpr double kVariantR     = 0.90, kVariantG   = 0.65, kVariantB   = 0.15;
@@ -113,6 +116,7 @@ void BoardRenderer::draw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int
         cr->restore();
     };
     layer(&BoardRenderer::drawGrid);
+    layer(&BoardRenderer::drawCrosshair);
     layer(&BoardRenderer::drawStones);
     layer(&BoardRenderer::drawLastMove);
     // UX-07 order: variant -> database -> engine overlay (incl. best ring) ->
@@ -190,22 +194,60 @@ void BoardRenderer::drawGrid(const Cairo::RefPtr<Cairo::Context> &cr)
         // of board size.
         cr->set_font_size(std::clamp(cellSize_ * 0.35, 9.0, 16.0));
 
+        // UX-08: the hovered cell's column letter / row number are emphasised
+        // (bold + accent colour). Only for a valid empty cell, like the crosshair.
+        const Coord hov = vm_.hoverMove;
+        const bool hot  = hov.isValid(bs) && !vm_.isOccupied(hov);
+        auto setLabelStyle = [&](bool emphasised) {
+            if (emphasised) {
+                cr->set_source_rgb(kLabelHotR, kLabelHotG, kLabelHotB);
+                cr->select_font_face("sans-serif", Cairo::ToyFontFace::Slant::NORMAL,
+                                     Cairo::ToyFontFace::Weight::BOLD);
+            } else {
+                cr->set_source_rgb(coordR_, coordG_, coordB_);
+                cr->select_font_face("sans-serif", Cairo::ToyFontFace::Slant::NORMAL,
+                                     Cairo::ToyFontFace::Weight::NORMAL);
+            }
+        };
+
         Cairo::TextExtents ext;
         for (int i = 0; i < bs; ++i) {
             // Column labels (A-O) at top.
             char col = 'A' + i;
             std::string label(1, col);
+            setLabelStyle(hot && hov.x == i);
             cr->get_text_extents(label, ext);
             cr->move_to(cellCenterX(i) - ext.width / 2.0, marginTop_ - 6.0);
             cr->show_text(label);
 
             // Row labels (15..1 top to bottom) at left.
             std::string row = std::to_string(bs - i);
+            setLabelStyle(hot && hov.y == i);
             cr->get_text_extents(row, ext);
             cr->move_to(marginLeft_ - ext.width - 6.0, cellCenterY(i) + ext.height / 2.0);
             cr->show_text(row);
         }
     }
+}
+
+// ── 1b. CrosshairLayer (UX-08) ───────────────────────────────────────────────
+void BoardRenderer::drawCrosshair(const Cairo::RefPtr<Cairo::Context> &cr)
+{
+    const Coord h = vm_.hoverMove;
+    if (!h.isValid(vm_.boardSize)) return;
+    // Occupied cells follow the UI-16 rule (no hover feedback on a real stone):
+    // no crosshair there either.
+    if (vm_.isOccupied(h)) return;
+
+    const double x0 = cellCenterX(0), x1 = cellCenterX(vm_.boardSize - 1);
+    const double y0 = cellCenterY(0), y1 = cellCenterY(vm_.boardSize - 1);
+    cr->set_source_rgba(kCrossR, kCrossG, kCrossB, kCrossAlpha);
+    cr->set_line_width(std::max(2.0, cellSize_ * 0.12));
+    cr->move_to(x0, cellCenterY(h.y));
+    cr->line_to(x1, cellCenterY(h.y));
+    cr->move_to(cellCenterX(h.x), y0);
+    cr->line_to(cellCenterX(h.x), y1);
+    cr->stroke();
 }
 
 // ── 2. StoneLayer ────────────────────────────────────────────────────────────
