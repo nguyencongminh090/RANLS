@@ -29,7 +29,7 @@ start Sprint 22.
 
 ## Backlog
 
-- 🔲 **UI-16.** hover and PV ghost stones draw over occupied cells — [detail](docs/todo/UI-16-hover-and-pv-ghost-draw-over-occupied-cells.md)
+- ✅ **UI-16.** hover and PV ghost stones draw over occupied cells — [detail](docs/todo/UI-16-hover-and-pv-ghost-draw-over-occupied-cells.md)
 - 🔲 **UI-17.** BoardRenderer layers leak Cairo state (font face) — [detail](docs/todo/UI-17-renderer-cairo-state-leak.md)
 - ✅ **UI-18.** best-move mark hidden whenever a winrate tag is shown — [detail](docs/todo/UI-18-best-move-mark-hidden-by-winrate-tag.md)
 - 🔲 **UX-07.** redesign board mark language (engine / database / variant / best) — size L, design gate `features/board-marks/` first — [detail](docs/todo/UX-07-board-mark-visual-language.md)

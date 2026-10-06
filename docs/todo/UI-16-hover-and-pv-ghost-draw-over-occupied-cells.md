@@ -1,6 +1,6 @@
 # UI-16 — Hover and PV ghost stones draw over occupied cells
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** ✅ FIXED (2026-10-06) — `BoardViewModel::isOccupied` + guards in `drawHover` / `drawPVHighlight`; real-render regression test `test_ui16_hover_occupied.cpp`; Release ctest 5/5. See [fix-log](../fix-log/2026-10-06-ui-16-hover-ghost-occupied.md).
 **Area:** src/ui/board_renderer.cpp (drawHover, drawPVHighlight), tests/
 **Priority:** P2
 **Source:** User board-UI task + [board marks review audit](../audit/2026-10-06-board-marks-ux-review.md) — 2026-10-06

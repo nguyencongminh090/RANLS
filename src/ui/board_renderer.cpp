@@ -490,6 +490,7 @@ void BoardRenderer::drawPVHighlight(const Cairo::RefPtr<Cairo::Context> &cr)
     for (size_t i = 0; i < vm_.pvPreview.size(); ++i) {
         const auto &pos = vm_.pvPreview[i];
         if (!pos.isValid(vm_.boardSize)) continue;
+        if (vm_.isOccupied(pos)) continue;   // UI-16: never paint a ghost over a real stone
 
         double cx = cellCenterX(pos.x);
         double cy = cellCenterY(pos.y);
@@ -524,6 +525,7 @@ void BoardRenderer::drawPVHighlight(const Cairo::RefPtr<Cairo::Context> &cr)
 void BoardRenderer::drawHover(const Cairo::RefPtr<Cairo::Context> &cr)
 {
     if (!vm_.hoverMove.isValid(vm_.boardSize)) return;
+    if (vm_.isOccupied(vm_.hoverMove)) return;   // UI-16: no hover stone over a real stone
 
     double cx = cellCenterX(vm_.hoverMove.x);
     double cy = cellCenterY(vm_.hoverMove.y);

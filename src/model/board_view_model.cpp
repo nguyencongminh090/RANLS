@@ -9,6 +9,13 @@ BoardViewModel::BoardViewModel(GameState &state)
 {
 }
 
+bool BoardViewModel::isOccupied(Coord c) const
+{
+    for (const auto &entry : stones)
+        if (entry.first == c) return true;
+    return false;
+}
+
 void BoardViewModel::update()
 {
     boardSize  = state_.boardSize();
