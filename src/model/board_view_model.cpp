@@ -23,6 +23,68 @@ int BoardViewModel::moveNumberAt(Coord c) const
     return i < moveNumber_.size() ? moveNumber_[i] : 0;
 }
 
+std::string BoardViewModel::tooltipFor(Coord c) const
+{
+    if (!c.isValid(boardSize) || isOccupied(c)) return {};
+
+    std::string out;
+    auto addLine = [&out](const std::string &line) {
+        if (!out.empty()) out += '\n';
+        out += line;
+    };
+
+    // Engine mark (searchOverlay is only populated while analysing with
+    // showSearchOverlay on). Examined/Examining dots add no text: a tooltip on
+    // every dot of a running search would be noise.
+    for (const auto &m : searchOverlay) {
+        if (m.pos != c) continue;
+        if (m.kind == SearchOverlayMark::Kind::Tag) {
+            std::string line = "Engine: " + m.label;
+            const auto &cells = state_.analysisOverlay().cells;
+            auto it = cells.find(c);
+            if (it != cells.end() && it->second.tagDepth > 0)
+                line += " (depth " + std::to_string(it->second.tagDepth) + ")";
+            addLine(line);
+        } else if (m.kind == SearchOverlayMark::Kind::Lost) {
+            addLine("Losing move");
+        }
+        if (m.isBest) addLine("Best move");
+        break;
+    }
+
+    // Database entry (databaseMarkers is empty when showDatabase is off).
+    for (const auto &m : databaseMarkers) {
+        if (m.pos != c) continue;
+        const auto &db = state_.database();
+        auto it = db.find(c);
+        if (it == db.end()) break;
+        const DatabaseEntry &e = it->second;
+        const char *bound = e.bound == 0 ? "Exact" : e.bound == 1 ? "Alpha" : e.bound == 2 ? "Beta" : "Unknown";
+        std::string head = "Database";
+        const std::string &text = e.boardText.empty() ? e.label : e.boardText;
+        if (!text.empty()) head += ": " + text;
+        addLine(head);
+        addLine("Value " + std::to_string(e.value) + ", depth " + std::to_string(e.depth) +
+                ", bound " + bound);
+        if (m.isBest) addLine("Best database move");
+        if (e.hasComment) addLine("Has comment");
+        break;
+    }
+
+    // Variant marker.
+    for (const auto &m : variantMarkers) {
+        if (m.pos != c) continue;
+        addLine(std::to_string(m.branchCount) + (m.branchCount == 1 ? " variation" : " variations"));
+        break;
+    }
+
+    // Renju forbidden point -- indication only (UI-03), still playable.
+    if (std::find(forbiddenPoints.begin(), forbiddenPoints.end(), c) != forbiddenPoints.end())
+        addLine("Forbidden for Black (still playable)");
+
+    return out;
+}
+
 void BoardViewModel::update()
 {
     boardSize  = state_.boardSize();
