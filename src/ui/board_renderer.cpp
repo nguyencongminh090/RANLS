@@ -308,6 +308,7 @@ void BoardRenderer::drawForbiddenPoints(const Cairo::RefPtr<Cairo::Context> &cr)
 
     for (const auto &pos : vm_.forbiddenPoints) {
         if (!pos.isValid(vm_.boardSize)) continue;
+        cr->begin_new_path();   // UX-07: see drawDatabaseMarkers
         double cx = cellCenterX(pos.x);
         double cy = cellCenterY(pos.y);
 
@@ -363,6 +364,9 @@ void BoardRenderer::drawDatabaseMarkers(const Cairo::RefPtr<Cairo::Context> &cr)
         double cx = cellCenterX(m.pos.x);
         double cy = cellCenterY(m.pos.y);
 
+        // A previous marker's show_text leaves a current point; without this
+        // the next path would start with a stray line from the old label.
+        cr->begin_new_path();
         const bool badge = hasEngineMark(m.pos);
         if (badge && cellSize_ < kMinBadgeCell) continue;
 
@@ -380,7 +384,7 @@ void BoardRenderer::drawDatabaseMarkers(const Cairo::RefPtr<Cairo::Context> &cr)
             cr->set_source_rgba(kDatabaseR, kDatabaseG, kDatabaseB, 0.95);
         }
         const double thin  = std::max(1.5, cellSize_ * 0.05);
-        const double thick = std::max(2.5, cellSize_ * 0.11);
+        const double thick = std::max(2.5, cellSize_ * 0.08);
         cr->set_line_width(m.isBest ? thick : thin);
         cr->move_to(cx, cy - dr);
         cr->line_to(cx + dr, cy);
@@ -427,6 +431,7 @@ void BoardRenderer::drawVariantMarkers(const Cairo::RefPtr<Cairo::Context> &cr)
         double cx = cellCenterX(m.pos.x);
         double cy = cellCenterY(m.pos.y);
 
+        cr->begin_new_path();   // see drawDatabaseMarkers
         cr->set_source_rgba(kVariantR, kVariantG, kVariantB, 0.9);
         cr->set_line_width(std::max(1.5, cellSize_ * 0.06));
         cr->arc(cx, cy, rRing, 0, 2 * M_PI);
@@ -470,6 +475,7 @@ void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
 
     for (const auto &m : vm_.searchOverlay) {
         if (!m.pos.isValid(vm_.boardSize)) continue;
+        cr->begin_new_path();   // see drawDatabaseMarkers (tag text -> next arc)
         double cx = cellCenterX(m.pos.x);
         double cy = cellCenterY(m.pos.y);
 
