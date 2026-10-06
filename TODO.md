@@ -23,19 +23,16 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 ## Active
 
-No active sprint. Sprint 21 closed 2026-10-06 (ARCH-04 + ARCH-02 + ARCH-05 shipped; archived to
-`docs/sprint/archive/sprint-21.md`, release `v0.8.2`). Run `/sprint open 22 "<goal>" <CODE...>` to
-start Sprint 22.
+Sprint 22 (opened 2026-10-06, goal "Board mark visual language: stacked engine/database/variant marks, best ring, hover tooltips") — pulled from Backlog:
 
-## Backlog
-
-- ✅ **UI-16.** hover and PV ghost stones draw over occupied cells — [detail](docs/todo/UI-16-hover-and-pv-ghost-draw-over-occupied-cells.md)
-- ✅ **UI-17.** BoardRenderer layers leak Cairo state (font face) — [detail](docs/todo/UI-17-renderer-cairo-state-leak.md)
-- ✅ **UI-18.** best-move mark hidden whenever a winrate tag is shown — [detail](docs/todo/UI-18-best-move-mark-hidden-by-winrate-tag.md)
 - 🔲 **UX-07.** redesign board mark language (engine / database / variant / best) — size L, design gate `features/board-marks/` first — [detail](docs/todo/UX-07-board-mark-visual-language.md)
 - 🔲 **UX-08.** board hover crosshair, margin highlight, mark tooltips (after UX-07) — [detail](docs/todo/UX-08-board-hover-crosshair-and-tooltips.md)
 
-Filed 2026-10-06 from [board marks review audit](docs/audit/2026-10-06-board-marks-ux-review.md).
+## Backlog
+
+No open items.
+
+Filed 2026-10-06 from [board marks review audit](docs/audit/2026-10-06-board-marks-ux-review.md) — UI-16/17/18 shipped 2026-10-06 outside a sprint (PRs #46–#48, see Completed); UX-07 and UX-08 **pulled into Sprint 22 Active 2026-10-06** (see `docs/sprint/current.md`).
 
 Filed 2026-10-05 from [architecture review audit](docs/audit/2026-10-05-architecture-review.md) — ARCH-01 and ARCH-03 **pulled into Sprint 20 Active 2026-10-05** (see `docs/sprint/current.md`). ARCH-02 design resolved 2026-10-06 (`features/extract-mainwindow-orchestration/`); split into ARCH-04 / ARCH-02 / ARCH-05 and **pulled into Sprint 21 Active 2026-10-06** (see `docs/sprint/current.md`).
 
@@ -133,3 +130,9 @@ Sprint 21:
 - ✅ **ARCH-04.** Characterization tests for analyze / auto-move behavior (tests only, before any extraction) [2 pts] — [detail](docs/todo/ARCH-04-characterize-analyze-autoplay-behavior.md) · [instruction](docs/instruction/ARCH-04-characterize-analyze-autoplay-behavior.md)
 - ✅ **ARCH-02.** Extract `AnalysisCoordinator` (analyze-restart / auto-move / ENG-02 revert) out of `MainWindow` into `src/engine/` [4 pts] — [detail](docs/todo/ARCH-02-extract-analysis-coordination-from-mainwindow.md) · [instruction](docs/instruction/ARCH-02-extract-analysis-coordination-from-mainwindow.md)
 - ✅ **ARCH-05.** Extract GTK-free `GameFileService` (save/load logic) out of `MainWindow` [2 pts] — [detail](docs/todo/ARCH-05-extract-game-file-service.md) · [instruction](docs/instruction/ARCH-05-extract-game-file-service.md)
+
+Shipped 2026-10-06 outside a sprint (bug fixes from the board marks review, PRs #46–#48):
+
+- ✅ **UI-16.** hover and PV ghost stones draw over occupied cells — [detail](docs/todo/UI-16-hover-and-pv-ghost-draw-over-occupied-cells.md)
+- ✅ **UI-17.** BoardRenderer layers leak Cairo state (font face) — [detail](docs/todo/UI-17-renderer-cairo-state-leak.md)
+- ✅ **UI-18.** best-move mark hidden whenever a winrate tag is shown — [detail](docs/todo/UI-18-best-move-mark-hidden-by-winrate-tag.md)

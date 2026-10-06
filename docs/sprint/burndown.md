@@ -146,6 +146,7 @@ points at sprint start to 0 at the end date.
 | 2026-10-06 | 1 / 3 items | 2 pts | ARCH-02 done — PR #44 squash `86c20a3`: GTK-free `AnalysisCoordinator` in `src/engine/` (injected `postIdle`, weak-ptr liveness token), `main_window.cpp` 1328 → 1228 lines, 11 new display-free tests, existing tests untouched. ARCH-05 remains |
 | 2026-10-06 | 0 / 3 items | 0 pts | ARCH-05 done — PR #45 squash `a287fe0`: GTK-free `GameFileService` in `src/model/` (save/load logic; dialogs and message text unchanged), 7 new display-free tests, `main_window.cpp` 1228 → 1191. All Sprint 21 Active items done — ready to close |
 | 2026-10-06 | 0 / 3 items | 0 pts | Sprint 21 closed — ARCH-04 (PR #43 `af9c6b2`) + ARCH-02 (PR #44 `86c20a3`) + ARCH-05 (PR #45 `a287fe0`) landed on `main`; archived to `docs/sprint/archive/sprint-21.md`, nothing rolled over. Release `v0.8.2` cut (PATCH — internal refactors + tests, no user-visible change). Table reset below for Sprint 22 |
+| 2026-10-06 | 2 / 2 items | — | Sprint 22 opened (goal "Board mark visual language: stacked engine/database/variant marks, best ring, hover tooltips"): UX-07, UX-08 pulled from Backlog into Active — see docs/sprint/current.md. Backlog now empty. UI-16/17/18 shipped just before, outside a sprint (PRs #46–#48) |
 
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).
