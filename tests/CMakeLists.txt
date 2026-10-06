@@ -41,6 +41,7 @@ add_executable(ranls-gui-tests
     test_anlz01_analyze_mode_coverage.cpp
     test_anlz05_stop_then_move.cpp
     test_anlz06_search_intent_gate.cpp
+    test_arch02_analysis_coordinator.cpp
     test_proto04_stop_flush_race.cpp
     test_proto07_yxanalz.cpp
     test_ui02_tree_row_highlight.cpp
@@ -75,6 +76,7 @@ add_executable(ranls-gui-tests
     ${CMAKE_SOURCE_DIR}/src/engine/protocol_extension.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_process.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_controller.cpp
+    ${CMAKE_SOURCE_DIR}/src/engine/analysis_coordinator.cpp
 )
 
 target_include_directories(ranls-gui-tests PRIVATE
@@ -195,6 +197,7 @@ add_executable(ranls-gui-ui-tests
     ${CMAKE_SOURCE_DIR}/src/engine/protocol_extension.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_process.cpp
     ${CMAKE_SOURCE_DIR}/src/engine/engine_controller.cpp
+    ${CMAKE_SOURCE_DIR}/src/engine/analysis_coordinator.cpp
 )
 
 target_include_directories(ranls-gui-ui-tests PRIVATE
