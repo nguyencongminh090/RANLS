@@ -13,7 +13,7 @@
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
 | ARCH-01 | Break the model ↔ engine include cycle (move analysis data types into `model/`) | — | 2 | ✅ Done (PR #41, squash `2874af3`) |
-| ARCH-03 | Narrow `CommandContext` + split `registerBuiltins()` | ARCH-01 | 3 | 🔲 Not started |
+| ARCH-03 | Narrow `CommandContext` + split `registerBuiltins()` | ARCH-01 | 3 | ✅ Done (PR #42, squash `7dabb0e`) |
 
 Points taken from the Backlog estimates (ARCH-01 2, ARCH-03 3).
 
