@@ -43,6 +43,15 @@ public:
     /// touching GameState.
     bool isOccupied(Coord c) const;
 
+    /// UX-08: hover tooltip text for the cell `c`, built from the current render
+    /// state (plus GameState for database value/depth/bound and engine tag
+    /// depth). Lines are '\n'-separated. Empty string = no tooltip (occupied,
+    /// off-board, or nothing to say). Honours the existing toggles: engine
+    /// marks only while searchOverlay is populated (showSearchOverlay), database
+    /// info only with showDatabase. Never contains comment text -- the engine
+    /// sends only a has-comment flag.
+    std::string tooltipFor(Coord c) const;
+
     // ── Fields consumed by BoardRenderer ────────────────────────────────────
     int                          boardSize    = 15;
     ViewConfig                   viewConfig;                            ///< View settings for rendering

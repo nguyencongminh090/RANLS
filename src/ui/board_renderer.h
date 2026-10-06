@@ -49,6 +49,9 @@ public:
 private:
     // ── Layer methods (called in order) ─────────────────────────────────────
     void drawGrid(const Cairo::RefPtr<Cairo::Context> &cr);
+    /// UX-08: faint row/column line through the hovered EMPTY cell, drawn
+    /// above the grid and below stones/marks so nothing is hidden.
+    void drawCrosshair(const Cairo::RefPtr<Cairo::Context> &cr);
     void drawStones(const Cairo::RefPtr<Cairo::Context> &cr);
     void drawLastMove(const Cairo::RefPtr<Cairo::Context> &cr);
     void drawDatabaseMarkers(const Cairo::RefPtr<Cairo::Context> &cr);
