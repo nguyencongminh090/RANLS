@@ -4,7 +4,7 @@
 **Area:** `src/main_window.{h,cpp}`, new GTK-free class(es) in `src/engine/` or a new layer
 **Priority:** P2
 **Source:** architecture review, 2026-10-05 — [docs/audit/2026-10-05-architecture-review.md](../audit/2026-10-05-architecture-review.md)
-**Design:** features/<slug>/ required first — none yet (design gate: choose target layer)
+**Design:** [features/extract-mainwindow-orchestration/](../../features/extract-mainwindow-orchestration/planning.md) — DRAFT 2026-10-06, open questions unresolved (design gate still closed)
 **Depends on / relates to:** ARCH-01
 
 ## Problem
