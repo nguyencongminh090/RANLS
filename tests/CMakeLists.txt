@@ -42,6 +42,7 @@ add_executable(ranls-gui-tests
     test_anlz05_stop_then_move.cpp
     test_anlz06_search_intent_gate.cpp
     test_arch02_analysis_coordinator.cpp
+    test_arch05_game_file_service.cpp
     test_proto04_stop_flush_race.cpp
     test_proto07_yxanalz.cpp
     test_ui02_tree_row_highlight.cpp
@@ -66,6 +67,7 @@ add_executable(ranls-gui-tests
     ${CMAKE_SOURCE_DIR}/src/model/variation_tree.cpp
     ${CMAKE_SOURCE_DIR}/src/model/settings_storage.cpp
     ${CMAKE_SOURCE_DIR}/src/model/game_io.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/game_file_service.cpp
     ${CMAKE_SOURCE_DIR}/src/model/renju_rule.cpp
     ${CMAKE_SOURCE_DIR}/src/model/rdb/compressor.cpp
     ${CMAKE_SOURCE_DIR}/src/model/rdb/rdb_container.cpp
@@ -188,6 +190,7 @@ add_executable(ranls-gui-ui-tests
     ${CMAKE_SOURCE_DIR}/src/model/board_view_model.cpp
     ${CMAKE_SOURCE_DIR}/src/model/settings_storage.cpp
     ${CMAKE_SOURCE_DIR}/src/model/game_io.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/game_file_service.cpp
     ${CMAKE_SOURCE_DIR}/src/model/rdb/compressor.cpp
     ${CMAKE_SOURCE_DIR}/src/model/rdb/rdb_container.cpp
     ${CMAKE_SOURCE_DIR}/src/model/rdb/game_graph_cbor.cpp
