@@ -13,7 +13,7 @@
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| ARCH-04 | Characterization tests for analyze / auto-move behavior | — | 2 | 🔲 Not started |
+| ARCH-04 | Characterization tests for analyze / auto-move behavior | — | 2 | ✅ Done (PR #43, squash `af9c6b2`) |
 | ARCH-02 | Extract `AnalysisCoordinator` out of `MainWindow` | ARCH-04 | 4 | 🔲 Not started |
 | ARCH-05 | Extract GTK-free `GameFileService` | ARCH-02 (soft) | 2 | 🔲 Not started |
 
