@@ -109,6 +109,10 @@ static bool hotkeyMatches(const std::string &specRaw, guint keyval, Gdk::Modifie
 MainWindow::MainWindow()
     : boardViewModel_(gameState_)
     , controller_(gameState_, engine_)
+    , coordinator_(gameState_, controller_,
+                   [](std::function<void()> fn) {
+                       Glib::signal_idle().connect_once(std::move(fn));
+                   })
     , boardView_(boardViewModel_)
     , analysisPanel_(gameState_)
     , bottomPanel_()
@@ -476,6 +480,10 @@ void MainWindow::size_allocate_vfunc(int width, int height, int baseline)
 // ─── Signal wiring ───────────────────────────────────────────────────────────
 void MainWindow::connectSignals()
 {
+    // ARCH-02: the coordinator's ENG-02 revert changed enginePlays in GameState
+    // only (never persisted) — re-sync the menu radio.
+    coordinator_.signal_engine_plays_reverted.connect([this]() { syncEnginePlaysMenu(); });
+
     // Board click → place a move.
     boardView_.signal_move_clicked.connect([this](Coord pos) {
         // ANLZ-05: a click during an in-flight analysis places the stone. Stop
@@ -1082,9 +1090,7 @@ void MainWindow::onStartAnalysis()
     // from the board side-to-move (available regardless of engine state) so
     // both the "engine not running" and "already running" branches below
     // revert consistently.
-    if (isEnginesTurn(gameState_.matchConfig().enginePlays,
-                      gameState_.board().sideToMove()))
-        revertEnginePlaysToOff();
+    coordinator_.revertEnginePlaysIfEnginesTurn();
 
     if (!engine_.isRunning()) {
         // Engine not running — start it first, but do NOT analyze yet.
@@ -1106,31 +1112,15 @@ void MainWindow::onStartAnalysis()
 
 void MainWindow::onStopAnalysis()
 {
-    // ENG-02: Stop (toolbar button or hotkey) is a manual intervention — cancel
-    // any armed auto-play. The helper is a no-op when no side was assigned.
-    revertEnginePlaysToOff();
-    controller_.stopAnalysis();
-}
-
-void MainWindow::revertEnginePlaysToOff()
-{
-    MatchConfig mc = gameState_.matchConfig();
-    if (mc.enginePlays == EnginePlaysSide::Off) return;  // nothing armed
-    mc.enginePlays = EnginePlaysSide::Off;
-    gameState_.setMatchConfig(mc);
-    syncEnginePlaysMenu();
-    // Deliberately NO SettingsStorage::save here — unlike onSetEnginePlays(),
-    // this revert is a transient session action (ENG-02). The persisted,
-    // user-chosen side is restored on next launch. No status message / toast.
+    // ENG-02: Stop (toolbar button or hotkey) is a manual intervention — the
+    // coordinator cancels any armed auto-play, then stops the search.
+    coordinator_.stopAnalysis();
 }
 
 // ── UI-06: "Engine plays <side>" auto-move ───────────────────────────────────
 void MainWindow::onSetEnginePlays(EnginePlaysSide side)
 {
-    MatchConfig mc = gameState_.matchConfig();
-    if (mc.enginePlays == side) { maybeStartAutoMove(); return; }
-    mc.enginePlays = side;
-    gameState_.setMatchConfig(mc);
+    if (!coordinator_.setEnginePlays(side)) { maybeStartAutoMove(); return; }
     // Persist alongside the other config blocks (same pattern as onSettings()).
     // STATE-04: pass GameSetupConfig too so rule / board_size aren't wiped.
     SettingsStorage::save(gameState_.engineConfig(), gameState_.viewConfig(),
@@ -1151,40 +1141,6 @@ void MainWindow::syncEnginePlaysMenu()
     enginePlaysAction_->change_state(Glib::Variant<Glib::ustring>::create(state));
 }
 
-void MainWindow::maybeStartAutoMove()
-{
-    if (autoMoveScheduled_) return;
-    if (gameState_.matchConfig().enginePlays == EnginePlaysSide::Off) return;
-
-    // Defer to an idle callback: signal_board_changed can fire many times in
-    // one synchronous batch (a game load replays every move), and GameState
-    // rejects a makeMove() while analyzing_ is set — so requesting a move
-    // mid-batch would both fire on the wrong position and break the replay.
-    // The flag coalesces the burst into a single deferred check.
-    autoMoveScheduled_ = true;
-    Glib::signal_idle().connect_once([this]() {
-        autoMoveScheduled_ = false;
-
-        const auto plays = gameState_.matchConfig().enginePlays;
-        if (plays == EnginePlaysSide::Off) return;
-        // ANLZ-05: while Analyze Mode is on the engine never auto-plays — not even
-        // on its own assigned turn. It only ever analyses the current position
-        // (scheduleAnalyzeModeRestart() now covers the engine's-turn position too).
-        // This reverses planning.md Q6 for Analyze Mode; with Analyze Mode off the
-        // auto-move / ENG-02 behaviour is unchanged.
-        if (gameState_.viewConfig().analyzeMode) return;
-        if (!engine_.isRunning()) return;
-        if (controller_.engineState() != EngineController::EngineState::Idle) return;
-
-        const Stone toMove = gameState_.board().sideToMove();
-        if (!isEnginesTurn(plays, toMove)) return;  // ENG-02: shared predicate
-
-        // After the engine's move lands, side-to-move flips to the other
-        // colour, so this check fails next time — no infinite loop.
-        controller_.requestEngineMove();
-    });
-}
-
 // ── ANLZ-01: Analyze Mode (continuous background analysis) ────────────────────
 void MainWindow::onToggleAnalyzeMode(bool active)
 {
@@ -1200,18 +1156,9 @@ void MainWindow::onToggleAnalyzeMode(bool active)
     // Keep both toggle surfaces (menu checkbox + panel button) consistent.
     syncAnalyzeModeMenu();
 
-    if (active) {
-        // Turning it on kicks an immediate restart on the current position
-        // (the idle-coalesced check re-verifies engine running / Idle / turn).
-        // ANLZ-07: force=true — the user explicitly asked for a restart; any
-        // cached "converged" result from before Analyze Mode was toggled off
-        // must not suppress it.
-        scheduleAnalyzeModeRestart(/*force=*/true);
-    } else {
-        // Q7: stop the current search, leave the process running. Orthogonal to
-        // ENG-02 — deliberately NO revertEnginePlaysToOff() here.
-        controller_.stopAnalysis();
-    }
+    // ARCH-02: on => forced restart (ANLZ-07); off => stop search only, no
+    // ENG-02 revert (Q7). Decision logic lives in AnalysisCoordinator.
+    coordinator_.onAnalyzeModeToggled(active);
 }
 
 void MainWindow::syncAnalyzeModeMenu()
@@ -1258,53 +1205,6 @@ void MainWindow::syncSearchOverlayMenu()
         searchOverlayAction_->set_state(Glib::Variant<bool>::create(v.showSearchOverlay));
     if (searchWinrateAction_)
         searchWinrateAction_->set_state(Glib::Variant<bool>::create(v.showSearchWinrate));
-}
-
-void MainWindow::scheduleAnalyzeModeRestart(bool force)
-{
-    if (!gameState_.viewConfig().analyzeMode) return;
-
-    // ANLZ-07: latch `force` across coalesced calls — see analyzeModeForce_'s
-    // doc comment. A later non-forced call must never downgrade an earlier
-    // forced one still waiting on the idle callback.
-    if (force) analyzeModeForce_ = true;
-
-    if (analyzeModeScheduled_) return;
-
-    // Defer to a single idle callback — same rationale as maybeStartAutoMove():
-    // signal_board_changed can fire many times in one synchronous batch (a game
-    // load replays every move; undoAll/redoAll step ply by ply), and the engine
-    // must analyse only the final settled position, once.
-    analyzeModeScheduled_ = true;
-    Glib::signal_idle().connect_once([this]() {
-        analyzeModeScheduled_ = false;
-        const bool doForce = analyzeModeForce_;
-        analyzeModeForce_ = false;
-
-        if (!gameState_.viewConfig().analyzeMode) return;
-        if (!engine_.isRunning()) return;
-        if (controller_.engineState() != EngineController::EngineState::Idle) return;
-
-        // ANLZ-05: the engine's-turn position is analysed too. The old
-        // `isEnginesTurn(...) return;` bail existed only to hand that position to
-        // maybeStartAutoMove(), which no longer runs while Analyze Mode is on
-        // (planning.md Q6 reversed). Analyze Mode is now a pure study mode.
-
-        // ANLZ-07: skip re-arming when the search that just finished on this
-        // position already converged to the same result as the one before it
-        // — nothing new to find, and re-running it would just repeat the
-        // same YXBOARD+YXNBEST request/response forever (the busy-loop this
-        // task fixes). `doForce` (a genuine position change, or the user
-        // explicitly toggling Analyze Mode off/on) always bypasses this —
-        // never let a stale cached result suppress analysing a position the
-        // user actually asked to (re)study.
-        if (!doForce && controller_.analysisConverged()) return;
-
-        // Restart order matters: analyze() early-returns unless state == Idle,
-        // so stopAnalysis() (Idle + RT-01 flush) must precede it.
-        controller_.stopAnalysis();
-        controller_.analyze();
-    });
 }
 
 void MainWindow::onUndoAll()

@@ -4,6 +4,7 @@
 #include "model/board_view_model.h"
 #include "engine/engine_process.h"
 #include "engine/engine_controller.h"
+#include "engine/analysis_coordinator.h"
 #include "ui/board_view.h"
 #include "ui/analysis_panel.h"
 #include "ui/bottom_panel.h"
@@ -116,18 +117,11 @@ private:
     /// so the menu reflects persisted / externally-changed state. Both
     /// directions must stay in sync (see docs/instruction/UI-06...).
     void syncEnginePlaysMenu();
-    /// If MatchConfig says the engine plays the side to move, and the engine
-    /// process is running and Idle, ask it for a move. Scheduled on an idle
-    /// callback so it runs once after a batch of position changes (e.g. a game
-    /// load) settles, never re-entrantly. Inert while enginePlays == Off.
-    void maybeStartAutoMove();
-    /// ENG-02: manual intervention cancels auto-play. If enginePlays != Off,
-    /// set it back to Off in the in-memory MatchConfig and sync the menu radio.
-    /// Transient session action — deliberately does NOT call
-    /// SettingsStorage::save (unlike onSetEnginePlays), so the persisted
-    /// user-chosen side is restored on next launch. No status message / toast.
-    /// No-op when enginePlays is already Off.
-    void revertEnginePlaysToOff();
+    /// ARCH-02: thin forwarders to AnalysisCoordinator (decision logic, idle
+    /// coalescing and the ENG-02 revert live there; see engine/analysis_coordinator.h).
+    /// Kept as members because the friend probes and signal wiring call them.
+    void maybeStartAutoMove() { coordinator_.maybeStartAutoMove(); }
+    void revertEnginePlaysToOff() { coordinator_.revertEnginePlaysToOff(); }
 
     // ── ANLZ-01: Analyze Mode (continuous background analysis) ──────────────
     /// Toggle handler (menu checkbox or analysis-panel button): push the new
@@ -150,23 +144,9 @@ private:
     /// Mirror ViewConfig::showSearchOverlay / showSearchWinrate onto the two
     /// menu checkbox actions. State-only (no re-entrant persist).
     void syncSearchOverlayMenu();
-    /// If Analyze Mode is on, coalesce a burst of position changes into a single
-    /// deferred check that, when the engine is running + Idle, does
-    /// stopAnalysis(); analyze() on the new current position. Copy of
-    /// maybeStartAutoMove()'s idle-coalescing structure.
-    ///
-    /// ANLZ-07: `force` bypasses the "skip if the last analysis-intent search
-    /// already converged to the same result on this position" check
-    /// (EngineController::analysisConverged()) — pass true for a genuine
-    /// reason to restart regardless of any cached result: a real position
-    /// change (signal_board_changed) or the user explicitly toggling Analyze
-    /// Mode off/on. The default (false) is for the routine
-    /// engine-just-went-Idle re-arm, where a converged, unchanged result
-    /// means re-running the search would just repeat it forever (the
-    /// busy-loop this task fixes). Multiple coalesced calls before the
-    /// deferred check runs latch `force` if ANY of them requested it — see
-    /// analyzeModeForce_.
-    void scheduleAnalyzeModeRestart(bool force = false);
+    /// ARCH-02/ANLZ-07: forwarder; `force` semantics documented on
+    /// AnalysisCoordinator::scheduleAnalyzeModeRestart.
+    void scheduleAnalyzeModeRestart(bool force = false) { coordinator_.scheduleAnalyzeModeRestart(force); }
 
     void onUndoAll();
     void onUndo();
@@ -194,6 +174,9 @@ private:
     BoardViewModel     boardViewModel_;
     EngineProcess        engine_;
     EngineController     controller_;
+    /// ARCH-02: Analyze-Mode restart / auto-move / ENG-02 revert logic (GTK-free).
+    /// Declared after gameState_/controller_ so it is destroyed first.
+    AnalysisCoordinator  coordinator_;
     std::unique_ptr<CommandDispatcher> commandDispatcher_;
 
     // RT-01: periodic tick that coalesces gameState_.signal_engine_analysis
@@ -209,28 +192,20 @@ private:
     // burst of signal_board_changed emissions (a game load replays moves one
     // by one) triggers at most one move request, for the final position.
     Glib::RefPtr<Gio::SimpleAction> enginePlaysAction_;
-    bool autoMoveScheduled_ = false;
+    // ARCH-02: read-only views of the coordinator's idle-coalescing latches
+    // (the ARCH-04 friend probes read these names).
+    const bool &autoMoveScheduled_ = coordinator_.autoMoveScheduled();
+    const bool &analyzeModeScheduled_ = coordinator_.analyzeModeScheduled();
+    const bool &analyzeModeForce_ = coordinator_.analyzeModeForce();
 
     // ANLZ-01: the menu-bar "Analyze Mode" checkable (bool) action, kept in
     // sync with gameState_.viewConfig().analyzeMode in both directions.
-    // `analyzeModeScheduled_` coalesces the idle-callback that restarts the
-    // engine's analysis so a burst of signal_board_changed emissions (a game
-    // load, undoAll/redoAll) triggers at most one restart, for the final
-    // position — same rationale as autoMoveScheduled_ above.
     Glib::RefPtr<Gio::SimpleAction> analyzeModeAction_;
-    bool analyzeModeScheduled_ = false;
 
     // PROTO-06: the two View-menu checkable actions for the live search
     // overlay, kept in sync with gameState_.viewConfig() in both directions.
     Glib::RefPtr<Gio::SimpleAction> searchOverlayAction_;
     Glib::RefPtr<Gio::SimpleAction> searchWinrateAction_;
-
-    // ANLZ-07: latches whether ANY scheduleAnalyzeModeRestart() call
-    // coalesced into the pending idle callback requested `force` — a
-    // non-forced call arriving after a forced one (or vice versa) must not
-    // downgrade the eventual restart, so this is OR'd in, never overwritten,
-    // until the deferred callback consumes and resets it.
-    bool analyzeModeForce_ = false;
 
     // ── Layout ──────────────────────────────────────────────────────────────
     Gtk::HeaderBar     headerBar_;
