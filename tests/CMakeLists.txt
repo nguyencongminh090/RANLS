@@ -159,6 +159,7 @@ add_executable(ranls-gui-ui-tests
     test_proto05_incremental_stream.cpp
     test_proto06_analysis_overlay.cpp
     test_ui16_hover_occupied.cpp
+    test_ui17_renderer_state_isolation.cpp
     test_proto07_yxanalz_console.cpp
     test_arch03_help_pinned.cpp
     test_eng03_close_request.cpp

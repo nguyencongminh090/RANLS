@@ -93,15 +93,27 @@ void BoardRenderer::draw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int
     marginTop_  = geo.marginTop;
 
     // ── Layer pipeline ──────────────────────────────────────────────────────
-    drawGrid(cr);
-    drawStones(cr);
-    drawLastMove(cr);
-    drawForbiddenPoints(cr);
-    drawDatabaseMarkers(cr);
-    drawVariantMarkers(cr);
-    drawSearchOverlay(cr);
-    drawPVHighlight(cr);
-    drawHover(cr);
+    // UI-17: every layer runs inside its own save()/restore() so font face,
+    // font size, line width and source colour set by one layer (e.g. the BOLD
+    // "X" of drawForbiddenPoints) can never leak into the next one.
+    // The base face is the one the text layers used to inherit from the
+    // coordinate labels (sans-serif, normal), now set once so it survives restore().
+    cr->select_font_face("sans-serif", Cairo::ToyFontFace::Slant::NORMAL,
+                         Cairo::ToyFontFace::Weight::NORMAL);
+    auto layer = [&](void (BoardRenderer::*draw)(const Cairo::RefPtr<Cairo::Context> &)) {
+        cr->save();
+        (this->*draw)(cr);
+        cr->restore();
+    };
+    layer(&BoardRenderer::drawGrid);
+    layer(&BoardRenderer::drawStones);
+    layer(&BoardRenderer::drawLastMove);
+    layer(&BoardRenderer::drawForbiddenPoints);
+    layer(&BoardRenderer::drawDatabaseMarkers);
+    layer(&BoardRenderer::drawVariantMarkers);
+    layer(&BoardRenderer::drawSearchOverlay);
+    layer(&BoardRenderer::drawPVHighlight);
+    layer(&BoardRenderer::drawHover);
 }
 
 // ── 1. GridLayer ─────────────────────────────────────────────────────────────
