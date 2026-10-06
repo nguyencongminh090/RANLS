@@ -122,7 +122,6 @@ MainWindow::MainWindow()
 
     commandDispatcher_ = std::make_unique<CommandDispatcher>(CommandContext{
         .gameState = gameState_,
-        .engine = engine_,
         .controller = controller_,
         .print = [this](const std::string &line) { bottomPanel_.appendRecv("Output", line); },
         .clearConsole = [this]() { bottomPanel_.clearEngineLog(); },

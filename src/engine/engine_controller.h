@@ -133,6 +133,11 @@ public:
             || state_ == EngineState::Analyzing || state_ == EngineState::Stopping;
     }
 
+    /// ARCH-03: true while the underlying engine process is alive. Forwards to
+    /// EngineProcess::isRunning() so command/ handlers need not hold the raw
+    /// process (distinct from isStarted(), which tracks the controller state).
+    bool isRunning() const;
+
     /// ANLZ-07: true if the most recently completed analysis-intent
     /// (analyze()/YXNBEST) search produced the same result — best move +
     /// eval text, whatever EngineStatus/PVLine already carry — as the

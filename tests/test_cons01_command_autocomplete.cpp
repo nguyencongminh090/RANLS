@@ -51,7 +51,6 @@ CommandContext makeCtx(GameState &gs, EngineProcess &eng, EngineController &ctrl
 {
     return CommandContext{
         .gameState = gs,
-        .engine = eng,
         .controller = ctrl,
         .print = [](const std::string &) {},
         .clearConsole = [] {},

@@ -1,7 +1,6 @@
 #include "command_dispatcher.h"
 
 #include "command_completer.h"
-#include "engine/engine_process.h"
 #include "engine/engine_controller.h"
 
 #include <algorithm>
@@ -167,7 +166,7 @@ bool CommandDispatcher::executeLine(const std::string &line)
     }
 
     // External/raw protocol line.
-    if (!ctx_.engine.isRunning()) {
+    if (!ctx_.controller.isRunning()) {
         printError("Engine not running. Use: !engine start");
         return true;
     }
@@ -250,7 +249,8 @@ void CommandDispatcher::printHelp() const
     }
 }
 
-void CommandDispatcher::registerBuiltins()
+// Help group "info".
+void CommandDispatcher::registerInfoCommands()
 {
     registerCommand(
         {"info", "help", "!help", "Show this help (grouped)"},
@@ -259,13 +259,17 @@ void CommandDispatcher::registerBuiltins()
     registerCommand(
         {"info", "about", "!about", "Send ABOUT to the engine"},
         [this](const Command &) {
-            if (!ctx_.engine.isRunning()) {
+            if (!ctx_.controller.isRunning()) {
                 printError("Engine not running. Use: !engine start");
                 return;
             }
             ctx_.controller.sendRawCommand("ABOUT");
         });
+}
 
+// Help group "board".
+void CommandDispatcher::registerBoardCommands()
+{
     registerCommand(
         {"board", "start", "!start <size>", "New game with board size; sync engine if running"},
         [this](const Command &c) {
@@ -331,161 +335,6 @@ void CommandDispatcher::registerBuiltins()
         });
 
     registerCommand(
-        {"analysis", "analyze", "!analyze [n]", "Start analysis (optional n = MultiPV)"},
-        [this](const Command &c) {
-            if (!ctx_.engine.isRunning()) {
-                printError("Engine not running. Use: !engine start");
-                return;
-            }
-
-            if (c.args.size() > 1) {
-                printError("Usage: analyze [n]");
-                return;
-            }
-
-            if (c.args.size() == 1) {
-                auto n = parseIntArg(c.args[0]);
-                if (!n || *n <= 0 || *n > 99) {
-                    printError("Invalid n. Expected 1..99");
-                    return;
-                }
-                auto cfg = ctx_.gameState.engineConfig();
-                cfg.multiPV = *n;
-                ctx_.gameState.setEngineConfig(cfg);
-                ctx_.controller.sendConfig();
-            }
-
-            revertEnginePlaysIfEnginesTurn();  // ENG-02
-            ctx_.controller.analyze();
-        });
-
-    // PROTO-07: analyze an explicit allow-list of root moves (YXANALZ) — one
-    // PV line per listed move. Console-only, by design (resolved design §8):
-    // no button/context-menu affordance.
-    registerCommand(
-        {"analysis", "yxanalz", "!yxAnalz <moveText...>",
-         "Analyze listed root moves (YXANALZ protocol extension—requires compatible engine); interruptible; no stone; alphabetic moves"},
-        [this](const Command &c) {
-            if (!ctx_.engine.isRunning()) {
-                printError("Engine not running. Use: !engine start");
-                return;
-            }
-
-            // Resolved design §8: refused, not suspended, while continuous
-            // Analyze Mode owns the search loop (ANLZ-01/05). One guard,
-            // before anything is sent — no suspend/resume path.
-            if (ctx_.gameState.viewConfig().analyzeMode) {
-                printError("Turn off Analyze Mode first (!yxAnalz needs exclusive use of the engine).");
-                return;
-            }
-
-            if (c.tail.empty()) {
-                printError("Usage: !yxAnalz <moveText...>  (e.g. !yxAnalz h3 h2 h9)");
-                return;
-            }
-
-            // Shared with !pos / !play — alphabetic move text, display
-            // orientation, off-board tokens already dropped here.
-            auto parsed = parseMovesText(c.tail, ctx_.gameState.boardSize());
-            if (parsed.empty()) {
-                printError("No valid analyze move parsed from: " + c.tail);
-                return;
-            }
-
-            // Drop occupied points: the engine rejects them per-coord anyway
-            // ("ERROR Coord is not valid..."), but there is no reason to spend
-            // a round-trip on a move that provably cannot be a root move.
-            const auto &board = ctx_.gameState.board();
-            std::vector<Coord> moves;
-            moves.reserve(parsed.size());
-            for (const auto &m : parsed) {
-                if (board.stoneAt(m) != Stone::Empty) continue;
-                moves.push_back(m);
-            }
-            if (moves.empty()) {
-                printError("No valid analyze move: every listed point is off-board or occupied.");
-                return;
-            }
-            if (moves.size() != parsed.size()) {
-                printInfo("Skipped " + std::to_string(parsed.size() - moves.size())
-                          + " occupied point(s).");
-            }
-
-            revertEnginePlaysIfEnginesTurn();  // ENG-02, same as !analyze
-            ctx_.controller.analyzeMoves(moves);
-        });
-
-    registerCommand(
-        {"analysis", "stop", "!stop", "Stop analysis (STOP)"},
-        [this](const Command &) { ctx_.controller.stopAnalysis(); });
-
-    registerCommand(
-        {"engine", "engine", "!engine <start|stop|reload>", "Engine lifecycle"},
-        [this](const Command &c) {
-            if (c.args.size() != 1) {
-                printError("Usage: engine <start|stop|reload>");
-                return;
-            }
-            std::string sub = c.args[0];
-            std::transform(sub.begin(), sub.end(), sub.begin(),
-                           [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
-
-            if (sub == "start") {
-                auto &cfg = ctx_.gameState.engineConfig();
-                if (cfg.enginePath.empty()) {
-                    printError("enginePath is empty (set it in Settings).");
-                    return;
-                }
-                ctx_.controller.startEngine();
-                ctx_.controller.sendConfig();
-                syncExtensionCommands();  // PROTO-03
-                printInfo("OK: engine started");
-            } else if (sub == "stop") {
-                ctx_.controller.stopEngine();
-                printInfo("OK: engine stopped");
-            } else if (sub == "reload") {
-                ctx_.controller.reloadEngine();
-                printInfo("OK: engine reloaded");
-            } else {
-                printError("Unknown subcommand: " + sub);
-            }
-        });
-
-    registerCommand(
-        {"engine", "send", "!send <raw engine line>", "Send a raw protocol line to the engine"},
-        [this](const Command &c) {
-            if (c.tail.empty()) {
-                printError("Usage: send <raw engine line>");
-                return;
-            }
-            if (!ctx_.engine.isRunning()) {
-                printError("Engine not running. Use: !engine start");
-                return;
-            }
-            ctx_.controller.sendRawCommand(c.tail);
-        });
-
-    registerCommand(
-        {"config", "info", "!info set <key> <value>", "Edit engine config and sendConfig"},
-        [this](const Command &c) {
-            if (c.args.size() < 1) {
-                printError("Usage: info set <key> <value>");
-                return;
-            }
-            if (c.args[0] != "set") {
-                printError("Usage: info set <key> <value>");
-                return;
-            }
-            if (c.args.size() < 3) {
-                printError("Usage: info set <key> <value>");
-                return;
-            }
-            const std::string &key = c.args[1];
-            std::string value = joinArgs(c.args, 2);
-            setEngineConfigKey(key, value);
-        });
-
-    registerCommand(
         {"board", "loadpos", "!loadpos", "Load position from move text (end with: done)"},
         [this](const Command &) { beginPosSession(); });
 
@@ -541,11 +390,104 @@ void CommandDispatcher::registerBuiltins()
                     << " moves=" << moveText;
             printInfo(summary.str());
         });
+}
+
+// Help group "analysis".
+void CommandDispatcher::registerAnalysisCommands()
+{
+    registerCommand(
+        {"analysis", "analyze", "!analyze [n]", "Start analysis (optional n = MultiPV)"},
+        [this](const Command &c) {
+            if (!ctx_.controller.isRunning()) {
+                printError("Engine not running. Use: !engine start");
+                return;
+            }
+
+            if (c.args.size() > 1) {
+                printError("Usage: analyze [n]");
+                return;
+            }
+
+            if (c.args.size() == 1) {
+                auto n = parseIntArg(c.args[0]);
+                if (!n || *n <= 0 || *n > 99) {
+                    printError("Invalid n. Expected 1..99");
+                    return;
+                }
+                auto cfg = ctx_.gameState.engineConfig();
+                cfg.multiPV = *n;
+                ctx_.gameState.setEngineConfig(cfg);
+                ctx_.controller.sendConfig();
+            }
+
+            revertEnginePlaysIfEnginesTurn();  // ENG-02
+            ctx_.controller.analyze();
+        });
+
+    // PROTO-07: analyze an explicit allow-list of root moves (YXANALZ) — one
+    // PV line per listed move. Console-only, by design (resolved design §8):
+    // no button/context-menu affordance.
+    registerCommand(
+        {"analysis", "yxanalz", "!yxAnalz <moveText...>",
+         "Analyze listed root moves (YXANALZ protocol extension—requires compatible engine); interruptible; no stone; alphabetic moves"},
+        [this](const Command &c) {
+            if (!ctx_.controller.isRunning()) {
+                printError("Engine not running. Use: !engine start");
+                return;
+            }
+
+            // Resolved design §8: refused, not suspended, while continuous
+            // Analyze Mode owns the search loop (ANLZ-01/05). One guard,
+            // before anything is sent — no suspend/resume path.
+            if (ctx_.gameState.viewConfig().analyzeMode) {
+                printError("Turn off Analyze Mode first (!yxAnalz needs exclusive use of the engine).");
+                return;
+            }
+
+            if (c.tail.empty()) {
+                printError("Usage: !yxAnalz <moveText...>  (e.g. !yxAnalz h3 h2 h9)");
+                return;
+            }
+
+            // Shared with !pos / !play — alphabetic move text, display
+            // orientation, off-board tokens already dropped here.
+            auto parsed = parseMovesText(c.tail, ctx_.gameState.boardSize());
+            if (parsed.empty()) {
+                printError("No valid analyze move parsed from: " + c.tail);
+                return;
+            }
+
+            // Drop occupied points: the engine rejects them per-coord anyway
+            // ("ERROR Coord is not valid..."), but there is no reason to spend
+            // a round-trip on a move that provably cannot be a root move.
+            const auto &board = ctx_.gameState.board();
+            std::vector<Coord> moves;
+            moves.reserve(parsed.size());
+            for (const auto &m : parsed) {
+                if (board.stoneAt(m) != Stone::Empty) continue;
+                moves.push_back(m);
+            }
+            if (moves.empty()) {
+                printError("No valid analyze move: every listed point is off-board or occupied.");
+                return;
+            }
+            if (moves.size() != parsed.size()) {
+                printInfo("Skipped " + std::to_string(parsed.size() - moves.size())
+                          + " occupied point(s).");
+            }
+
+            revertEnginePlaysIfEnginesTurn();  // ENG-02, same as !analyze
+            ctx_.controller.analyzeMoves(moves);
+        });
+
+    registerCommand(
+        {"analysis", "stop", "!stop", "Stop analysis (STOP)"},
+        [this](const Command &) { ctx_.controller.stopAnalysis(); });
 
     registerCommand(
         {"analysis", "play", "!play <moveText...>", "Load moves then start analysis"},
         [this](const Command &c) {
-            if (!ctx_.engine.isRunning()) {
+            if (!ctx_.controller.isRunning()) {
                 printError("Engine not running. Use: !engine start");
                 return;
             }
@@ -575,13 +517,95 @@ void CommandDispatcher::registerBuiltins()
             revertEnginePlaysIfEnginesTurn();  // ENG-02
             ctx_.controller.analyze();
         });
+}
 
+// Help group "engine".
+void CommandDispatcher::registerEngineCommands()
+{
+    registerCommand(
+        {"engine", "engine", "!engine <start|stop|reload>", "Engine lifecycle"},
+        [this](const Command &c) {
+            if (c.args.size() != 1) {
+                printError("Usage: engine <start|stop|reload>");
+                return;
+            }
+            std::string sub = c.args[0];
+            std::transform(sub.begin(), sub.end(), sub.begin(),
+                           [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
+
+            if (sub == "start") {
+                auto &cfg = ctx_.gameState.engineConfig();
+                if (cfg.enginePath.empty()) {
+                    printError("enginePath is empty (set it in Settings).");
+                    return;
+                }
+                ctx_.controller.startEngine();
+                ctx_.controller.sendConfig();
+                syncExtensionCommands();  // PROTO-03
+                printInfo("OK: engine started");
+            } else if (sub == "stop") {
+                ctx_.controller.stopEngine();
+                printInfo("OK: engine stopped");
+            } else if (sub == "reload") {
+                ctx_.controller.reloadEngine();
+                printInfo("OK: engine reloaded");
+            } else {
+                printError("Unknown subcommand: " + sub);
+            }
+        });
+
+    registerCommand(
+        {"engine", "send", "!send <raw engine line>", "Send a raw protocol line to the engine"},
+        [this](const Command &c) {
+            if (c.tail.empty()) {
+                printError("Usage: send <raw engine line>");
+                return;
+            }
+            if (!ctx_.controller.isRunning()) {
+                printError("Engine not running. Use: !engine start");
+                return;
+            }
+            ctx_.controller.sendRawCommand(c.tail);
+        });
+}
+
+// Help group "config".
+void CommandDispatcher::registerConfigCommands()
+{
+    registerCommand(
+        {"config", "info", "!info set <key> <value>", "Edit engine config and sendConfig"},
+        [this](const Command &c) {
+            if (c.args.size() < 1) {
+                printError("Usage: info set <key> <value>");
+                return;
+            }
+            if (c.args[0] != "set") {
+                printError("Usage: info set <key> <value>");
+                return;
+            }
+            if (c.args.size() < 3) {
+                printError("Usage: info set <key> <value>");
+                return;
+            }
+            const std::string &key = c.args[1];
+            std::string value = joinArgs(c.args, 2);
+            setEngineConfigKey(key, value);
+        });
+}
+
+// Help group "debug".
+void CommandDispatcher::registerDebugCommands()
+{
     registerCommand(
         {"debug", "clear", "!clear", "Clear the console log"},
         [this](const Command &) {
             if (ctx_.clearConsole) ctx_.clearConsole();
         });
+}
 
+// Help group "database".
+void CommandDispatcher::registerDatabaseCommands()
+{
     registerCommand(
         {"database", "db", "!db <query|load|save|on|off|label|comment|delete>", "Database commands"},
         [this](const Command &c) {
@@ -671,6 +695,17 @@ void CommandDispatcher::registerBuiltins()
         });
 }
 
+void CommandDispatcher::registerBuiltins()
+{
+    registerInfoCommands();
+    registerBoardCommands();
+    registerAnalysisCommands();
+    registerEngineCommands();
+    registerConfigCommands();
+    registerDebugCommands();
+    registerDatabaseCommands();
+}
+
 void CommandDispatcher::syncExtensionCommands()
 {
     // Drop any previously-registered extension commands (a reload may remove
@@ -697,7 +732,7 @@ void CommandDispatcher::syncExtensionCommands()
         };
         std::string cmdName = name;
         registerCommand(std::move(spec), [this, cmdName](const Command &c) {
-            if (!ctx_.engine.isRunning()) {
+            if (!ctx_.controller.isRunning()) {
                 printError("Engine not running. Use: !engine start");
                 return;
             }

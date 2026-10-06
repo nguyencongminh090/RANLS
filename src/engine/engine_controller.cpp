@@ -204,6 +204,11 @@ void EngineController::setState(EngineState next)
     signal_state_changed.emit(state_);
 }
 
+bool EngineController::isRunning() const
+{
+    return engine_.isRunning();
+}
+
 bool EngineController::isUsable() const
 {
     return state_ == EngineState::Starting || state_ == EngineState::Idle

@@ -56,7 +56,6 @@ struct ConsoleFixture {
     {
         return CommandContext{
             .gameState = gs,
-            .engine = eng,
             .controller = ctrl,
             .print = [this](const std::string &l) { out.push_back(l); },
             .clearConsole = [] {},
