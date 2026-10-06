@@ -13,6 +13,16 @@ internal tracking files for traceability.
 
 _Nothing yet._
 
+## [0.8.2] - 2026-10-06
+
+Sprint 21 — internal clean-up only; no user-visible change.
+
+### Changed
+
+- Internal: the analyze / auto-move logic and the save/load logic no longer live inside the main
+  window class, and are now covered by display-free tests. Analyze Mode, "Engine plays", Save and
+  Open behave exactly as before (ARCH-02, ARCH-04, ARCH-05).
+
 ## [0.8.1] - 2026-10-06
 
 Sprint 20 — quieter Engine Log, plus internal architecture clean-up (no other user-visible change).
@@ -317,7 +327,8 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.8.1...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.8.2...HEAD
+[0.8.2]: https://github.com/nguyencongminh090/RANLS/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.6.0...v0.7.0

@@ -23,11 +23,9 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 ## Active
 
-Sprint 21 (opened 2026-10-06, goal "Extract MainWindow's analyze/auto-move/file orchestration into GTK-free, unit-tested classes (ARCH-02 split, characterization first)") — pulled from Backlog / filed from the resolved ARCH-02 design:
-
-- ✅ **ARCH-04.** Characterization tests for analyze / auto-move behavior (tests only, before any extraction) [2 pts] — [detail](docs/todo/ARCH-04-characterize-analyze-autoplay-behavior.md) · [instruction](docs/instruction/ARCH-04-characterize-analyze-autoplay-behavior.md)
-- ✅ **ARCH-02.** Extract `AnalysisCoordinator` (analyze-restart / auto-move / ENG-02 revert) out of `MainWindow` into `src/engine/` [4 pts] — [detail](docs/todo/ARCH-02-extract-analysis-coordination-from-mainwindow.md) · [instruction](docs/instruction/ARCH-02-extract-analysis-coordination-from-mainwindow.md)
-- ✅ **ARCH-05.** Extract GTK-free `GameFileService` (save/load logic) out of `MainWindow` [2 pts] — [detail](docs/todo/ARCH-05-extract-game-file-service.md) · [instruction](docs/instruction/ARCH-05-extract-game-file-service.md)
+No active sprint. Sprint 21 closed 2026-10-06 (ARCH-04 + ARCH-02 + ARCH-05 shipped; archived to
+`docs/sprint/archive/sprint-21.md`, release `v0.8.2`). Run `/sprint open 22 "<goal>" <CODE...>` to
+start Sprint 22.
 
 ## Backlog
 
@@ -123,3 +121,9 @@ Sprint 20:
 
 - ✅ **ARCH-01.** Break the model ↔ engine include cycle (move analysis data types into `model/`) [2 pts] — [detail](docs/todo/ARCH-01-break-model-engine-include-cycle.md)
 - ✅ **ARCH-03.** Narrow `CommandContext` + split `registerBuiltins()` [3 pts] — [detail](docs/todo/ARCH-03-narrow-command-context-split-dispatcher.md)
+
+Sprint 21:
+
+- ✅ **ARCH-04.** Characterization tests for analyze / auto-move behavior (tests only, before any extraction) [2 pts] — [detail](docs/todo/ARCH-04-characterize-analyze-autoplay-behavior.md) · [instruction](docs/instruction/ARCH-04-characterize-analyze-autoplay-behavior.md)
+- ✅ **ARCH-02.** Extract `AnalysisCoordinator` (analyze-restart / auto-move / ENG-02 revert) out of `MainWindow` into `src/engine/` [4 pts] — [detail](docs/todo/ARCH-02-extract-analysis-coordination-from-mainwindow.md) · [instruction](docs/instruction/ARCH-02-extract-analysis-coordination-from-mainwindow.md)
+- ✅ **ARCH-05.** Extract GTK-free `GameFileService` (save/load logic) out of `MainWindow` [2 pts] — [detail](docs/todo/ARCH-05-extract-game-file-service.md) · [instruction](docs/instruction/ARCH-05-extract-game-file-service.md)
