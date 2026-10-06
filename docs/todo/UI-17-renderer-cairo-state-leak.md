@@ -1,6 +1,6 @@
 # UI-17 — BoardRenderer layers leak Cairo state (font face)
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** ✅ FIXED (2026-10-06) — every layer wrapped in `save()/restore()` in `BoardRenderer::draw`; real-render regression test `test_ui17_renderer_state_isolation.cpp`; Release ctest 5/5. See [fix-log](../fix-log/2026-10-06-ui-17-renderer-cairo-state-leak.md).
 **Area:** src/ui/board_renderer.cpp
 **Priority:** P3
 **Source:** User board-UI task + [board marks review audit](../audit/2026-10-06-board-marks-ux-review.md) — 2026-10-06
