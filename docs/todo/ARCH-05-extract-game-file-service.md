@@ -1,6 +1,6 @@
 # ARCH-05 — Extract GTK-free GameFileService from MainWindow
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** ✅ DONE
 **Area:** `src/main_window.cpp` (`onSaveGame`, `onLoadGame`), new `src/engine/` or `src/model/`-adjacent GTK-free service (see Scope 1)
 **Priority:** P3
 **Source:** `features/extract-mainwindow-orchestration/planning.md` Q5 — resolved 2026-10-06; split from ARCH-02
@@ -38,3 +38,9 @@ Only the decision/translation logic moves; dialogs cannot. Rejected: skipping it
 - `onSaveGame`/`onLoadGame` shrink to dialog glue; no gtk include in the new service.
 - New unit tests pass without a display; existing RDB tests unchanged and green.
 - Dialog messages byte-identical.
+
+## Outcome (2026-10-06)
+
+Implemented as specified. New GTK-free `GameFileService` (`src/model/game_file_service.{h,cpp}`, namespace functions `save(gs, path, generator)` / `load(gs, path)` returning `Result{ok, error}`); layer chosen: `model/` (needs only `model/` + `model/rdb/`; no `engine/`/gtk includes, so rule 8 and `arch01-model-no-engine-includes` hold; no new directory, so no new include-guard check). `MainWindow::onLoadGame`/`onSaveGame` keep only dialog glue: file dialogs/filters, `confirmDiscardGame`, pre-load `onStopAnalysis()`, `showErrorDialog` ("Could not load game" / "Could not save game", text unchanged), cancel handling and `controller_.sendConfig()` after a successful load. The generator name is passed in (`kAppDisplayName`) so the service does not include `main_window.h`. No format, dialog, filter or message-text change; RDB codec, `GameIO`, `AnalysisCoordinator`, `EngineController` untouched.
+
+Verification (Release, display present, scratch build dir): `RUN_TESTS=1 ./build.sh` clean; ctest 5/5; `ranls-gui-tests` 246 cases / 2760 assertions (baseline 239/2703, +7/+57), `ranls-gui-ui-tests` 60/460 (0 skipped); existing tests unedited (only `tests/CMakeLists.txt` wiring + new `tests/test_arch05_game_file_service.cpp`). `main_window.cpp` 1228 -> 1191 lines; `onLoadGame` body 52 -> 46, `onSaveGame` body 61 -> 31.

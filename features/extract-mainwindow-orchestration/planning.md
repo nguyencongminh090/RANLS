@@ -75,3 +75,7 @@ skills `solid-single-responsibility`, `software-architecture`; audit
 ## Implementation outcome — 2026-10-06 (ARCH-02)
 
 Implemented per the Resolution: `AnalysisCoordinator` in `src/engine/` (Q1), injected `postIdle` (Q2), menu sync via `signal_engine_plays_reverted` handled in `MainWindow` (Q3), persistence stays in `MainWindow` (Q4), one class (Q7), friend probes kept unchanged (Q8; latches exposed through const-reference members). Lifetime handled with a `weak_ptr` liveness token. `main_window.cpp` 1328 -> 1228 lines, `.h` 269 -> 244. See `docs/fix-log/2026-10-06-arch-02-analysis-coordinator.md`.
+
+## Implementation outcome (ARCH-05)
+
+Implemented per Q5: `GameFileService` placed in `src/model/` (it needs only `model/` + `model/rdb/`, so rule 8 and the `arch01` ctest hold). Save/load logic moved verbatim; the generator name is a parameter (avoids including `main_window.h`). `MainWindow` keeps dialogs, `confirmDiscardGame`, pre-load `onStopAnalysis()`, `showErrorDialog` and `controller_.sendConfig()`. `main_window.cpp` 1228 -> 1191 lines; +7 display-free tests. See `docs/fix-log/2026-10-06-arch-05-game-file-service.md`.
