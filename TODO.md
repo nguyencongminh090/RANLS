@@ -23,14 +23,13 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 ## Active
 
-Sprint 20 (opened 2026-10-05, goal "Fix the model↔engine layering violation and narrow CommandContext (architecture review follow-ups)") — pulled from Backlog:
-
-- ✅ **ARCH-01.** Break the model ↔ engine include cycle (move analysis data types into `model/`) [2 pts] — [detail](docs/todo/ARCH-01-break-model-engine-include-cycle.md)
-- ✅ **ARCH-03.** Narrow `CommandContext` + split `registerBuiltins()` [3 pts] — [detail](docs/todo/ARCH-03-narrow-command-context-split-dispatcher.md)
+No active sprint. Sprint 20 closed 2026-10-06 (ARCH-01 + ARCH-03 shipped; archived to
+`docs/sprint/archive/sprint-20.md`, release `v0.8.1`). Run `/sprint open 21 "<goal>" <CODE...>` to
+start Sprint 21.
 
 ## Backlog
 
-No open items except ARCH-02 below.
+No open items except ARCH-02 below (needs a `features/` design first).
 
 Filed 2026-10-05 from [architecture review audit](docs/audit/2026-10-05-architecture-review.md) — ARCH-01 and ARCH-03 **pulled into Sprint 20 Active 2026-10-05** (see `docs/sprint/current.md`); ARCH-02 remains (needs design):
 - 🔲 **ARCH-02.** Extract analyze/auto-move orchestration out of `MainWindow` [8 pts, needs design] — [detail](docs/todo/ARCH-02-extract-analysis-coordination-from-mainwindow.md)
@@ -118,3 +117,8 @@ Sprint 19:
 - ✅ **PROTO-07.** native `!yxAnalz` console command — analyze an explicit allow-list of root moves (Rapfi `YXANALZ`). First-class feature (not `.ptc`). Alphabetic move text only (numeric `x,y` deferred — `parseMovesText` out of bounds to change). — [detail](docs/todo/PROTO-07-yxanalz-root-move-allowlist.md) · [instruction](docs/instruction/PROTO-07-yxanalz-root-move-allowlist.md)
 - ✅ **CONS-03.** `!help` documents `!yxAnalz` / YXANALZ as an engine-protocol extension (needs a supporting engine; real interruptible search; places no stone; alphabetic move text only). Help-text only, no behaviour change. Follow-on to PROTO-07. — [detail](docs/todo/CONS-03-help-doc-yxanalz-protocol-extension.md) · [instruction](docs/instruction/CONS-03-help-doc-yxanalz-protocol-extension.md)
 - ✅ **DOC-02.** standardize `CLAUDE.md` — hard-rules section, GTK4 fix, bug-fix/sprint workflows moved to path-scoped `.claude/rules/`, GitHub model to the `github` skill (filed + done 2026-10-05, no sprint) — [detail](docs/todo/DOC-02-standardize-claude-md.md)
+
+Sprint 20:
+
+- ✅ **ARCH-01.** Break the model ↔ engine include cycle (move analysis data types into `model/`) [2 pts] — [detail](docs/todo/ARCH-01-break-model-engine-include-cycle.md)
+- ✅ **ARCH-03.** Narrow `CommandContext` + split `registerBuiltins()` [3 pts] — [detail](docs/todo/ARCH-03-narrow-command-context-split-dispatcher.md)

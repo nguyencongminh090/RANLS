@@ -13,6 +13,22 @@ internal tracking files for traceability.
 
 _Nothing yet._
 
+## [0.8.1] - 2026-10-06
+
+Sprint 20 — quieter Engine Log, plus internal architecture clean-up (no other user-visible change).
+
+### Fixed
+
+- The Engine Log no longer fills with the engine's live `INFO DEPTH/NODES/SPEED/PV/BESTLINE…`
+  search lines during analysis. They still feed the analysis panels and status, and real
+  messages, errors and warnings still appear in the log.
+
+### Changed
+
+- Internal: the model layer no longer depends on the engine layer, and console command handlers
+  no longer reach the raw engine process (ARCH-01, ARCH-03). `!help` output and all commands
+  behave exactly as before.
+
 ## [0.8.0] - 2026-09-10
 
 Sprint 19 — analyse a hand-picked set of root moves instead of the engine's own candidates.
@@ -301,7 +317,8 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.5.0...v0.6.0

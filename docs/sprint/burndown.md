@@ -140,6 +140,7 @@ points at sprint start to 0 at the end date.
 | 2026-10-05 | 2 / 2 items | 5 pts | Sprint 20 opened (goal "Fix the model↔engine layering violation and narrow CommandContext (architecture review follow-ups)"): ARCH-01, ARCH-03 pulled from Backlog into Active — see docs/sprint/current.md. Backlog now has 1 item (ARCH-02, needs design) |
 | 2026-10-05 | 1 / 2 items | 3 pts | ARCH-01 done — PR #41 squash `2874af3`: analysis domain types moved to `model/analysis_types.h`, `src/model` has no `engine/` includes, new `arch01-model-no-engine-includes` ctest. ARCH-03 remains |
 | 2026-10-06 | 0 / 2 items | 0 pts | ARCH-03 done — PR #42 squash `7dabb0e`: `registerBuiltins()` split into 7 per-group registrars, `EngineProcess&` removed from `CommandContext` (via `EngineController::isRunning()`), `!help`/names/usage pinned byte-identical by new `test_arch03_help_pinned`. Sprint 20 Active items all done — ready to close |
+| 2026-10-06 | 0 / 2 items | 0 pts | Sprint 20 closed — ARCH-01 (PR #41 `2874af3`) + ARCH-03 (PR #42 `7dabb0e`) landed on `main`; archived to `docs/sprint/archive/sprint-20.md`, nothing rolled over. Release `v0.8.1` cut (PATCH — Engine Log INFO-noise fix + internal layering refactors, no new feature). Table reset below for Sprint 21 |
 
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).
