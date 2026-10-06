@@ -64,6 +64,10 @@ private:
     /// still fully clickable/playable, this layer never blocks input.
     void drawForbiddenPoints(const Cairo::RefPtr<Cairo::Context> &cr);
 
+    /// UX-07: true if the engine overlay carries a mark on `c` (database mark
+    /// then shrinks to a corner badge). Linear scan; no allocation.
+    bool hasEngineMark(Coord c) const;
+
     // ── Coordinate helpers ──────────────────────────────────────────────────
     /// Convert board coordinate (x, y) to pixel center.
     double cellCenterX(int x) const;

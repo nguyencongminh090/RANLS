@@ -1,6 +1,6 @@
 # UX-07 — Redesign board mark language (engine / database / variant / best)
 
-**Status:** 🔲 OPEN (Active — Sprint 22)
+**Status:** ✅ DONE (2026-10-06) — model: `BoardViewModel::moveNumberAt()` (Coord→move-number table built once per `update()`, replaces the per-stone `std::find`), database `Marker::isBest` (max `value`, ties flag all), variant `Marker::branchCount` (children of current node). Renderer: layer order grid → stones → last move → variant → database → engine (+best ring) → forbidden → PV ghost → hover; outlined DB diamond (corner badge when the cell has an engine mark, thicker outline for best), variant ring + dot with count badge when > 1; badges/counts hidden below 20 px cells. +17 cases (`test_ux07_board_mark_model.cpp`, `test_ux07_board_marks_render.cpp`). Release ctest 5/5, `ranls-gui-tests` 246/2760, `ranls-gui-ui-tests` 80/542. Offscreen Cairo PNGs (15×15 + 22×22, light + dark margin) inspected; NOT verified in the live app window. See [fix-log](../fix-log/2026-10-06-ux-07-board-mark-visual-language.md).
 **Area:** src/model/board_view_model.{h,cpp}, src/ui/board_renderer.{h,cpp}, tests/
 **Priority:** P2
 **Source:** User board-UI task + [board marks review audit](../audit/2026-10-06-board-marks-ux-review.md) — 2026-10-06

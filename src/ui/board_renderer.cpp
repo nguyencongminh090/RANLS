@@ -17,6 +17,9 @@ static constexpr double kHoverAlpha   = 0.4;
 static constexpr double kGhostAlpha   = 0.35;
 static constexpr double kMarkerAlpha  = 0.7;
 static constexpr double kVariantR     = 0.90, kVariantG   = 0.65, kVariantB   = 0.15;
+// UX-07: below this cell size (px) corner badges and branch counts are hidden
+// (22x22 boards have small cells; the badges would just be noise).
+static constexpr double kMinBadgeCell = 20.0;
 static constexpr double kDatabaseR    = 0.40, kDatabaseG  = 0.75, kDatabaseB  = 0.40;
 
 static void set_source_from_winrate(const Cairo::RefPtr<Cairo::Context>& cr, double winrate, double alpha) {
@@ -102,16 +105,23 @@ void BoardRenderer::draw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int
                          Cairo::ToyFontFace::Weight::NORMAL);
     auto layer = [&](void (BoardRenderer::*draw)(const Cairo::RefPtr<Cairo::Context> &)) {
         cr->save();
+        // save()/restore() does NOT cover the current path: a text layer
+        // (show_text) leaves a current point, and the next layer's first
+        // arc() would then draw a stray connecting line from it.
+        cr->begin_new_path();
         (this->*draw)(cr);
         cr->restore();
     };
     layer(&BoardRenderer::drawGrid);
     layer(&BoardRenderer::drawStones);
     layer(&BoardRenderer::drawLastMove);
-    layer(&BoardRenderer::drawForbiddenPoints);
-    layer(&BoardRenderer::drawDatabaseMarkers);
+    // UX-07 order: variant -> database -> engine overlay (incl. best ring) ->
+    // lost/forbidden -> PV ghost -> hover, so the lower-priority marks stay
+    // visible under (or beside) the engine's.
     layer(&BoardRenderer::drawVariantMarkers);
+    layer(&BoardRenderer::drawDatabaseMarkers);
     layer(&BoardRenderer::drawSearchOverlay);
+    layer(&BoardRenderer::drawForbiddenPoints);
     layer(&BoardRenderer::drawPVHighlight);
     layer(&BoardRenderer::drawHover);
 }
@@ -222,9 +232,9 @@ void BoardRenderer::drawStones(const Cairo::RefPtr<Cairo::Context> &cr)
         cr->stroke();
 
         if (vm_.viewConfig.showMoveNumbers) {
-            auto it = std::find(vm_.moveHistory.begin(), vm_.moveHistory.end(), pos);
-            if (it != vm_.moveHistory.end()) {
-                int moveIndex = std::distance(vm_.moveHistory.begin(), it) + 1;
+            // UX-07: O(1) lookup from the view model's per-update index map.
+            const int moveIndex = vm_.moveNumberAt(pos);
+            if (moveIndex > 0) {
                 std::string num = std::to_string(moveIndex);
 
                 bool isLast = hasLast && pos == vm_.lastMove;
@@ -298,6 +308,7 @@ void BoardRenderer::drawForbiddenPoints(const Cairo::RefPtr<Cairo::Context> &cr)
 
     for (const auto &pos : vm_.forbiddenPoints) {
         if (!pos.isValid(vm_.boardSize)) continue;
+        cr->begin_new_path();   // UX-07: see drawDatabaseMarkers
         double cx = cellCenterX(pos.x);
         double cy = cellCenterY(pos.y);
 
@@ -330,38 +341,62 @@ void BoardRenderer::drawForbiddenPoints(const Cairo::RefPtr<Cairo::Context> &cr)
 }
 
 // ── 4. DatabaseMarkerLayer ───────────────────────────────────────────────────
+// UX-07: database entries are OUTLINED (stroke-only) diamonds so they read as
+// "book knowledge" next to the engine's filled discs. The best entry gets a
+// thicker outline. On a cell that also carries an engine mark the diamond
+// shrinks to a corner badge (no label); below kMinBadgeCell the badge is
+// dropped entirely (the engine mark wins).
+bool BoardRenderer::hasEngineMark(Coord c) const
+{
+    for (const auto &m : vm_.searchOverlay)
+        if (m.pos == c) return true;
+    return false;
+}
+
 void BoardRenderer::drawDatabaseMarkers(const Cairo::RefPtr<Cairo::Context> &cr)
 {
     if (vm_.databaseMarkers.empty()) return;
 
-    double r = stoneRadius() * 0.55;
+    const double r = stoneRadius() * 0.55;
 
     for (const auto &m : vm_.databaseMarkers) {
         if (!m.pos.isValid(vm_.boardSize)) continue;
         double cx = cellCenterX(m.pos.x);
         double cy = cellCenterY(m.pos.y);
 
-        // Draw heat map diamond marker.
-        if (m.eval >= 0) {
-            set_source_from_winrate(cr, m.eval, kMarkerAlpha);
-        } else {
-            cr->set_source_rgba(kDatabaseR, kDatabaseG, kDatabaseB, kMarkerAlpha);
+        // A previous marker's show_text leaves a current point; without this
+        // the next path would start with a stray line from the old label.
+        cr->begin_new_path();
+        const bool badge = hasEngineMark(m.pos);
+        if (badge && cellSize_ < kMinBadgeCell) continue;
+
+        double dr = r;
+        if (badge) {
+            dr = cellSize_ * 0.14;
+            cx += cellSize_ * 0.30;
+            cy -= cellSize_ * 0.30;
         }
 
-        cr->move_to(cx, cy - r);
-        cr->line_to(cx + r, cy);
-        cr->line_to(cx, cy + r);
-        cr->line_to(cx - r, cy);
+        // Heat-coloured outline (HSV ramp unchanged).
+        if (m.eval >= 0) {
+            set_source_from_winrate(cr, m.eval, 0.95);
+        } else {
+            cr->set_source_rgba(kDatabaseR, kDatabaseG, kDatabaseB, 0.95);
+        }
+        const double thin  = std::max(1.5, cellSize_ * 0.05);
+        const double thick = std::max(2.5, cellSize_ * 0.08);
+        cr->set_line_width(m.isBest ? thick : thin);
+        cr->move_to(cx, cy - dr);
+        cr->line_to(cx + dr, cy);
+        cr->line_to(cx, cy + dr);
+        cr->line_to(cx - dr, cy);
         cr->close_path();
-        cr->fill();
+        cr->stroke();
 
-        // Label text. UX-03: plain white-on-heatmap text drops to ~1.5:1
-        // contrast for winrates in the yellow-green band (hue ~65-95° in
-        // set_source_from_winrate above); add a dark shadow behind it, the
-        // same fix already used for the candidate-move labels below
-        // (drawCandidateMoves) -- keeps the label legible across the whole
-        // heat-map hue range regardless of the marker's own color.
-        if (!m.label.empty()) {
+        // Label text (eval text only; no bound/comment glyphs). UX-03: white
+        // text with a dark shadow stays legible across the heat hue range and
+        // now also over the unfilled diamond / bare wood. Not drawn on badges.
+        if (!badge && !m.label.empty()) {
             cr->set_font_size(std::max(8.0, cellSize_ * 0.28));
             Cairo::TextExtents ext;
             cr->get_text_extents(m.label, ext);
@@ -380,19 +415,46 @@ void BoardRenderer::drawDatabaseMarkers(const Cairo::RefPtr<Cairo::Context> &cr)
 }
 
 // ── 5. VariantMarkerLayer ────────────────────────────────────────────────────
+// UX-07: ring + centre dot (the dot alone was easy to lose under other
+// marks). The ring is larger than the engine tag disc / best ring so it stays
+// visible around them. With > 1 branches a count badge sits at the bottom-right
+// corner (hidden below kMinBadgeCell).
 void BoardRenderer::drawVariantMarkers(const Cairo::RefPtr<Cairo::Context> &cr)
 {
     if (vm_.variantMarkers.empty()) return;
 
-    double r = stoneRadius() * 0.30;
-    cr->set_source_rgba(kVariantR, kVariantG, kVariantB, kMarkerAlpha);
+    const double rRing = stoneRadius() * 0.80;
+    const double rDot  = stoneRadius() * 0.22;
 
     for (const auto &m : vm_.variantMarkers) {
         if (!m.pos.isValid(vm_.boardSize)) continue;
         double cx = cellCenterX(m.pos.x);
         double cy = cellCenterY(m.pos.y);
-        cr->arc(cx, cy, r, 0, 2 * M_PI);
+
+        cr->begin_new_path();   // see drawDatabaseMarkers
+        cr->set_source_rgba(kVariantR, kVariantG, kVariantB, 0.9);
+        cr->set_line_width(std::max(1.5, cellSize_ * 0.06));
+        cr->arc(cx, cy, rRing, 0, 2 * M_PI);
+        cr->stroke();
+        cr->arc(cx, cy, rDot, 0, 2 * M_PI);
         cr->fill();
+
+        if (m.branchCount > 1 && cellSize_ >= kMinBadgeCell) {
+            const double bx = cx + cellSize_ * 0.30;
+            const double by = cy + cellSize_ * 0.30;
+            const double br = cellSize_ * 0.17;
+            cr->set_source_rgba(kVariantR, kVariantG, kVariantB, 1.0);
+            cr->arc(bx, by, br, 0, 2 * M_PI);
+            cr->fill();
+
+            const std::string num = std::to_string(m.branchCount);
+            cr->set_font_size(std::max(7.0, cellSize_ * 0.24));
+            Cairo::TextExtents ext;
+            cr->get_text_extents(num, ext);
+            cr->set_source_rgba(0.10, 0.07, 0.0, 1.0);
+            cr->move_to(bx - ext.width / 2.0 - ext.x_bearing, by + ext.height / 2.0);
+            cr->show_text(num);
+        }
     }
 }
 
@@ -413,6 +475,7 @@ void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
 
     for (const auto &m : vm_.searchOverlay) {
         if (!m.pos.isValid(vm_.boardSize)) continue;
+        cr->begin_new_path();   // see drawDatabaseMarkers (tag text -> next arc)
         double cx = cellCenterX(m.pos.x);
         double cy = cellCenterY(m.pos.y);
 
