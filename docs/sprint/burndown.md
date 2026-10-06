@@ -144,6 +144,7 @@ points at sprint start to 0 at the end date.
 | 2026-10-06 | 3 / 3 items | 8 pts | Sprint 21 opened (goal "Extract MainWindow's analyze/auto-move/file orchestration into GTK-free, unit-tested classes"): ARCH-04, ARCH-02, ARCH-05 — ARCH-02 design gate resolved with the user and split; see docs/sprint/current.md. Backlog now empty |
 | 2026-10-06 | 2 / 3 items | 6 pts | ARCH-04 done — PR #43 squash `af9c6b2`: six characterization cases (auto-move gating, one-restart coalescing, ANLZ-07 force latch, Analyze-Mode-off, ENG-02 revert not persisted); tests only, no `src/` change. ARCH-02 now unblocked |
 | 2026-10-06 | 1 / 3 items | 2 pts | ARCH-02 done — PR #44 squash `86c20a3`: GTK-free `AnalysisCoordinator` in `src/engine/` (injected `postIdle`, weak-ptr liveness token), `main_window.cpp` 1328 → 1228 lines, 11 new display-free tests, existing tests untouched. ARCH-05 remains |
+| 2026-10-06 | 0 / 3 items | 0 pts | ARCH-05 done — PR #45 squash `a287fe0`: GTK-free `GameFileService` in `src/model/` (save/load logic; dialogs and message text unchanged), 7 new display-free tests, `main_window.cpp` 1228 → 1191. All Sprint 21 Active items done — ready to close |
 
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).
