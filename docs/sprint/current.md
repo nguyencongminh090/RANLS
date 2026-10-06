@@ -13,7 +13,7 @@
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
 | UX-07 | Redesign board mark language (engine / database / variant / best) | — | — | ✅ Done (PR #49, `8e33e1f`) |
-| UX-08 | Board hover crosshair, margin highlight, mark tooltips | UX-07 (soft) | — | 🔲 Not started |
+| UX-08 | Board hover crosshair, margin highlight, mark tooltips | UX-07 (soft) | — | ✅ Done (PR #50, `c8b59c4`) |
 
 Points not yet estimated (consistent with Sprints 3–…).
 

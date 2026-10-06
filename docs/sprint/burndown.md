@@ -148,6 +148,7 @@ points at sprint start to 0 at the end date.
 | 2026-10-06 | 0 / 3 items | 0 pts | Sprint 21 closed — ARCH-04 (PR #43 `af9c6b2`) + ARCH-02 (PR #44 `86c20a3`) + ARCH-05 (PR #45 `a287fe0`) landed on `main`; archived to `docs/sprint/archive/sprint-21.md`, nothing rolled over. Release `v0.8.2` cut (PATCH — internal refactors + tests, no user-visible change). Table reset below for Sprint 22 |
 | 2026-10-06 | 2 / 2 items | — | Sprint 22 opened (goal "Board mark visual language: stacked engine/database/variant marks, best ring, hover tooltips"): UX-07, UX-08 pulled from Backlog into Active — see docs/sprint/current.md. Backlog now empty. UI-16/17/18 shipped just before, outside a sprint (PRs #46–#48) |
 | 2026-10-06 | 1 / 2 items | — | UX-07 shipped (PR #49 squash `8e33e1f`): move-number index, DB isBest + outlined diamond / corner badge, variant ring + branch count; Cairo stray-path fix found on the way. UX-08 remains. Not yet verified in the live GTK window |
+| 2026-10-06 | 0 / 2 items | — | UX-08 shipped (PR #50 squash `c8b59c4`): `BoardViewModel::tooltipFor` + BoardView query-tooltip, hover crosshair, bold margin labels; `hasComment` confirmed to be a flag only (Q12). All Sprint 22 Active items done — sprint ready to close. Live-window check of tooltips/marks still owed |
 
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).
