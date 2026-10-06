@@ -25,6 +25,11 @@ public:
     /// Rebuild all render-ready fields from the current GameState.
     void update();
 
+    /// UI-16: true if `c` holds a stone in the current render state. Lets
+    /// BoardRenderer keep hover / PV-ghost layers off occupied cells without
+    /// touching GameState.
+    bool isOccupied(Coord c) const;
+
     // ── Fields consumed by BoardRenderer ────────────────────────────────────
     int                          boardSize    = 15;
     ViewConfig                   viewConfig;                            ///< View settings for rendering
