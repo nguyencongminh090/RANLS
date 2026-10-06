@@ -18,12 +18,25 @@ public:
         Coord       pos;
         std::string label;          ///< Short text label (e.g., "W5", "L3", "65%")
         double      eval = -1.0;    ///< Win rate [0,1], or -1 if N/A
+        /// UX-07 (database markers): true for the entry with the highest
+        /// `value`. Ties: every entry sharing the maximum is flagged.
+        bool        isBest = false;
+        /// UX-07 (variant markers): number of children of the current node
+        /// (index 0 = first-added child = main continuation). 0 for markers
+        /// that are not variant markers.
+        int         branchCount = 0;
     };
 
     explicit BoardViewModel(GameState &state);
 
     /// Rebuild all render-ready fields from the current GameState.
     void update();
+
+    /// UX-07: 1-based move number of the stone at `c` (first occurrence in
+    /// moveHistory), or 0 if no played move sits there. O(1): backed by a
+    /// Coord -> index table built once per update(), replacing the per-stone
+    /// std::find the renderer used for move numbers.
+    int moveNumberAt(Coord c) const;
 
     /// UI-16: true if `c` holds a stone in the current render state. Lets
     /// BoardRenderer keep hover / PV-ghost layers off occupied cells without
@@ -68,4 +81,7 @@ public:
 
 private:
     GameState &state_;
+    /// UX-07: row-major (y * boardSize + x) -> 1-based move number, 0 = none.
+    /// Rebuilt by update(); capacity is reused between updates.
+    std::vector<int> moveNumber_;
 };

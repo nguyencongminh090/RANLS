@@ -16,6 +16,13 @@ bool BoardViewModel::isOccupied(Coord c) const
     return false;
 }
 
+int BoardViewModel::moveNumberAt(Coord c) const
+{
+    if (!c.isValid(boardSize)) return 0;
+    const size_t i = static_cast<size_t>(c.y) * boardSize + c.x;
+    return i < moveNumber_.size() ? moveNumber_[i] : 0;
+}
+
 void BoardViewModel::update()
 {
     boardSize  = state_.boardSize();
@@ -41,13 +48,27 @@ void BoardViewModel::update()
     for (int i = 0; i < hist.moveCount(); ++i) {
         moveHistory.push_back(hist.moves()[i]);
     }
+    // UX-07: Coord -> move number, built once per update(). First occurrence
+    // wins (same as the std::find it replaces).
+    moveNumber_.assign(static_cast<size_t>(boardSize) * boardSize, 0);
+    for (size_t i = 0; i < moveHistory.size(); ++i) {
+        const Coord &c = moveHistory[i];
+        if (!c.isValid(boardSize)) continue;
+        int &slot = moveNumber_[static_cast<size_t>(c.y) * boardSize + c.x];
+        if (slot == 0) slot = static_cast<int>(i) + 1;
+    }
 
     // ── Variant markers from the variation tree ─────────────────────────────
     variantMarkers.clear();
     auto path     = state_.currentPath();
     auto branches = state_.tree().getBranchCoords(path);
     for (const auto &coord : branches) {
-        variantMarkers.push_back({coord, "", -1.0});
+        // UX-07: branchCount = children of the current node. getBranchCoords()
+        // lists those children in insertion order (index 0 = main line).
+        Marker m;
+        m.pos         = coord;
+        m.branchCount = static_cast<int>(branches.size());
+        variantMarkers.push_back(m);
     }
 
     // ── PROTO-06: live per-cell search overlay (replaces candidateMoves) ────
@@ -111,6 +132,15 @@ void BoardViewModel::update()
             // Normalize centipawns to [0, 1] winrate using the same sigmoid as the engine.
             m.eval  = 1.0 / (1.0 + std::exp(-static_cast<double>(entry.value) / 200.0));
             databaseMarkers.push_back(m);
+        }
+        // UX-07: flag the best entry (highest value; ties -> all tied flagged).
+        if (!databaseMarkers.empty()) {
+            int bestValue = state_.database().begin()->second.value;
+            for (const auto &kv : state_.database())
+                bestValue = std::max(bestValue, kv.second.value);
+            size_t i = 0;
+            for (const auto &kv : state_.database())
+                databaseMarkers[i++].isBest = (kv.second.value == bestValue);
         }
     }
 
