@@ -465,6 +465,17 @@ void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
             break;
         }
         }
+
+        // UI-18: a best move that also carries a winrate tag (Kind::Tag) gets
+        // the same cyan ring drawn just outside the tag disc, so the tag text
+        // stays readable and the best move is still marked. Kind::Best cells
+        // already drew their own disc + ring above.
+        if (m.isBest && m.kind != Kind::Best) {
+            cr->set_source_rgba(0.10, 0.55, 0.70, 0.95);
+            cr->set_line_width(std::max(2.0, cellSize_ * 0.07));
+            cr->arc(cx, cy, rTag + std::max(1.5, cellSize_ * 0.05), 0, 2 * M_PI);
+            cr->stroke();
+        }
     }
 }
 

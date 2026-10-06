@@ -1,6 +1,6 @@
 # UI-18 — Best-move mark is hidden whenever a winrate tag is shown
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** ✅ FIXED (2026-10-06) — `SearchOverlayMark::isBest` + ring over the tag; regression test in `test_proto06_analysis_overlay.cpp`; Release ctest 5/5. Ring appearance not yet checked on screen. See [fix-log](../fix-log/2026-10-06-ui-18-best-mark-with-tag.md).
 **Area:** src/model/board_view_model.{h,cpp}, src/ui/board_renderer.cpp, tests/
 **Priority:** P2
 **Source:** User board-UI task + [board marks review audit](../audit/2026-10-06-board-marks-ux-review.md) — 2026-10-06

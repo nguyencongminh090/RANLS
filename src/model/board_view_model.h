@@ -57,6 +57,7 @@ public:
         Kind        kind    = Kind::Tag;
         std::string label;             ///< winrate/mate text — Tag only
         double      winrate = 0.5;     ///< backs the HSV heat colour — Tag only
+        bool        isBest  = false;   ///< UI-18: this cell is the current best root move (orthogonal to kind)
     };
     std::vector<SearchOverlayMark> searchOverlay;
 
