@@ -1,6 +1,6 @@
 # UX-08 — Board hover UX: crosshair, margin highlight, mark tooltips
 
-**Status:** 🔲 OPEN (Active — Sprint 22)
+**Status:** ✅ DONE (2026-10-06) — `BoardViewModel::tooltipFor` (engine tag/best/lost + depth, database value/depth/bound/best/has-comment, variant count, Renju forbidden "still playable"; empty for occupied/off-board; examined/examining dots add no text), `BoardView` query-tooltip, renderer crosshair layer below stones (empty hovered cells only; none on occupied) + bold accent margin labels. +26 cases (`test_ux08_*`); Release ctest 5/5, `ranls-gui-tests` 246/2760, `ranls-gui-ui-tests` 104/634. Offscreen PNGs viewed; not verified in the live GTK window.
 **Area:** src/ui/board_view.cpp, src/ui/board_renderer.cpp, src/model/board_view_model.*
 **Priority:** P3
 **Source:** User board-UI task + [board marks review audit](../audit/2026-10-06-board-marks-ux-review.md) — 2026-10-06
