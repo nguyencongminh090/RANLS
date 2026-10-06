@@ -71,3 +71,7 @@ each extraction PR removes the moved code and reports before/after line counts.
 `docs/knowledge/pattern-facade.md`, `docs/knowledge/principle-layering-dependency-rule.md`;
 skills `solid-single-responsibility`, `software-architecture`; audit
 `docs/audit/2026-10-05-architecture-review.md`; prior features `features/analyze-mode/`.
+
+## Implementation outcome — 2026-10-06 (ARCH-02)
+
+Implemented per the Resolution: `AnalysisCoordinator` in `src/engine/` (Q1), injected `postIdle` (Q2), menu sync via `signal_engine_plays_reverted` handled in `MainWindow` (Q3), persistence stays in `MainWindow` (Q4), one class (Q7), friend probes kept unchanged (Q8; latches exposed through const-reference members). Lifetime handled with a `weak_ptr` liveness token. `main_window.cpp` 1328 -> 1228 lines, `.h` 269 -> 244. See `docs/fix-log/2026-10-06-arch-02-analysis-coordinator.md`.

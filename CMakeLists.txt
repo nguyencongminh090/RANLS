@@ -98,6 +98,7 @@ set(GUI_SOURCES
     # Engine
     src/engine/engine_process.cpp
     src/engine/engine_controller.cpp
+    src/engine/analysis_coordinator.cpp
     src/engine/gomocup_protocol.cpp
     src/engine/protocol_extension.cpp
 

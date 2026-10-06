@@ -1,6 +1,6 @@
 # ARCH-02 — Extract analyze/auto-move orchestration out of MainWindow
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** ✅ DONE
 **Area:** `src/main_window.{h,cpp}`, new `src/engine/analysis_coordinator.{h,cpp}`
 **Priority:** P2
 **Source:** architecture review, 2026-10-05 — [docs/audit/2026-10-05-architecture-review.md](../audit/2026-10-05-architecture-review.md)
@@ -42,3 +42,10 @@ Orchestration rules (when to analyze/auto-move) are application logic and should
 - Not a UI redesign; no menu/shortcut changes.
 - Do not retire existing friend-probe tests in this task.
 - `GameFileService` is ARCH-05, not here.
+
+## Outcome (2026-10-06)
+
+Added GTK-free `src/engine/analysis_coordinator.{h,cpp}` (`GameState&`, `EngineController&`, injected `postIdle`). It owns the Analyze-Mode restart decision + coalescing/force latches, the engine-plays auto-move decision + latch, and the ENG-02 revert (in memory, never persisted; announces via `signal_engine_plays_reverted`). Guard order moved verbatim (ANLZ-05, ANLZ-07, `stopAnalysis()` before `analyze()`). `MainWindow` keeps widgets, wiring, the `Glib::signal_idle().connect_once` adapter, `sync*Menu()` and persistence; handlers delegate. Lifetime: posted callbacks hold a `weak_ptr` liveness token, so one running after the coordinator is destroyed is a no-op; `coordinator_` is declared after `gameState_`/`controller_`, so it is destroyed first. No behaviour change.
+
+- Line counts: `src/main_window.cpp` 1328 -> 1228 (-100), `src/main_window.h` 269 -> 244 (-25). Logic moved is ~150 lines; `MainWindow` retains thin forwarders (`maybeStartAutoMove`, `scheduleAnalyzeModeRestart`, `revertEnginePlaysToOff`) and const-reference views of the latches so the ARCH-04 friend probes compile and pass unchanged (no existing test file edited).
+- Tests: new `tests/test_arch02_analysis_coordinator.cpp` (11 cases, in display-free `ranls-gui-tests`, manual scheduler). Release `RUN_TESTS=1 ./build.sh`: ctest 5/5; `ranls-gui-tests` 239 cases / 2703 assertions (+11 / +78); `ranls-gui-ui-tests` 60 / 460, executed (DISPLAY present, not skipped). `grep -rniE 'gtk|glib' src/engine/analysis_coordinator.*` empty; `src/model` has no `engine/` includes; `scripts/check-tracking-sync.js --full` passes.
