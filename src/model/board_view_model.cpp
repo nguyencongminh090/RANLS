@@ -60,7 +60,9 @@ void BoardViewModel::update()
         for (const auto &[c, cell] : ov.cells) {
             if (!emptyCell(c)) continue;
             SearchOverlayMark m;
-            m.pos = c;
+            m.pos    = c;
+            // UI-18: best is a flag, not a rank -- a tagged best move keeps both.
+            m.isBest = (c == ov.bestMove);
             if (showTags && !cell.tag.empty()) {
                 m.kind    = SearchOverlayMark::Kind::Tag;
                 m.label   = cell.tag;
@@ -82,8 +84,9 @@ void BoardViewModel::update()
         // BEST may have arrived before any POS/tag for that cell — no map entry.
         if (emptyCell(ov.bestMove) && ov.cells.find(ov.bestMove) == ov.cells.end()) {
             SearchOverlayMark m;
-            m.pos  = ov.bestMove;
-            m.kind = SearchOverlayMark::Kind::Best;
+            m.pos    = ov.bestMove;
+            m.kind   = SearchOverlayMark::Kind::Best;
+            m.isBest = true;
             searchOverlay.push_back(m);
         }
     }

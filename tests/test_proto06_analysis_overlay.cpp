@@ -282,3 +282,59 @@ TEST_CASE("PROTO-06: BoardViewModel::searchOverlay is live-only and respects the
         CHECK(bvm.searchOverlay.empty());
     }
 }
+
+// ── 7. UI-18: the best root move stays flagged when it also carries a tag ───
+// Root cause: update() resolved one Kind per cell (tag > lost > best > ...), so
+// the best root move -- which almost always has a winrate tag -- resolved to
+// Tag and lost its Best mark. `isBest` is now orthogonal to `kind`.
+TEST_CASE("UI-18: best root move is flagged isBest even when it carries a winrate tag") {
+    Harness h;
+    h.gs.setAnalyzing(true);
+    h.feed(pvBlock(0, 2, 10, "3,3", 0.60));   // Coord{3,3} = A, tagged
+    h.feed(pvBlock(1, 2, 10, "4,3", 0.55));   // Coord{3,4} = B, tagged
+    h.feed({"MESSAGE REALTIME BEST 3,3"});
+    REQUIRE(h.gs.tickAnalysis());
+
+    using Kind = BoardViewModel::SearchOverlayMark::Kind;
+    const Coord A{3, 3}, B{3, 4};
+
+    auto markAt = [](const BoardViewModel &bvm, Coord c) -> const BoardViewModel::SearchOverlayMark * {
+        for (const auto &m : bvm.searchOverlay)
+            if (m.pos == c) return &m;
+        return nullptr;
+    };
+
+    BoardViewModel bvm(h.gs);
+    bvm.update();
+
+    const auto *a = markAt(bvm, A);
+    REQUIRE(a);
+    CHECK(a->kind == Kind::Tag);   // winrate text still shown
+    CHECK(a->label == "60%");
+    CHECK(a->isBest);              // ...and the best flag survives
+
+    const auto *b = markAt(bvm, B);
+    REQUIRE(b);
+    CHECK_FALSE(b->isBest);        // only the best move is flagged
+
+    // showSearchWinrate off -> tag hidden; Best is still the visible mark.
+    ViewConfig vc = h.gs.viewConfig();
+    vc.showSearchWinrate = false;
+    h.gs.setViewConfig(vc);
+    BoardViewModel bvm2(h.gs);
+    bvm2.update();
+    const auto *a2 = markAt(bvm2, A);
+    REQUIRE(a2);
+    CHECK(a2->isBest);
+
+    // A best move with no map entry yet (BEST before any POS/tag) is flagged too.
+    Harness h2;
+    h2.gs.setAnalyzing(true);
+    h2.feed({"MESSAGE REALTIME BEST 5,5"});
+    REQUIRE(h2.gs.tickAnalysis());
+    BoardViewModel bvm3(h2.gs);
+    bvm3.update();
+    const auto *c = markAt(bvm3, Coord{5, 5});
+    REQUIRE(c);
+    CHECK(c->isBest);
+}
