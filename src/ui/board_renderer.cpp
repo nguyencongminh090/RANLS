@@ -290,7 +290,8 @@ void BoardRenderer::drawStones(const Cairo::RefPtr<Cairo::Context> &cr)
                                        (stone == Stone::Black) ? 0.9 : 0.1);
                 }
                 
-                cr->select_font_face("sans-serif", Cairo::ToyFontFace::Slant::NORMAL, Cairo::ToyFontFace::Weight::NORMAL);
+                // Bold digits read better on a stone than the thin default face.
+                cr->select_font_face("sans-serif", Cairo::ToyFontFace::Slant::NORMAL, Cairo::ToyFontFace::Weight::BOLD);
                 cr->set_font_size(std::max(8.0, cellSize_ * 0.45));
                 Cairo::TextExtents ext;
                 cr->get_text_extents(num, ext);
@@ -309,8 +310,13 @@ void BoardRenderer::drawStones(const Cairo::RefPtr<Cairo::Context> &cr)
                     cr->get_text_extents(num, ext);
                 }
 
-                cr->move_to(cx - ext.width / 2.0, cy + ext.height / 2.0);
+                // Centre the ink box: x/y_bearing are the offset of the glyph
+                // bounding box from the origin, so ignoring them shifted the
+                // number off-centre (digit-dependent).
+                cr->move_to(cx - ext.width / 2.0 - ext.x_bearing,
+                            cy - ext.height / 2.0 - ext.y_bearing);
                 cr->show_text(num);
+                cr->begin_new_path();
             }
         }
     }
@@ -511,9 +517,51 @@ void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
     if (vm_.searchOverlay.empty()) return;
 
     using Kind = BoardViewModel::SearchOverlayMark::Kind;
-    const double rTag  = stoneRadius() * 0.55;
     const double rMark = stoneRadius() * 0.42;
-    cr->set_font_size(std::max(8.0, cellSize_ * 0.32));
+    const double labelFont = std::max(8.0, cellSize_ * 0.36);
+    cr->set_font_size(labelFont);
+
+    // Sabaki heatmap (Shudan `.shudan-heat_N`): each analysed move is a soft,
+    // blurred blob -- not a hard disc -- whose colour/size/opacity come from a
+    // strength 1..9 (red < purple < blue < green; 9 = best, widest glow).
+    // Sabaki derives strength from visits*winrate relative to the best move;
+    // we have no visits here, so it is winrate relative to the best tag.
+    struct Heat { double r, g, b, spread, blur, alpha; };
+    static const Heat kHeat[9] = {
+        {0.941, 0.137, 0.067, 0.40, 0.75, 0.7},   // 1 #F02311
+        {0.941, 0.137, 0.067, 0.40, 0.75, 0.8},   // 2
+        {0.573, 0.153, 0.561, 0.45, 0.80, 0.7},   // 3 #92278F
+        {0.573, 0.153, 0.561, 0.50, 0.85, 0.8},   // 4
+        {0.282, 0.525, 0.835, 0.55, 0.90, 0.7},   // 5 #4886D5
+        {0.282, 0.525, 0.835, 0.60, 1.00, 0.8},   // 6
+        {0.282, 0.525, 0.835, 0.75, 1.00, 0.8},   // 7
+        {0.349, 0.659, 0.059, 0.90, 1.00, 0.7},   // 8 #59A80F
+        {0.349, 0.659, 0.059, 1.00, 1.00, 0.8},   // 9
+    };
+    double bestWinrate = 0.0;
+    for (const auto &m : vm_.searchOverlay)
+        if (m.kind == Kind::Tag) bestWinrate = std::max(bestWinrate, m.winrate);
+    auto strengthOf = [&](const BoardViewModel::SearchOverlayMark &m) {
+        if (m.isBest) return 9;
+        if (bestWinrate <= 0.0) return 1;
+        return std::clamp(static_cast<int>(std::lround(8.0 * m.winrate / bestWinrate)) + 1, 1, 9);
+    };
+    // Sabaki's blobs reach ~2 cells across; gomoku tags sit on adjacent cells,
+    // so the whole glow is scaled down to stay readable.
+    constexpr double kGlowScale = 0.6;
+    auto drawHeat = [&](double gx, double gy, int strength) {
+        const Heat &h = kHeat[strength - 1];
+        // box-shadow `0 0 blur spread`: solid out to spread - blur/2, gone at spread + blur/2.
+        const double rIn  = std::max(0.0, h.spread - h.blur / 2.0) * kGlowScale * cellSize_;
+        const double rOut = (h.spread + h.blur / 2.0) * kGlowScale * cellSize_;
+        auto g = Cairo::RadialGradient::create(gx, gy, rIn, gx, gy, rOut);
+        g->add_color_stop_rgba(0.0, h.r, h.g, h.b, h.alpha);
+        g->add_color_stop_rgba(1.0, h.r, h.g, h.b, 0.0);
+        cr->set_source(g);
+        cr->arc(gx, gy, rOut, 0, 2 * M_PI);
+        cr->fill();
+        cr->begin_new_path();
+    };
 
     for (const auto &m : vm_.searchOverlay) {
         if (!m.pos.isValid(vm_.boardSize)) continue;
@@ -523,24 +571,22 @@ void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
 
         switch (m.kind) {
         case Kind::Tag: {
-            set_source_from_winrate(cr, m.winrate, 0.55);
-            cr->arc(cx, cy, rTag, 0, 2 * M_PI);
-            cr->fill();
-            set_source_from_winrate(cr, m.winrate, 0.8);
-            cr->set_line_width(1.5);
-            cr->arc(cx, cy, rTag, 0, 2 * M_PI);
-            cr->stroke();
+            drawHeat(cx, cy, strengthOf(m));
             if (!m.label.empty()) {
+                // Sabaki label: bold, white, centred, soft dark shadow.
+                cr->select_font_face("sans-serif", Cairo::ToyFontFace::Slant::NORMAL,
+                                     Cairo::ToyFontFace::Weight::BOLD);
                 Cairo::TextExtents ext;
                 cr->get_text_extents(m.label, ext);
-                double tx = cx - ext.width / 2.0;
-                double ty = cy + ext.height / 2.0;
-                cr->set_source_rgba(0.0, 0.0, 0.0, 0.6);
+                const double tx = cx - ext.width / 2.0 - ext.x_bearing;
+                const double ty = cy - ext.height / 2.0 - ext.y_bearing;
+                cr->set_source_rgba(0.0, 0.0, 0.0, 0.55);
                 cr->move_to(tx + 1, ty + 1);
                 cr->show_text(m.label);
                 cr->set_source_rgba(1.0, 1.0, 1.0, 0.95);
                 cr->move_to(tx, ty);
                 cr->show_text(m.label);
+                cr->begin_new_path();
             }
             break;
         }
@@ -583,16 +629,11 @@ void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
         }
         }
 
-        // UI-18: a best move that also carries a winrate tag (Kind::Tag) gets
-        // the same cyan ring drawn just outside the tag disc, so the tag text
-        // stays readable and the best move is still marked. Kind::Best cells
-        // already drew their own disc + ring above.
-        if (m.isBest && m.kind != Kind::Best) {
-            cr->set_source_rgba(0.10, 0.55, 0.70, 0.95);
-            cr->set_line_width(std::max(2.0, cellSize_ * 0.07));
-            cr->arc(cx, cy, rTag + std::max(1.5, cellSize_ * 0.05), 0, 2 * M_PI);
-            cr->stroke();
-        }
+        // UI-18: a best move that also carries a non-Tag mark (lost/examined/
+        // examining) still gets the glow; Kind::Tag drew its own above and
+        // Kind::Best is its own cyan disc.
+        if (m.isBest && m.kind != Kind::Best && m.kind != Kind::Tag)
+            drawHeat(cx, cy, 9);
     }
 }
 
