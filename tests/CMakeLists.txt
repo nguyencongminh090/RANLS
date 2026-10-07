@@ -164,6 +164,7 @@ add_executable(ranls-gui-ui-tests
     test_ui19_best_ring_clears_tag_text.cpp
     test_ui20_stone_number_centered.cpp
     test_ux07_board_mark_model.cpp
+    test_fix_database_marker_winrate.cpp
     test_ux07_board_marks_render.cpp
     test_ux08_tooltip_model.cpp
     test_ux08_hover_crosshair.cpp

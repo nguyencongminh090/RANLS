@@ -3,6 +3,21 @@
 #include "renju_rule.h"
 #include <cmath>
 #include <algorithm>
+#include <cstdlib>
+
+/// Heat-colour winrate [0,1] of a database marker, read from the engine's own
+/// display label like the original Yixin-Board (main.c: "W.." -> 100, "L.." -> 0,
+/// "NN%" -> NN); -1 when the label carries no score ("D", empty, ...). The raw
+/// record value is deliberately not converted: the engine's cp -> winrate scale
+/// and sign are its own (label uses valueToWinRate(-value), scale != 200 for
+/// yixin-net), so any local sigmoid disagrees with the "NN%" drawn on the marker.
+static double databaseLabelWinrate(const std::string &label) {
+    if (label.empty()) return -1.0;
+    if (label[0] == 'W' || label[0] == 'w') return 1.0;
+    if (label[0] == 'L' || label[0] == 'l') return 0.0;
+    if (label.back() == '%') return std::clamp(std::atoi(label.c_str()), 0, 100) / 100.0;
+    return -1.0;
+}
 
 BoardViewModel::BoardViewModel(GameState &state)
     : state_(state)
@@ -191,8 +206,7 @@ void BoardViewModel::update()
             Marker m;
             m.pos   = coord;
             m.label = entry.boardText.empty() ? entry.label : entry.boardText;
-            // Normalize centipawns to [0, 1] winrate using the same sigmoid as the engine.
-            m.eval  = 1.0 / (1.0 + std::exp(-static_cast<double>(entry.value) / 200.0));
+            m.eval  = databaseLabelWinrate(entry.label);
             databaseMarkers.push_back(m);
         }
         // UX-07: flag the best entry (highest value; ties -> all tied flagged).
