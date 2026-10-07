@@ -525,7 +525,7 @@ void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
     // blurred blob -- not a hard disc -- whose colour/size/opacity come from a
     // strength 1..9 (red < purple < blue < green; 9 = best, widest glow).
     // Sabaki derives strength from visits*winrate relative to the best move;
-    // we have no visits here, so it is winrate relative to the best tag.
+    // we have no visits here, so it is the winrate gap to the best tag.
     struct Heat { double r, g, b, spread, blur, alpha; };
     static const Heat kHeat[9] = {
         {0.941, 0.137, 0.067, 0.40, 0.75, 0.7},   // 1 #F02311
@@ -541,10 +541,13 @@ void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
     double bestWinrate = 0.0;
     for (const auto &m : vm_.searchOverlay)
         if (m.kind == Kind::Tag) bestWinrate = std::max(bestWinrate, m.winrate);
+    // Steeper than Sabaki's ratio: one strength step per 4 winrate points below
+    // the best tag (7 pts -> blue, 20 pts -> purple, 32+ pts -> red).
+    constexpr double kPointsPerStep = 0.04;
     auto strengthOf = [&](const BoardViewModel::SearchOverlayMark &m) {
         if (m.isBest) return 9;
-        if (bestWinrate <= 0.0) return 1;
-        return std::clamp(static_cast<int>(std::lround(8.0 * m.winrate / bestWinrate)) + 1, 1, 9);
+        const int steps = static_cast<int>(std::lround((bestWinrate - m.winrate) / kPointsPerStep));
+        return std::clamp(9 - steps, 1, 9);
     };
     // Sabaki's blobs reach ~2 cells across; gomoku tags sit on adjacent cells,
     // so the whole glow is scaled down to stay readable.
