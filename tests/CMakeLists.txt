@@ -158,6 +158,7 @@ add_executable(ranls-gui-ui-tests
     test_anlz07_analyze_restart_convergence.cpp
     test_proto05_incremental_stream.cpp
     test_proto06_analysis_overlay.cpp
+    test_fix_winrate_engine_scale.cpp
     test_ui16_hover_occupied.cpp
     test_ui17_renderer_state_isolation.cpp
     test_ui19_best_ring_clears_tag_text.cpp
