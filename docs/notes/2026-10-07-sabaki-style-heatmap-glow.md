@@ -13,4 +13,5 @@ gradient mimicking the CSS `box-shadow` spread/blur) coloured by strength 1..9 (
 (UI-18/UI-19), so nothing can cover the text. Deviation: Sabaki's strength uses visits x winrate; the view model
 has no visits, so strength = winrate relative to the best tag. Layering unchanged.
 Glow radii scaled by 0.6 (kGlowScale) after review: Sabaki's are ~2 cells wide.
+Strength later made steeper: 1 step per 4 winrate points below the best tag (was ratio-based, left 44% vs 51% green).
 Checked via an offscreen PNG (not committed) and `RUN_TESTS=1 ./build.sh` 5/5; not verified in the live window.
