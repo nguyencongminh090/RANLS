@@ -290,7 +290,8 @@ void BoardRenderer::drawStones(const Cairo::RefPtr<Cairo::Context> &cr)
                                        (stone == Stone::Black) ? 0.9 : 0.1);
                 }
                 
-                cr->select_font_face("sans-serif", Cairo::ToyFontFace::Slant::NORMAL, Cairo::ToyFontFace::Weight::NORMAL);
+                // Bold digits read better on a stone than the thin default face.
+                cr->select_font_face("sans-serif", Cairo::ToyFontFace::Slant::NORMAL, Cairo::ToyFontFace::Weight::BOLD);
                 cr->set_font_size(std::max(8.0, cellSize_ * 0.45));
                 Cairo::TextExtents ext;
                 cr->get_text_extents(num, ext);
@@ -309,8 +310,13 @@ void BoardRenderer::drawStones(const Cairo::RefPtr<Cairo::Context> &cr)
                     cr->get_text_extents(num, ext);
                 }
 
-                cr->move_to(cx - ext.width / 2.0, cy + ext.height / 2.0);
+                // Centre the ink box: x/y_bearing are the offset of the glyph
+                // bounding box from the origin, so ignoring them shifted the
+                // number off-centre (digit-dependent).
+                cr->move_to(cx - ext.width / 2.0 - ext.x_bearing,
+                            cy - ext.height / 2.0 - ext.y_bearing);
                 cr->show_text(num);
+                cr->begin_new_path();
             }
         }
     }
