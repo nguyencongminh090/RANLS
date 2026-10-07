@@ -518,6 +518,7 @@ void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
     for (const auto &m : vm_.searchOverlay) {
         if (!m.pos.isValid(vm_.boardSize)) continue;
         cr->begin_new_path();   // see drawDatabaseMarkers (tag text -> next arc)
+        double tagExtent = rTag;   // radius needed to enclose the tag text
         double cx = cellCenterX(m.pos.x);
         double cy = cellCenterY(m.pos.y);
 
@@ -535,6 +536,9 @@ void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
                 cr->get_text_extents(m.label, ext);
                 double tx = cx - ext.width / 2.0;
                 double ty = cy + ext.height / 2.0;
+                // The label (e.g. "55.3") can be wider than the disc; remember
+                // its half-diagonal so the best ring clears it.
+                tagExtent = std::max(rTag, 0.5 * std::hypot(ext.width, ext.height));
                 cr->set_source_rgba(0.0, 0.0, 0.0, 0.6);
                 cr->move_to(tx + 1, ty + 1);
                 cr->show_text(m.label);
@@ -584,13 +588,13 @@ void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
         }
 
         // UI-18: a best move that also carries a winrate tag (Kind::Tag) gets
-        // the same cyan ring drawn just outside the tag disc, so the tag text
-        // stays readable and the best move is still marked. Kind::Best cells
+        // the same cyan ring drawn just outside the tag disc *and its text*
+        // (a wide label used to be cut by the ring), so the tag stays readable and the best move is still marked. Kind::Best cells
         // already drew their own disc + ring above.
         if (m.isBest && m.kind != Kind::Best) {
             cr->set_source_rgba(0.10, 0.55, 0.70, 0.95);
             cr->set_line_width(std::max(2.0, cellSize_ * 0.07));
-            cr->arc(cx, cy, rTag + std::max(1.5, cellSize_ * 0.05), 0, 2 * M_PI);
+            cr->arc(cx, cy, tagExtent + std::max(2.0, cellSize_ * 0.05), 0, 2 * M_PI);
             cr->stroke();
         }
     }
