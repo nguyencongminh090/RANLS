@@ -540,11 +540,14 @@ void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
         if (bestWinrate <= 0.0) return 1;
         return std::clamp(static_cast<int>(std::lround(8.0 * m.winrate / bestWinrate)) + 1, 1, 9);
     };
+    // Sabaki's blobs reach ~2 cells across; gomoku tags sit on adjacent cells,
+    // so the whole glow is scaled down to stay readable.
+    constexpr double kGlowScale = 0.6;
     auto drawHeat = [&](double gx, double gy, int strength) {
         const Heat &h = kHeat[strength - 1];
         // box-shadow `0 0 blur spread`: solid out to spread - blur/2, gone at spread + blur/2.
-        const double rIn  = std::max(0.0, h.spread - h.blur / 2.0) * cellSize_;
-        const double rOut = (h.spread + h.blur / 2.0) * cellSize_;
+        const double rIn  = std::max(0.0, h.spread - h.blur / 2.0) * kGlowScale * cellSize_;
+        const double rOut = (h.spread + h.blur / 2.0) * kGlowScale * cellSize_;
         auto g = Cairo::RadialGradient::create(gx, gy, rIn, gx, gy, rOut);
         g->add_color_stop_rgba(0.0, h.r, h.g, h.b, h.alpha);
         g->add_color_stop_rgba(1.0, h.r, h.g, h.b, 0.0);

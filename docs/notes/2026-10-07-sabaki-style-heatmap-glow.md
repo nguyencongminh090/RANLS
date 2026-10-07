@@ -12,4 +12,5 @@ gradient mimicking the CSS `box-shadow` spread/blur) coloured by strength 1..9 (
 = widest green glow), with a bold white centred label (shadow, 0.36 x cell). Replaces the hard disc + ring
 (UI-18/UI-19), so nothing can cover the text. Deviation: Sabaki's strength uses visits x winrate; the view model
 has no visits, so strength = winrate relative to the best tag. Layering unchanged.
+Glow radii scaled by 0.6 (kGlowScale) after review: Sabaki's are ~2 cells wide.
 Checked via an offscreen PNG (not committed) and `RUN_TESTS=1 ./build.sh` 5/5; not verified in the live window.
