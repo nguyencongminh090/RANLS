@@ -45,6 +45,8 @@ private:
     void parseMessage(const std::string &msg);
     void parseInfo(const std::string &info);
     void resetCurrentPVState();
+    bool parseMessageEval(int pvIdx, const std::string &eval, double &winrate, int &mateStep,
+                          std::string &evalText) const;
     void parseDatabase(const std::string &dbLine);
     void onPVDone();
     void tryExtensionReply(const std::string &line);
@@ -71,6 +73,15 @@ private:
     double  currentPvWinrate_ = 0.5;
     int     currentPvMateStep_ = 0;
     std::string currentPvEvalText_;
+    bool        currentPvHasInfoWinrate_ = false;   ///< INFO WINRATE seen for this PV block
+
+    /// Engine-reported winrate per PV index, with the INFO EVAL text it belongs to.
+    struct InfoWinrate {
+        bool        valid = false;
+        double      winrate = 0.5;
+        std::string evalText;
+    };
+    std::vector<InfoWinrate> infoWinrates_;
     std::vector<Coord> currentBestLine_;
 
     // PROTO-06: accumulated live per-cell search overlay for the current think.

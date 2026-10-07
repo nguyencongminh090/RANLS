@@ -304,6 +304,7 @@ void GomocupProtocol::clearAnalysisState() {
     currentPVIndex_  = 0;
     currentNumPV_    = 0;
     currentBestLine_.clear();
+    infoWinrates_.clear();
     // PROTO-06: the live per-cell overlay is per-think too — drop it here so a
     // stale REALTIME/tag cell can't survive a position change or a fresh
     // analyze. GameState clears its own copy + repaints (resetAnalysisState).
@@ -524,7 +525,23 @@ void GomocupProtocol::resetCurrentPVState() {
     currentPvWinrate_ = currentStatus_.winrate;
     currentPvMateStep_ = currentStatus_.mateStep;
     currentPvEvalText_ = currentStatus_.evalText;
+    currentPvHasInfoWinrate_ = false;
     currentBestLine_.clear();
+}
+
+/// Parse a MESSAGE-line eval token, but keep the engine's own winrate when the
+/// `INFO` stream already reported one for this PV and this same eval. The
+/// cp -> winrate scale is engine/config dependent (≈116 for yixin-net, 200 only
+/// by default), so re-deriving it from cp disagrees with the board tag. Mate
+/// scores and cp values with no matching INFO record fall back to parseEvalToken.
+bool GomocupProtocol::parseMessageEval(int pvIdx, const std::string &eval, double &winrate,
+                                       int &mateStep, std::string &evalText) const {
+    if (!parseEvalToken(eval, winrate, mateStep, evalText)) return false;
+    if (mateStep == 0 && pvIdx >= 0 && pvIdx < static_cast<int>(infoWinrates_.size())) {
+        const InfoWinrate &known = infoWinrates_[pvIdx];
+        if (known.valid && known.evalText == evalText) winrate = known.winrate;
+    }
+    return true;
 }
 
 void GomocupProtocol::parseMessage(const std::string &msg) {
@@ -676,7 +693,7 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
                 pv.score = currentStatus_.winrate;
                 pv.mateStep = currentStatus_.mateStep;
                 pv.evalText = currentStatus_.evalText;
-                if (parseEvalToken(eval, pv.score, pv.mateStep, pv.evalText)) {
+                if (parseMessageEval(pvIndex, eval, pv.score, pv.mateStep, pv.evalText)) {
                     if (pvIndex == 0) {
                         currentStatus_.winrate = pv.score;
                         currentStatus_.mateStep = pv.mateStep;
@@ -712,7 +729,7 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
                 currentStatus_.depth = pv.depth;
                 currentStatus_.selDepth = pv.selDepth;
             } else if (part.rfind("Eval ", 0) == 0) {
-                parseEvalToken(trimCopy(part.substr(5)), pv.score, pv.mateStep, pv.evalText);
+                parseMessageEval(0, trimCopy(part.substr(5)), pv.score, pv.mateStep, pv.evalText);
                 currentStatus_.winrate = pv.score;
                 currentStatus_.mateStep = pv.mateStep;
                 currentStatus_.evalText = pv.evalText;
@@ -744,8 +761,8 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
                 parseDepthPair(trimCopy(part.substr(6)), currentStatus_.depth, currentStatus_.selDepth);
                 updated = true;
             } else if (part.rfind("Eval ", 0) == 0) {
-                parseEvalToken(trimCopy(part.substr(5)), currentStatus_.winrate,
-                               currentStatus_.mateStep, currentStatus_.evalText);
+                parseMessageEval(0, trimCopy(part.substr(5)), currentStatus_.winrate,
+                                 currentStatus_.mateStep, currentStatus_.evalText);
                 updated = true;
             } else if (part.rfind("Node ", 0) == 0 || part.rfind("Visit ", 0) == 0) {
                 auto space = part.find(' ');
@@ -801,7 +818,7 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
         } else if (token == "ev" || token == "eval") {
             std::string eval;
             if (ss >> eval) {
-                if (parseEvalToken(eval, parsedWinrate, parsedMateStep, parsedEvalText)) {
+                if (parseMessageEval(parsedPVIndex, eval, parsedWinrate, parsedMateStep, parsedEvalText)) {
                     if (parsedPVIndex == 0) {
                         currentStatus_.winrate = parsedWinrate;
                         currentStatus_.mateStep = parsedMateStep;
@@ -930,8 +947,13 @@ void GomocupProtocol::parseInfo(const std::string &info) {
     } else if (key == "EVAL") {
         std::string eval;
         ss >> eval;
-        if (parseEvalToken(eval, currentPvWinrate_, currentPvMateStep_, currentPvEvalText_)
-            && currentPVIndex_ == 0) {
+        const double engineWinrate = currentPvWinrate_;
+        const bool   parsed =
+            parseEvalToken(eval, currentPvWinrate_, currentPvMateStep_, currentPvEvalText_);
+        // cp is only a fallback: INFO WINRATE (engine scale) wins whatever the order.
+        if (parsed && currentPvHasInfoWinrate_ && currentPvMateStep_ == 0)
+            currentPvWinrate_ = engineWinrate;
+        if (parsed && currentPVIndex_ == 0) {
             currentStatus_.winrate = currentPvWinrate_;
             currentStatus_.mateStep = currentPvMateStep_;
             currentStatus_.evalText = currentPvEvalText_;
@@ -939,7 +961,8 @@ void GomocupProtocol::parseInfo(const std::string &info) {
     } else if (key == "WINRATE") {
         double winrate = 0.5;
         if (ss >> winrate) {
-            currentPvWinrate_ = winrate;
+            currentPvWinrate_        = winrate;
+            currentPvHasInfoWinrate_ = true;
             if (currentPVIndex_ == 0) {
                 currentStatus_.winrate = winrate;
             }
@@ -997,6 +1020,11 @@ void GomocupProtocol::onPVDone() {
     pv.score    = currentPvWinrate_;
     pv.mateStep = currentPvMateStep_;
     pv.evalText = currentPvEvalText_;
+
+    if (currentPvHasInfoWinrate_) {
+        if (idx >= static_cast<int>(infoWinrates_.size())) infoWinrates_.resize(idx + 1);
+        infoWinrates_[idx] = {true, currentPvWinrate_, currentPvEvalText_};
+    }
 
     if (!currentBestLine_.empty()) {
         pv.moves = currentBestLine_;
