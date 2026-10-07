@@ -511,40 +511,60 @@ void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
     if (vm_.searchOverlay.empty()) return;
 
     using Kind = BoardViewModel::SearchOverlayMark::Kind;
-    const double rTag  = stoneRadius() * 0.55;
+    // Sabaki-style heatmap: the tag is a stone-sized disc with the text centred.
+    const double rTag  = stoneRadius() * 0.92;
     const double rMark = stoneRadius() * 0.42;
     cr->set_font_size(std::max(8.0, cellSize_ * 0.32));
+
+    // Cyan radial glow fading out from radius r to ~1.45 r.
+    auto drawBestGlow = [&](double gx, double gy, double r) {
+        auto g = Cairo::RadialGradient::create(gx, gy, r * 0.9, gx, gy, r * 1.45);
+        g->add_color_stop_rgba(0.0, 0.25, 0.85, 0.95, 0.85);
+        g->add_color_stop_rgba(1.0, 0.25, 0.85, 0.95, 0.0);
+        cr->set_source(g);
+        cr->arc(gx, gy, r * 1.45, 0, 2 * M_PI);
+        cr->fill();
+    };
 
     for (const auto &m : vm_.searchOverlay) {
         if (!m.pos.isValid(vm_.boardSize)) continue;
         cr->begin_new_path();   // see drawDatabaseMarkers (tag text -> next arc)
-        double tagExtent = rTag;   // radius needed to enclose the tag text
         double cx = cellCenterX(m.pos.x);
         double cy = cellCenterY(m.pos.y);
 
         switch (m.kind) {
         case Kind::Tag: {
-            set_source_from_winrate(cr, m.winrate, 0.55);
+            // Best move: soft glow behind the disc (radial fade, never over the text).
+            if (m.isBest) drawBestGlow(cx, cy, rTag);
+            set_source_from_winrate(cr, m.winrate, 0.85);
             cr->arc(cx, cy, rTag, 0, 2 * M_PI);
             cr->fill();
-            set_source_from_winrate(cr, m.winrate, 0.8);
-            cr->set_line_width(1.5);
+            if (m.isBest) cr->set_source_rgba(0.55, 0.95, 1.0, 0.95);
+            else          cr->set_source_rgba(1.0, 1.0, 1.0, 0.35);
+            cr->set_line_width(m.isBest ? std::max(2.0, cellSize_ * 0.06) : 1.0);
             cr->arc(cx, cy, rTag, 0, 2 * M_PI);
             cr->stroke();
             if (!m.label.empty()) {
+                // Shrink the font until the label fits inside the disc.
+                double fs = std::max(8.0, cellSize_ * 0.32);
                 Cairo::TextExtents ext;
+                cr->set_font_size(fs);
                 cr->get_text_extents(m.label, ext);
-                double tx = cx - ext.width / 2.0;
-                double ty = cy + ext.height / 2.0;
-                // The label (e.g. "55.3") can be wider than the disc; remember
-                // its half-diagonal so the best ring clears it.
-                tagExtent = std::max(rTag, 0.5 * std::hypot(ext.width, ext.height));
+                const double fit = rTag * 1.9;
+                if (ext.width > fit) {
+                    fs = std::max(8.0, fs * fit / ext.width);
+                    cr->set_font_size(fs);
+                    cr->get_text_extents(m.label, ext);
+                }
+                const double tx = cx - ext.width / 2.0 - ext.x_bearing;
+                const double ty = cy - ext.height / 2.0 - ext.y_bearing;
                 cr->set_source_rgba(0.0, 0.0, 0.0, 0.6);
                 cr->move_to(tx + 1, ty + 1);
                 cr->show_text(m.label);
-                cr->set_source_rgba(1.0, 1.0, 1.0, 0.95);
+                cr->set_source_rgba(1.0, 1.0, 1.0, 0.97);
                 cr->move_to(tx, ty);
                 cr->show_text(m.label);
+                cr->set_font_size(std::max(8.0, cellSize_ * 0.32));
             }
             break;
         }
@@ -587,16 +607,11 @@ void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
         }
         }
 
-        // UI-18: a best move that also carries a winrate tag (Kind::Tag) gets
-        // the same cyan ring drawn just outside the tag disc *and its text*
-        // (a wide label used to be cut by the ring), so the tag stays readable and the best move is still marked. Kind::Best cells
-        // already drew their own disc + ring above.
-        if (m.isBest && m.kind != Kind::Best) {
-            cr->set_source_rgba(0.10, 0.55, 0.70, 0.95);
-            cr->set_line_width(std::max(2.0, cellSize_ * 0.07));
-            cr->arc(cx, cy, tagExtent + std::max(2.0, cellSize_ * 0.05), 0, 2 * M_PI);
-            cr->stroke();
-        }
+        // UI-18: a best move that also carries a non-Tag mark (lost/examined/
+        // examining) still gets the glow; Kind::Tag drew its own above and
+        // Kind::Best is its own cyan disc.
+        if (m.isBest && m.kind != Kind::Best && m.kind != Kind::Tag)
+            drawBestGlow(cx, cy, rMark);
     }
 }
 
