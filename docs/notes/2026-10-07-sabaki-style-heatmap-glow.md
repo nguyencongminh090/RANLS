@@ -4,9 +4,12 @@
 
 Request: "modify Sabaki heatmap when display winrate, the best move is glow and text (winrate%) display at center."
 
-Change: the engine Tag mark is now a stone-sized heat disc (0.92 × stone radius, alpha 0.85) with the
-label centred on the disc using text-extent bearings, font shrunk (min 8 px) to fit. The best move
-(`isBest`) gets a cyan radial glow drawn *behind* the disc plus a light-cyan rim, replacing the hard UI-18/UI-19
-ring, so it can never cut the text. Non-Tag best cells (lost/examined/examining) get the same glow.
-Layering unchanged (`ui` only). `test_ui19_best_ring_clears_tag_text` still passes (glow/rim are not near-white).
-Not verified in the live window (offscreen tests only).
+Source read: Sabaki `src/modules/analysis.js` (`getAnalysisHeatMapCell`, strength 1..9) + Shudan `css/goban.css`
+(`.shudan-heat_N`, `.shudan-heatlabel`).
+
+Change (`src/ui/board_renderer.cpp`, `drawSearchOverlay`): each engine Tag is a soft blurred blob (Cairo radial
+gradient mimicking the CSS `box-shadow` spread/blur) coloured by strength 1..9 (red/purple/blue/green, best = 9
+= widest green glow), with a bold white centred label (shadow, 0.36 x cell). Replaces the hard disc + ring
+(UI-18/UI-19), so nothing can cover the text. Deviation: Sabaki's strength uses visits x winrate; the view model
+has no visits, so strength = winrate relative to the best tag. Layering unchanged.
+Checked via an offscreen PNG (not committed) and `RUN_TESTS=1 ./build.sh` 5/5; not verified in the live window.
