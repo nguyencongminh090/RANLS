@@ -1,6 +1,6 @@
 # PAL-02 — Command palette: Ctrl+K overlay + action/command registries
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** ✅ DONE (2026-10-08, PR #58 squash `0a46eba`) — Ctrl+K (+ View ▸ Command Palette…) opens `CommandPalette` (popover, top-centre); `palette_catalog` = 22 actions + 20 settings + live `!` commands (`CommandDispatcher::commandSpecs()`, re-queried each open); run: actions via existing handlers / `win.*` actions, settings via `openSettings(id)`, `!` commands with args inserted into the Engine Log entry else run; recent items (top 50, `ViewConfig::paletteRecent`, persisted `palette_recent=`). Lexicon bundled via GResource. Tests: `test_pal02_palette_catalog.cpp`, `test_pal02_command_palette.cpp`; release ctest 5/5; driven live under Xvfb (Ctrl+K → "cai dat" → Settings → Enter). Not done: match highlighting in rows (engine returns no spans); no enabled-state predicates wired yet (dim/never-run mechanism tested); noisy tail results for short queries (needs a PAL-01 relative score cutoff).
 **Area:** `src/ui/command_palette.{h,cpp}`, `src/main_window.cpp` (action registration), `src/command/command_dispatcher.*` (entry provider), `data/style.css`
 **Priority:** P3
 **Source:** user request 2026-10-08
