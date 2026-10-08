@@ -307,6 +307,21 @@ Crosshair below stones, margin labels highlighted. After UX-07; no keyboard nav,
 
 ---
 
+## PAL-01 — palette-search-engine-and-benchmark
+
+Dataset first, then pure engine (NFC/fold/phrase max-match/BM25F), doctest gate, Whoosh dev-only benchmark; never tune on the test split.
+[detail](docs/instruction/PAL-01-palette-search-engine-and-benchmark.md)
+
+## PAL-02 — palette-overlay-ui-and-registries
+
+Ctrl+K overlay over PAL-01; explicit action metadata at registration; re-query `!` specs on open; one key controller.
+[detail](docs/instruction/PAL-02-palette-overlay-ui-and-registries.md)
+
+## PAL-03 — settings-registry-for-palette
+
+Behavior-preserving settings table + open-at-page/focus; test that every setting has an entry.
+[detail](docs/instruction/PAL-03-settings-registry-for-palette.md)
+
 _Items without an entry here (RT-02/03/04, STATE-02/03, PROTO-02, NAV-01, UI-01/02/03, UX-01…04,
 CLEAN-01) are self-contained enough that their `docs/todo/` detail file's "Scope boundary" section
 is sufficient guidance. Add an entry here if one turns out to need it._

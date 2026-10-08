@@ -17,7 +17,7 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 `ENG` engine lifecycle · `NAV` navigation · `UI` display logic · `UX` usability · `TEST` harness ·
 `CLEAN` hygiene · `IO` game persistence · `DOC` documentation · `TOOL` repo tooling ·
 `REL` release/versioning · `PORT` cross-platform portability · `ANLZ` analyze mode ·
-`RDB` `.rdb` save format · `NAME` app naming · `CONS` engine-log command console · `ARCH` architecture/layering refactors.
+`RDB` `.rdb` save format · `NAME` app naming · `CONS` engine-log command console · `ARCH` architecture/layering refactors · `PAL` command palette (Ctrl+K).
 
 ---
 
@@ -28,7 +28,13 @@ Sprint 22 (opened 2026-10-06, goal "Board mark visual language: stacked engine/d
 
 ## Backlog
 
-No open items.
+Filed 2026-10-08 from `features/command-palette/` (user request; Q1–Q10 resolved the same day; pull into a sprint via `/sprint`):
+
+- **PAL-01.** Command palette: pure en/vi search engine (classical NLP, BM25F) + shared dataset + Whoosh-baseline benchmark — [detail](docs/todo/PAL-01-palette-search-engine-and-benchmark.md) · [instruction](docs/instruction/PAL-01-palette-search-engine-and-benchmark.md)
+- **PAL-02.** Command palette: Ctrl+K overlay + action/`!`-command registries — [detail](docs/todo/PAL-02-palette-overlay-ui-and-registries.md) · [instruction](docs/instruction/PAL-02-palette-overlay-ui-and-registries.md)
+- **PAL-03.** Declarative settings registry so settings are searchable — [detail](docs/todo/PAL-03-settings-registry-for-palette.md) · [instruction](docs/instruction/PAL-03-settings-registry-for-palette.md)
+
+(Earlier Backlog: no other open items.)
 
 Filed 2026-10-06 from [board marks review audit](docs/audit/2026-10-06-board-marks-ux-review.md) — UI-16/17/18 shipped 2026-10-06 outside a sprint (PRs #46–#48, see Completed); UX-07 and UX-08 **pulled into Sprint 22 Active 2026-10-06** (see `docs/sprint/current.md`).
 
