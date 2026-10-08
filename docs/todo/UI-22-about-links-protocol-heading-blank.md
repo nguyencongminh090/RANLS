@@ -1,6 +1,6 @@
 # UI-22 — About dialog: "Links & protocol" section heading renders blank
 
-**Status:** 🔲 OPEN (Active — Sprint 25)
+**Status:** ✅ FIXED (2026-10-08, branch `ui-22/about-links-protocol-heading-blank`) — root cause: `makeSection()` put the raw title into Pango markup (`"<b>" + title + "</b>"`), so the bare `&` failed to parse ("Entity did not end with a semicolon…") and the heading stayed empty; the other headings have no `&`. Fix: `Glib::Markup::escape_text(title)`. **Verification:** new case in `tests/test_ui11_about_dialog.cpp` (every About heading present, no markup warning, en+vi) failed before, passes after; `GDK_BACKEND=x11 xvfb-run -a env -u WAYLAND_DISPLAY RUN_TESTS=1 ./build.sh` ctest 5/5; before/after screenshots (en, vi) read. Verbatim warning and detail: `docs/fix-log/2026-10-08-ui-22-about-links-protocol-heading.md`. **Not checked:** the live Help menu path (scratch harness presented the dialog). **Follow-up:** `makeValueLabel(markup=true)` does not escape the translated prefix; safe with current strings, would break if a translation gains `&`/`<`.
 **Area:** `src/ui/about_dialog.cpp` (`makeSection()`), tests/
 **Priority:** P3
 **Source:** user request 2026-10-08 ("BugAbout"); found by the I18N-02 agent during the vi visual pass
