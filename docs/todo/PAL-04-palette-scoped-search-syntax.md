@@ -11,7 +11,9 @@
 
 Today actions, settings and `!` console/protocol commands are ranked together. A plain query such as "cai dat" returns `!info`/`!db` among the UI results (seen in the Sprint 23 live check), and console commands (`!send`, `!engine`, `.ptc` extensions) are a different mental category from "things the app can do". Users also have no way to restrict a search to one category except the existing `!` prefix.
 
-## Scope (in order) — proposed, confirm before implementing
+## Scope (in order)
+
+_Proposed — confirm the open points under Reasoning before implementing._
 
 1. **Default (no prefix) = UI only:** actions + settings. Console/protocol commands no longer appear unless asked for.
 2. **Scope prefixes** (VS Code-style, first character of the query):
