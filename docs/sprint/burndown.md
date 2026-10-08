@@ -161,6 +161,7 @@ points at sprint start to 0 at the end date.
 | 2026-10-08 | 1 / 4 items | — | I18N-02 done (PR #61) — 185 UI strings wrapped, complete vi.tsv (user-reviewed), coverage lint, live refresh |
 | 2026-10-08 | 0 / 4 items | — | I18N-03 done (PR #62) — language= setting, Settings dropdown, system-locale startup; all Sprint 24 items landed |
 | 2026-10-08 | 0 / 4 items | — | Sprint 24 closed — PAL-04, I18N-01, I18N-02, I18N-03 landed on `main`; archived to `docs/sprint/archive/sprint-24.md`, nothing rolled over. Release `v0.11.0` cut (palette scopes + switchable UI language). Table reset below for Sprint 25 |
+| 2026-10-08 | 2 / 2 items | — | Sprint 25 opened (goal "Palette titles follow the UI language, and the About dialog heading bug is fixed"): I18N-04, UI-22 pulled from Backlog into Active — see docs/sprint/current.md. Backlog now empty |
 
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).

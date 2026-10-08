@@ -1,6 +1,6 @@
 # I18N-04 — UI language: palette titles from the catalog
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** 🔲 OPEN (Active — Sprint 25)
 **Area:** `src/ui/palette_catalog.cpp`, `src/ui/settings_registry.h`, `src/command/palette_search` display path
 **Priority:** P3
 **Source:** `features/ui-language/planning.md` Q7 (follow-up task)

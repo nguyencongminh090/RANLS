@@ -36,15 +36,18 @@ Sprint 24 (opened 2026-10-08, goal "Palette scopes (`!` `>` `@`) and a switchabl
 - ✅ **I18N-02.** Wrap UI strings in `tr()` + Vietnamese catalog + live refresh — [detail](docs/todo/I18N-02-wire-ui-strings.md) · [instruction](docs/instruction/I18N-02-wire-ui-strings.md)
 - ✅ **I18N-03.** Language setting (System/English/Tiếng Việt), persistence, system default — [detail](docs/todo/I18N-03-language-setting-and-persistence.md) · [instruction](docs/instruction/I18N-03-language-setting-and-persistence.md)
 
+Sprint 25 (opened 2026-10-08, goal "Palette titles follow the UI language, and the About dialog heading bug is fixed") — pulled from Backlog:
+
+- 🔲 **UI-22.** About dialog: "Links & protocol" heading renders blank — [detail](docs/todo/UI-22-about-links-protocol-heading-blank.md) · [instruction](docs/instruction/UI-22-about-links-protocol-heading-blank.md)
+- 🔲 **I18N-04.** UI language: palette titles from the catalog (display follows UI language; search stays bilingual) — [detail](docs/todo/I18N-04-palette-titles-from-catalog.md)
+
 ## Backlog
 
 PAL-04 (filed 2026-10-08 from the Sprint 23 follow-up discussion) — **pulled into Sprint 24 Active 2026-10-08** (see `docs/sprint/current.md`).
 
 
-Filed 2026-10-08 from `features/ui-language/` (Q1–Q11 resolved the same day): I18N-01/02/03 — **pulled into Sprint 24 Active 2026-10-08**; I18N-04 stays here:
+Filed 2026-10-08 from `features/ui-language/` (Q1–Q11 resolved the same day): I18N-01/02/03 — **pulled into Sprint 24 Active 2026-10-08**; I18N-04 **pulled into Sprint 25 Active 2026-10-08** (see `docs/sprint/current.md`).
 
-- 🔲 **UI-22.** About dialog: "Links & protocol" heading renders blank — [detail](docs/todo/UI-22-about-links-protocol-heading-blank.md) · [instruction](docs/instruction/UI-22-about-links-protocol-heading-blank.md)
-- 🔲 **I18N-04.** UI language: palette titles from the catalog (display follows UI language; search stays bilingual) — [detail](docs/todo/I18N-04-palette-titles-from-catalog.md)
 
 Filed 2026-10-08 from `features/command-palette/` (user request; Q1–Q10 resolved the same day): PAL-01/02/03 — **pulled into Sprint 23 Active 2026-10-08** (see `docs/sprint/current.md`).
 
