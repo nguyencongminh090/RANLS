@@ -13,7 +13,7 @@
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| I18N-05 | Escape translated text before Pango markup in `makeValueLabel` | — | — | 🔲 Not started |
+| I18N-05 | Escape translated text before Pango markup in `makeValueLabel` | — | — | ✅ Done (PR #65) |
 | I18N-06 | Visual verification pass of the Vietnamese UI | — (after I18N-05 preferred) | — | 🔲 Not started |
 
 Points not yet estimated (consistent with Sprints 3–25).

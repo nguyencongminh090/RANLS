@@ -166,6 +166,7 @@ points at sprint start to 0 at the end date.
 | 2026-10-08 | 0 / 2 items | — | I18N-04 done (PR #64) — palette titles follow the UI language, search data unchanged; all Sprint 25 items landed |
 | 2026-10-08 | 0 / 2 items | — | Sprint 25 closed — I18N-04, UI-22 landed on `main`; archived to `docs/sprint/archive/sprint-25.md`, nothing rolled over. Release `v0.11.1` cut (palette follows UI language; About heading fix). Table reset below for Sprint 26 |
 | 2026-10-08 | 2 / 2 items | — | Sprint 26 opened (goal "Harden the About dialog's markup against bad translations, and visually verify the Vietnamese UI"): I18N-05, I18N-06 pulled from Backlog into Active — see docs/sprint/current.md. Backlog now empty |
+| 2026-10-08 | 1 / 2 items | — | I18N-05 done (PR #65, squash `32b6c04`) — translated link prefixes escaped before Pango markup; I18N-06 remains |
 
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).
