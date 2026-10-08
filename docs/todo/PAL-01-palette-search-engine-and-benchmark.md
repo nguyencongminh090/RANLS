@@ -1,6 +1,6 @@
 # PAL-01 — Command palette: pure search engine + shared dataset + Whoosh benchmark
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** ✅ DONE (2026-10-08, PR #56 squash `dccc5ca`) — engine + shared dataset (61 entries / 199 queries, dev/test) + doctest gate + `ranls-palette-eval` + `scripts/palette_bench.py`. Test split (98 q): MRR A 0.980 / Whoosh+shared prep 0.950 / stock Whoosh 0.719; p50 3 µs vs ~1 ms. Caveats: dataset is small and author-written; kept at 61 real entries (synthetic scale corpus for latency not built); queries 199 (< 200). Vietnamese labels reviewed by the user.
 **Area:** `src/command/palette_search.{h,cpp}`, `src/command/palette_lexicon.*`, `tests/data/palette/`, `tests/test_pal01_*.cpp`, `scripts/palette_bench.py`
 **Priority:** P3
 **Source:** user request 2026-10-08 (Ctrl+K search to browse functions faster; classical NLP, en/vi)

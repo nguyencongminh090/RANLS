@@ -151,6 +151,7 @@ points at sprint start to 0 at the end date.
 | 2026-10-06 | 0 / 2 items | — | UX-08 shipped (PR #50 squash `c8b59c4`): `BoardViewModel::tooltipFor` + BoardView query-tooltip, hover crosshair, bold margin labels; `hasComment` confirmed to be a flag only (Q12). All Sprint 22 Active items done — sprint ready to close. Live-window check of tooltips/marks still owed |
 | 2026-10-08 | 0 / 2 items | — | Sprint 22 closed — UX-07, UX-08 landed on `main` (plus UI-19/20/21 and fixes outside the list); archived to `docs/sprint/archive/sprint-22.md`, nothing rolled over. Release `v0.9.0` cut (board marks, hover help, heatmap, modern chrome). Table reset below for Sprint 23 |
 | 2026-10-08 | 3 / 3 items | — | Sprint 23 opened (goal "Command palette (Ctrl+K): bilingual classical-NLP search over actions, settings and ! commands, benchmarked against a Whoosh baseline"): PAL-01, PAL-02, PAL-03 pulled from Backlog into Active — see docs/sprint/current.md. Backlog now empty |
+| 2026-10-08 | 2 / 3 items | — | PAL-01 shipped (PR #56 squash `dccc5ca`): `palette_search` engine, shared dataset, Whoosh benchmark; test-split MRR 0.980 vs 0.950 (Whoosh) vs 0.719 (stock). PAL-02, PAL-03 remain |
 
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).
