@@ -3,6 +3,7 @@
 #include <cctype>
 #include <filesystem>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -215,6 +216,13 @@ SettingsBundle load()
     if (!get("hotkey_undo").empty()) out.view.hotkeyUndo = get("hotkey_undo");
     if (!get("hotkey_redo").empty()) out.view.hotkeyRedo = get("hotkey_redo");
     if (!get("hotkey_new_game").empty()) out.view.hotkeyNewGame = get("hotkey_new_game");
+    // PAL-02: recently-run palette item ids (comma-joined, newest first).
+    {
+        std::istringstream ids(get("palette_recent"));
+        for (std::string id; std::getline(ids, id, ',');)
+            if (!id.empty())
+                out.view.paletteRecent.push_back(id);
+    }
 
     // UI-06: MatchConfig — which side (if any) the engine auto-plays. Any
     // value outside {0,1,2} falls back to the struct default (Off).
@@ -278,6 +286,12 @@ bool save(const EngineConfig &engine, const ViewConfig &view, const MatchConfig 
     out << "hotkey_undo=" << escapeValue(view.hotkeyUndo) << "\n";
     out << "hotkey_redo=" << escapeValue(view.hotkeyRedo) << "\n";
     out << "hotkey_new_game=" << escapeValue(view.hotkeyNewGame) << "\n";
+    {
+        std::string joined;
+        for (const auto &id : view.paletteRecent)
+            joined += (joined.empty() ? "" : ",") + id;
+        out << "palette_recent=" << escapeValue(joined) << "\n";
+    }
     out << "engine_plays=" << static_cast<int>(match.enginePlays) << "\n";
     // STATE-04: last-selected rule (global preference) + board size (new-game default).
     out << "rule=" << static_cast<int>(setup.rule) << "\n";

@@ -3,6 +3,7 @@
 #include "board_state.h"   // GameRule, DEFAULT_BOARD_SIZE, MAX_BOARD_SIZE
 
 #include <string>
+#include <vector>
 #include <cstdint>
 #include <unordered_map>
 
@@ -50,6 +51,10 @@ struct ViewConfig {
     std::string hotkeyUndo     = "Ctrl+Z";
     std::string hotkeyRedo     = "Ctrl+Y";
     std::string hotkeyNewGame  = "Ctrl+N";
+
+    /// PAL-02: ids of the most recently run command-palette items, newest
+    /// first (capped at 50 by palette_recent::touch). Persisted comma-joined.
+    std::vector<std::string> paletteRecent;
 };
 
 /// Which side, if any, the engine plays automatically (UI-06). `Off` (the

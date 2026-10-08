@@ -42,6 +42,12 @@ public:
     /// Clear only the engine log (gutter + content), keeping move log intact.
     void clearEngineLog();
 
+    /// PAL-02: switch to the Engine Log tab (so command output is visible).
+    void showEngineLog();
+    /// PAL-02: show the Engine Log tab, put `text` in the command entry (caret at
+    /// the end) and focus it — used by the palette for commands that need arguments.
+    void focusCommandEntry(const std::string &text);
+
     /// Signal emitted when user submits a command in the engine log entry.
     sigc::signal<void(std::string)> signal_command_sent;
 

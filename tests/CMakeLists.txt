@@ -34,6 +34,7 @@ add_executable(ranls-gui-tests
     test_cons02_autocorrect.cpp
     test_pal01_palette_search.cpp
     test_pal03_settings_registry.cpp
+    test_pal02_palette_catalog.cpp
     test_settings_storage.cpp
     test_eng01_engine_state.cpp
     test_eng02_revert_predicate.cpp
@@ -64,6 +65,7 @@ add_executable(ranls-gui-tests
 
     # Sources under test (model/engine only — no UI, no gtkmm).
     ${CMAKE_SOURCE_DIR}/src/command/palette_search.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/palette_catalog.cpp
     ${CMAKE_SOURCE_DIR}/src/model/move_history.cpp
     ${CMAKE_SOURCE_DIR}/src/model/board_state.cpp
     ${CMAKE_SOURCE_DIR}/src/model/game_state.cpp
@@ -192,6 +194,7 @@ add_executable(ranls-gui-ui-tests
     test_rdb02_save_open.cpp
     test_rdb03_ui_node_analysis.cpp
     test_pal03_settings_dialog.cpp
+    test_pal02_command_palette.cpp
 
     # UI sources under test.
     ${CMAKE_SOURCE_DIR}/src/main_window.cpp
@@ -207,6 +210,9 @@ add_executable(ranls-gui-ui-tests
     ${CMAKE_SOURCE_DIR}/src/ui/board_view.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/board_renderer.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/settings_dialog.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/command_palette.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/palette_catalog.cpp
+    ${CMAKE_SOURCE_DIR}/src/command/palette_search.cpp
     ${CMAKE_SOURCE_DIR}/src/command/command.cpp
     ${CMAKE_SOURCE_DIR}/src/command/command_dispatcher.cpp
 
@@ -249,6 +255,7 @@ target_compile_features(ranls-gui-ui-tests PRIVATE cxx_std_20)
 
 # PORT-03: on-disk paths of the portable stand-in engines (see mock_engine/).
 target_compile_definitions(ranls-gui-ui-tests PRIVATE
+    PALETTE_LEXICON_PATH="${CMAKE_SOURCE_DIR}/src/resources/palette_lexicon.tsv"
     MOCK_ENGINE_PATH="$<TARGET_FILE:mock_engine>"
     MOCK_ENGINE_QUIT_PATH="$<TARGET_FILE:mock_engine_quit>"
 )

@@ -55,6 +55,12 @@ public:
     /// argument hint once a name is complete.
     std::string commandUsage(const std::string &name) const;
 
+    /// PAL-02: read-only snapshot of every registered command's metadata (group /
+    /// name / usage / summary), for the Ctrl+K command palette. Re-queried on each
+    /// palette open so `.ptc` extension commands registered by syncExtensionCommands()
+    /// appear. No effect on executeLine() routing or handlers_.
+    std::vector<CommandSpec> commandSpecs() const { return specs_; }
+
     /// CONS-02: read-only — up to 3 currently-registered command names close to
     /// `token` (command_completer::didYouMean over registeredNames(): Levenshtein
     /// <= 2 and <= floor(len/2)), for the unknown-command "did you mean" hint.

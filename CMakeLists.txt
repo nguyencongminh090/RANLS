@@ -68,6 +68,7 @@ add_custom_command(
             ${RANLS_GRESOURCE_XML}
     DEPENDS ${RANLS_GRESOURCE_XML}
             ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/style.css
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/palette_lexicon.tsv
             ${RANLS_ICON_SVGS}
     COMMENT "Compiling GResource bundle (style.css + icons)"
     VERBATIM
@@ -121,6 +122,9 @@ set(GUI_SOURCES
     src/ui/tree_node_view.cpp
     src/ui/bottom_panel.cpp
     src/ui/settings_dialog.cpp
+    src/ui/command_palette.cpp
+    src/ui/palette_catalog.cpp
+    src/command/palette_search.cpp
     src/ui/about_dialog.cpp
 )
 
