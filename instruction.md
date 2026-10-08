@@ -322,6 +322,11 @@ Ctrl+K overlay over PAL-01; explicit action metadata at registration; re-query `
 Behavior-preserving settings table + open-at-page/focus; test that every setting has an entry.
 [detail](docs/instruction/PAL-03-settings-registry-for-palette.md)
 
+## UI-21 — modern-chrome-icons-css
+
+Icon header bar, hamburger menu and CSS tokens per `features/modern-ui/planning.md` sequencing; filled 16x16 icon paths only.
+[detail](docs/instruction/UI-21-modern-chrome-icons-css.md)
+
 _Items without an entry here (RT-02/03/04, STATE-02/03, PROTO-02, NAV-01, UI-01/02/03, UX-01…04,
 CLEAN-01) are self-contained enough that their `docs/todo/` detail file's "Scope boundary" section
 is sufficient guidance. Add an entry here if one turns out to need it._

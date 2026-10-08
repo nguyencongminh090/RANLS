@@ -1,5 +1,7 @@
 # UI-21 — Modern chrome: icon header bar, hamburger menu, CSS tokens
 
+**Status:** ✅ DONE (2026-10-08, PR #55 squash `a5529c8`) — see below; light theme and Windows not verified.
+
 Design: [features/modern-ui](../../features/modern-ui/planning.md). Size L.
 
 - Bundled symbolic SVG icon set (12 icons) registered via `IconTheme::add_resource_path`.
