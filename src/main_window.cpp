@@ -1,6 +1,7 @@
 #include "main_window.h"
 
 #include "command/palette_recent.h"
+#include "i18n/i18n.h"
 #include "ui/palette_catalog.h"
 #include "model/game_file_service.h"
 #include "model/settings_storage.h"
@@ -151,6 +152,9 @@ MainWindow::MainWindow()
     // starts out blank before the first setRule() call.
     updateRuleLabel();
 
+    // I18N-02: re-read every long-lived text whenever the UI language changes.
+    languageListener_ = i18n::addLanguageListener([this]() { refreshTranslatedUi(); });
+
     // Load persisted user settings (with defaults fallback).
     auto saved = SettingsStorage::load();
     gameState_.setEngineConfig(saved.engine);
@@ -200,6 +204,7 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
+    i18n::removeLanguageListener(languageListener_);
     analysisTickConn_.disconnect();
 }
 
@@ -285,64 +290,69 @@ void MainWindow::buildMenuBar()
     searchOverlayAction_ = makeViewToggle("show-search-overlay", &MainWindow::onToggleSearchOverlay);
     searchWinrateAction_ = makeViewToggle("show-search-winrate", &MainWindow::onToggleSearchWinrate);
 
-    // ── Build menu model ────────────────────────────────────────────────────
+    // UI-21: the former menu-bar row is now a hamburger menu in the header bar
+    // (same Gio::Menu model, so every "win.*" action and shortcut is unchanged).
+    menuButton_.set_icon_name("ranls-menu-symbolic");
+    menuButton_.set_menu_model(buildMenuModel());
+    menuButton_.set_primary(true);   // F10 opens it, like a menu bar
+    setButtonTooltipAndLabel(menuButton_, i18n::tr("Main menu"));
+}
+
+// I18N-02: built from the active language, so a language change rebuilds it
+// (Gio::Menu items hold their label text; there is no in-place retranslate).
+Glib::RefPtr<Gio::Menu> MainWindow::buildMenuModel()
+{
     auto menuModel = Gio::Menu::create();
 
     // Game menu.
     auto gameMenu = Gio::Menu::create();
-    gameMenu->append("New",        "win.new-game");
-    gameMenu->append("Load",       "win.load-game");
-    gameMenu->append("Save",       "win.save-game");
+    gameMenu->append(i18n::tr("New"),        "win.new-game");
+    gameMenu->append(i18n::tr("Load"),       "win.load-game");
+    gameMenu->append(i18n::tr("Save"),       "win.save-game");
 
     auto ruleSection = Gio::Menu::create();
     ruleSection->append("Freestyle Gomoku",     "win.set-rule::freestyle");
     ruleSection->append("Standard Gomoku",      "win.set-rule::standard");
     ruleSection->append("Free Renju",           "win.set-rule::renju");
 
-    gameMenu->append_submenu("Rule", ruleSection);
-    gameMenu->append("Board Size",  "win.board-size");
+    gameMenu->append_submenu(i18n::tr("Rule"), ruleSection);
+    gameMenu->append(i18n::tr("Board Size"),  "win.board-size");
 
     auto gameSection2 = Gio::Menu::create();
-    gameSection2->append("Quit", "win.quit");
+    gameSection2->append(i18n::tr("Quit"), "win.quit");
     gameMenu->append_section("", gameSection2);
 
     // Players menu.
     auto playersMenu = Gio::Menu::create();
-    playersMenu->append("Settings…", "win.settings");
+    playersMenu->append(i18n::tr("Settings…"), "win.settings");
 
     // Engine plays menu (UI-06) — pick which side the engine auto-plays.
     auto enginePlaysMenu = Gio::Menu::create();
-    enginePlaysMenu->append("Black", "win.engine-plays::black");
-    enginePlaysMenu->append("White", "win.engine-plays::white");
-    enginePlaysMenu->append("Off",   "win.engine-plays::off");
+    enginePlaysMenu->append(i18n::tr("Black"), "win.engine-plays::black");
+    enginePlaysMenu->append(i18n::tr("White"), "win.engine-plays::white");
+    enginePlaysMenu->append(i18n::tr("Off"),   "win.engine-plays::off");
 
     // ANLZ-01: Analyze Mode checkbox lives in its own section of the same menu.
     auto analyzeModeSection = Gio::Menu::create();
-    analyzeModeSection->append("Analyze Mode", "win.analyze-mode");
+    analyzeModeSection->append(i18n::tr("Analyze Mode"), "win.analyze-mode");
     enginePlaysMenu->append_section("", analyzeModeSection);
 
     // View menu (PROTO-06) — live search-overlay toggles.
     auto viewMenu = Gio::Menu::create();
-    viewMenu->append("Search Overlay",       "win.show-search-overlay");
-    viewMenu->append("Search Winrate Tags",  "win.show-search-winrate");
-    viewMenu->append("Command Palette…",     "win.command-palette");
+    viewMenu->append(i18n::tr("Search Overlay"),       "win.show-search-overlay");
+    viewMenu->append(i18n::tr("Search Winrate Tags"),  "win.show-search-winrate");
+    viewMenu->append(i18n::tr("Command Palette…"),     "win.command-palette");
 
     // Help menu.
     auto helpMenu = Gio::Menu::create();
-    helpMenu->append("About", "win.about");
+    helpMenu->append(i18n::tr("About"), "win.about");
 
-    menuModel->append_submenu("Game",         gameMenu);
-    menuModel->append_submenu("Players",      playersMenu);
-    menuModel->append_submenu("Engine plays", enginePlaysMenu);
-    menuModel->append_submenu("View",         viewMenu);
-    menuModel->append_submenu("Help",         helpMenu);
-
-    // UI-21: the former menu-bar row is now a hamburger menu in the header bar
-    // (same Gio::Menu model, so every "win.*" action and shortcut is unchanged).
-    menuButton_.set_icon_name("ranls-menu-symbolic");
-    menuButton_.set_menu_model(menuModel);
-    menuButton_.set_primary(true);   // F10 opens it, like a menu bar
-    setButtonTooltipAndLabel(menuButton_, "Main menu");
+    menuModel->append_submenu(i18n::tr("Game"),         gameMenu);
+    menuModel->append_submenu(i18n::tr("Players"),      playersMenu);
+    menuModel->append_submenu(i18n::tr("Engine plays"), enginePlaysMenu);
+    menuModel->append_submenu(i18n::tr("View"),         viewMenu);
+    menuModel->append_submenu(i18n::tr("Help"), helpMenu);
+    return menuModel;
 }
 
 // ─── Toolbar (header bar buttons) ────────────────────────────────────────────
@@ -353,19 +363,20 @@ void MainWindow::buildToolbar()
 {
     headerBar_.set_show_title_buttons(true);
 
-    auto makeIconButton = [](const char *icon, const char *tip) {
+    // I18N-02: tooltips / accessible names / labels are applied by
+    // retranslateToolbar() (called at the end, and again on a language change).
+    auto makeIconButton = [](const char *icon) {
         auto *btn = Gtk::make_managed<Gtk::Button>();
         btn->set_icon_name(icon);
-        setButtonTooltipAndLabel(*btn, tip);
         return btn;
     };
-    auto makeLabelButton = [](const char *icon, const char *text, const char *tip) {
+    auto makeLabelButton = [](const char *icon, Gtk::Label *&labelOut) {
         auto *box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 6);
         box->append(*Gtk::make_managed<Gtk::Image>(Gio::ThemedIcon::create(icon)));
-        box->append(*Gtk::make_managed<Gtk::Label>(text));
+        labelOut = Gtk::make_managed<Gtk::Label>();
+        box->append(*labelOut);
         auto *btn = Gtk::make_managed<Gtk::Button>();
         btn->set_child(*box);
-        setButtonTooltipAndLabel(*btn, tip);
         return btn;
     };
 
@@ -375,9 +386,10 @@ void MainWindow::buildToolbar()
     auto *fileGroup = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 0);
     fileGroup->add_css_class("linked");
 
-    btnNew_  = makeIconButton("ranls-new-symbolic",  "New game");
-    btnLoad_ = makeIconButton("ranls-open-symbolic", "Load game");
-    auto *btnSave = makeIconButton("ranls-save-symbolic", "Save game");
+    btnNew_  = makeIconButton("ranls-new-symbolic");
+    btnLoad_ = makeIconButton("ranls-open-symbolic");
+    btnSave_ = makeIconButton("ranls-save-symbolic");
+    auto *btnSave = btnSave_;
 
     btnNew_->signal_clicked().connect(sigc::mem_fun(*this, &MainWindow::onNewGame));
     btnLoad_->signal_clicked().connect(sigc::mem_fun(*this, &MainWindow::onLoadGame));
@@ -399,8 +411,8 @@ void MainWindow::buildToolbar()
     auto *analysisGroup = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 0);
     analysisGroup->add_css_class("linked");
 
-    auto *btnStart = makeLabelButton("ranls-play-symbolic", "Analyze", "Start analysis");
-    auto *btnStop  = makeLabelButton("ranls-stop-symbolic", "Stop",    "Stop analysis");
+    auto *btnStart = btnStart_ = makeLabelButton("ranls-play-symbolic", lblStart_);
+    auto *btnStop  = btnStop_  = makeLabelButton("ranls-stop-symbolic", lblStop_);
     btnStart->add_css_class("suggested-action");
 
     btnStart->signal_clicked().connect(sigc::mem_fun(*this, &MainWindow::onStartAnalysis));
@@ -414,10 +426,10 @@ void MainWindow::buildToolbar()
     auto *navGroup = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 0);
     navGroup->add_css_class("linked");
 
-    btnFirst_ = makeIconButton("ranls-first-symbolic", "Jump to first move");
-    btnUndo_  = makeIconButton("ranls-undo-symbolic",  "Undo move");
-    btnRedo_  = makeIconButton("ranls-redo-symbolic",  "Redo move");
-    btnLast_  = makeIconButton("ranls-last-symbolic",  "Jump to last move");
+    btnFirst_ = makeIconButton("ranls-first-symbolic");
+    btnUndo_  = makeIconButton("ranls-undo-symbolic");
+    btnRedo_  = makeIconButton("ranls-redo-symbolic");
+    btnLast_  = makeIconButton("ranls-last-symbolic");
 
     btnFirst_->signal_clicked().connect(sigc::mem_fun(*this, &MainWindow::onUndoAll));
     btnUndo_->signal_clicked().connect(sigc::mem_fun(*this, &MainWindow::onUndo));
@@ -431,6 +443,41 @@ void MainWindow::buildToolbar()
     headerBar_.pack_end(*navGroup);
 
     set_titlebar(headerBar_);
+    retranslateToolbar();
+}
+
+void MainWindow::retranslateToolbar()
+{
+    setButtonTooltipAndLabel(menuButton_, i18n::tr("Main menu"));
+    setButtonTooltipAndLabel(*btnNew_,   i18n::tr("New game"));
+    setButtonTooltipAndLabel(*btnLoad_,  i18n::tr("Load game"));
+    setButtonTooltipAndLabel(*btnSave_,  i18n::tr("Save game"));
+    lblStart_->set_text(i18n::tr("Analyze"));
+    lblStop_->set_text(i18n::tr("Stop"));
+    setButtonTooltipAndLabel(*btnStart_, i18n::tr("Start analysis"));
+    setButtonTooltipAndLabel(*btnStop_,  i18n::tr("Stop analysis"));
+    setButtonTooltipAndLabel(*btnFirst_, i18n::tr("Jump to first move"));
+    setButtonTooltipAndLabel(*btnUndo_,  i18n::tr("Undo move"));
+    setButtonTooltipAndLabel(*btnRedo_,  i18n::tr("Redo move"));
+    setButtonTooltipAndLabel(*btnLast_,  i18n::tr("Jump to last move"));
+}
+
+bool MainWindow::applyLanguage(const std::string &code)
+{
+    // setLanguage() notifies the listener registered in the constructor, which
+    // runs refreshTranslatedUi().
+    return i18n::setLanguage(code);
+}
+
+void MainWindow::refreshTranslatedUi()
+{
+    menuButton_.set_menu_model(buildMenuModel());
+    retranslateToolbar();
+    updateRuleLabel();
+    analysisPanel_.retranslate();
+    bottomPanel_.retranslate();
+    if (palette_)
+        palette_->retranslate();
 }
 
 // ─── Layout ──────────────────────────────────────────────────────────────────
@@ -800,12 +847,13 @@ void MainWindow::confirmDiscardGame(const Glib::ustring &action, std::function<v
 
     auto *dialog = new Gtk::MessageDialog(
         *this,
-        action + " will discard the current game (board, move history, and variation tree). Continue?",
+        i18n::format(i18n::tr("%s will discard the current game (board, move history, and variation tree). Continue?"),
+                     action.c_str()),
         /*use_markup=*/false,
         Gtk::MessageType::WARNING,
         Gtk::ButtonsType::YES_NO,
         /*modal=*/true);
-    dialog->set_secondary_text("This cannot be undone.");
+    dialog->set_secondary_text(i18n::tr("This cannot be undone."));
     dialog->signal_response().connect([dialog, onConfirmed](int response) {
         if (response == static_cast<int>(Gtk::ResponseType::YES)) {
             onConfirmed();
@@ -817,7 +865,7 @@ void MainWindow::confirmDiscardGame(const Glib::ustring &action, std::function<v
 
 void MainWindow::onNewGame()
 {
-    confirmDiscardGame("Starting a new game", [this]() {
+    confirmDiscardGame(i18n::tr("Starting a new game"), [this]() {
         // STATE-04: keep the current (persisted) board size as the new-game
         // size rather than snapping back to DEFAULT_BOARD_SIZE. Still resync
         // the engine unconditionally -- the protocol may have last seen a
@@ -855,18 +903,18 @@ void MainWindow::onLoadGame()
     if (gameState_.isAnalyzing())
         onStopAnalysis();
 
-    confirmDiscardGame("Loading a game", [this]() {
+    confirmDiscardGame(i18n::tr("Loading a game"), [this]() {
         auto dialog = Gtk::FileDialog::create();
-        dialog->set_title("Load Game");
+        dialog->set_title(i18n::tr("Load Game"));
 
         auto rdbFilter = Gtk::FileFilter::create();
-        rdbFilter->set_name("RANLS game (*.rdb)");
+        rdbFilter->set_name(i18n::tr("RANLS game (*.rdb)"));
         rdbFilter->add_pattern("*.rdb");
         auto yxFilter = Gtk::FileFilter::create();
-        yxFilter->set_name("Legacy game (*.yxgame)");
+        yxFilter->set_name(i18n::tr("Legacy game (*.yxgame)"));
         yxFilter->add_pattern("*.yxgame");
         auto allFilter = Gtk::FileFilter::create();
-        allFilter->set_name("All files");
+        allFilter->set_name(i18n::tr("All files"));
         allFilter->add_pattern("*");
         auto filters = Gio::ListStore<Gtk::FileFilter>::create();
         filters->append(rdbFilter);
@@ -887,7 +935,7 @@ void MainWindow::onLoadGame()
 
             const auto res = GameFileService::load(gameState_, path);
             if (!res.ok) {
-                showErrorDialog("Could not load game", res.error);
+                showErrorDialog(i18n::tr("Could not load game"), res.error);
                 return;
             }
             controller_.sendConfig();
@@ -902,11 +950,11 @@ void MainWindow::onLoadGame()
 void MainWindow::onSaveGame()
 {
     auto dialog = Gtk::FileDialog::create();
-    dialog->set_title("Save Game");
+    dialog->set_title(i18n::tr("Save Game"));
     dialog->set_initial_name("game.rdb");
 
     auto rdbFilter = Gtk::FileFilter::create();
-    rdbFilter->set_name("RANLS game (*.rdb)");
+    rdbFilter->set_name(i18n::tr("RANLS game (*.rdb)"));
     rdbFilter->add_pattern("*.rdb");
     auto filters = Gio::ListStore<Gtk::FileFilter>::create();
     filters->append(rdbFilter);
@@ -927,7 +975,7 @@ void MainWindow::onSaveGame()
         // in GameFileService; this callback only surfaces the error.
         const auto res = GameFileService::save(gameState_, path, kAppDisplayName);
         if (!res.ok)
-            showErrorDialog("Could not save game", res.error);
+            showErrorDialog(i18n::tr("Could not save game"), res.error);
     });
 }
 
@@ -978,13 +1026,14 @@ void MainWindow::persistGameSetup()
 // connectSignals() and called once at startup in the constructor.
 void MainWindow::updateRuleLabel()
 {
-    const char *text = "Rule: Freestyle Gomoku";
+    // Rule names are do-not-translate terms; only the "Rule: %s" frame is.
+    const char *name = "Freestyle Gomoku";
     switch (gameState_.rule()) {
-        case GameRule::Freestyle: text = "Rule: Freestyle Gomoku"; break;
-        case GameRule::Standard:  text = "Rule: Standard Gomoku";  break;
-        case GameRule::Renju:     text = "Rule: Free Renju";       break;
+        case GameRule::Freestyle: name = "Freestyle Gomoku"; break;
+        case GameRule::Standard:  name = "Standard Gomoku";  break;
+        case GameRule::Renju:     name = "Free Renju";       break;
     }
-    ruleLabel_.set_text(text);
+    ruleLabel_.set_text(i18n::format(i18n::tr("Rule: %s"), name));
 }
 
 void MainWindow::onBoardSize()
@@ -995,7 +1044,7 @@ void MainWindow::onBoardSize()
     // signal_hide() is the one place to reclaim it — mirrors the common
     // gtkmm "delete self on response/hide" idiom for standalone dialogs.
     auto *dialog = new Gtk::Window();
-    dialog->set_title("Board Size");
+    dialog->set_title(i18n::tr("Board Size"));
     dialog->set_transient_for(*this);
     dialog->set_modal(true);
     dialog->set_default_size(250, -1);
@@ -1006,7 +1055,7 @@ void MainWindow::onBoardSize()
     box->set_margin(16);
     auto *spin = Gtk::make_managed<Gtk::SpinButton>(
         Gtk::Adjustment::create(gameState_.boardSize(), 5, 22, 1));
-    auto *btn  = Gtk::make_managed<Gtk::Button>("Apply");
+    auto *btn  = Gtk::make_managed<Gtk::Button>(i18n::tr("Apply"));
 
     btn->add_css_class("suggested-action");
     btn->signal_clicked().connect([this, spin, dialog]() {
@@ -1014,7 +1063,7 @@ void MainWindow::onBoardSize()
         // UX-03: changing the board size discards the game as a side effect
         // of what the user framed as a *setting* change, not "start a new
         // game" -- worse than the New Game case, so it gets the same guard.
-        confirmDiscardGame("Changing the board size", [this, size]() {
+        confirmDiscardGame(i18n::tr("Changing the board size"), [this, size]() {
             gameState_.newGame(size);
             controller_.sendConfig();
             // STATE-04: persist the new size as the new-game default. Inside
@@ -1025,7 +1074,7 @@ void MainWindow::onBoardSize()
         dialog->close();
     });
 
-    box->append(*Gtk::make_managed<Gtk::Label>("Board Size (5–22):"));
+    box->append(*Gtk::make_managed<Gtk::Label>(i18n::tr("Board Size (5–22):")));
     box->append(*spin);
     box->append(*btn);
     dialog->set_child(*box);

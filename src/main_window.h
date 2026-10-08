@@ -27,7 +27,15 @@ public:
     MainWindow();
     ~MainWindow() override;
 
+    /// I18N-02: switch the UI language (i18n::setLanguage) and refresh every
+    /// long-lived text: the menu model, header/toolbar tooltips and labels,
+    /// the rule chip, panel tabs, status labels. Dialogs are built on open so
+    /// they pick the new language by themselves. Returns false for an
+    /// unsupported code. (The Settings selector that calls this is I18N-03.)
+    bool applyLanguage(const std::string &code);
+
 private:
+    friend struct RanlsI18n02Probe;  // test seam: menu model / header texts
     // ANLZ-05: the widget-level regression test drives the auto-move /
     // analyze-restart idle callbacks against real engine + controller state,
     // which requires reaching the private gameState_/engine_/controller_
@@ -46,6 +54,12 @@ private:
     friend struct RanlsPal02Probe;
 
     void buildMenuBar();
+    /// I18N-02: the hamburger menu model, built from the current language.
+    Glib::RefPtr<Gio::Menu> buildMenuModel();
+    /// I18N-02: (re)apply every translated tooltip / label of the header bar.
+    void retranslateToolbar();
+    /// I18N-02: language-changed refresh (see applyLanguage()).
+    void refreshTranslatedUi();
     void buildToolbar();
     void buildLayout();
     void connectSignals();
@@ -252,4 +266,10 @@ private:
     Gtk::Button       *btnLast_  = nullptr;
     Gtk::Button       *btnNew_   = nullptr;
     Gtk::Button       *btnLoad_  = nullptr;
+    Gtk::Button       *btnSave_  = nullptr;
+    Gtk::Button       *btnStart_ = nullptr;
+    Gtk::Button       *btnStop_  = nullptr;
+    Gtk::Label        *lblStart_ = nullptr;  // I18N-02: re-texted on language change
+    Gtk::Label        *lblStop_  = nullptr;
+    unsigned           languageListener_ = 0;  // I18N-02: i18n::ListenerId
 };
