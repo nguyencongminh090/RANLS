@@ -13,6 +13,14 @@ internal tracking files for traceability.
 
 _Nothing yet._
 
+## [0.11.2] - 2026-10-08
+
+Sprint 26 — About dialog robustness; Vietnamese UI verified.
+
+### Fixed
+
+- About dialog: the "Repository" and "Engine protocol" lines can no longer render blank if a translation contains `&` or `<` (hardening; no visible change today) (I18N-05).
+
 ## [0.11.1] - 2026-10-08
 
 Sprint 25 — the command palette follows the interface language; About heading fix.
@@ -378,7 +386,8 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.11.1...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.11.2...HEAD
+[0.11.2]: https://github.com/nguyencongminh090/RANLS/compare/v0.11.1...v0.11.2
 [0.11.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.11.0...v0.11.1
 [0.11.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.9.0...v0.10.0
