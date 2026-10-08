@@ -61,6 +61,7 @@ struct State {
     Catalog catalog;
     std::map<ListenerId, std::function<void()>> listeners;
     ListenerId nextId = 1;
+    std::map<std::string, Catalog, std::less<>> others;  // I18N-04: lazily loaded non-active languages
 };
 State &state()
 {
@@ -112,6 +113,7 @@ void setCatalogLoader(CatalogLoader loader)
     auto &s = state();
     std::lock_guard<std::mutex> lk(s.mu);
     s.loader = std::move(loader);
+    s.others.clear();
 }
 
 bool setLanguage(std::string_view code)
@@ -171,6 +173,42 @@ std::string tr(std::string_view key)
     if (const std::string *t = s.catalog.find(key))
         return *t;
     return std::string(key);
+}
+
+std::optional<std::string> lookupIn(std::string_view lang, std::string_view key)
+{
+    if (lang == "en" || !isSupported(lang))
+        return std::nullopt;
+    auto &s = state();
+    std::lock_guard<std::mutex> lk(s.mu);
+    const Catalog *cat = nullptr;
+    if (lang == s.language) {
+        cat = &s.catalog;
+    } else {
+        auto it = s.others.find(lang);
+        if (it == s.others.end()) {
+            Catalog parsed;
+            if (s.loader)
+                parsed = Catalog::parse(s.loader(lang));
+            it = s.others.emplace(std::string(lang), std::move(parsed)).first;
+        }
+        cat = &it->second;
+    }
+    if (const std::string *t = cat->find(key))
+        return *t;
+    return std::nullopt;
+}
+
+std::string trIn(std::string_view lang, std::string_view ctx, std::string_view text)
+{
+    std::string combined;
+    combined.append(ctx).push_back('|');
+    combined.append(text);
+    if (auto t = lookupIn(lang, combined))
+        return *t;
+    if (auto t = lookupIn(lang, text))
+        return *t;
+    return std::string(text);
 }
 
 std::string trc(std::string_view ctx, std::string_view text)

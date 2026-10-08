@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <functional>
 #include <map>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -85,6 +86,20 @@ std::string tr(std::string_view key);
 /// Translate with disambiguating context: looks up `ctx|text`, then falls back
 /// to `text` (not the combined key).
 std::string trc(std::string_view ctx, std::string_view text);
+
+/// I18N-04: marks a literal as a catalog key without translating it now (the
+/// lint counts it like tr()/trc()); lets constexpr tables declare keys that are
+/// translated later with trc()/trIn(). Returns `text` unchanged.
+constexpr std::string_view trNoop(std::string_view text) { return text; }
+constexpr std::string_view trcNoop(std::string_view /*ctx*/, std::string_view text) { return text; }
+
+/// I18N-04: translate into a specific language, whatever the UI language is
+/// (palette search keeps matching Vietnamese when the UI is English, story L7).
+/// `key` is looked up verbatim; nullopt for "en", an unsupported/unloaded
+/// language, or a missing/empty translation.
+std::optional<std::string> lookupIn(std::string_view lang, std::string_view key);
+/// Like trc() for `lang`: `ctx|text`, then `text`, then `text` itself.
+std::string trIn(std::string_view lang, std::string_view ctx, std::string_view text);
 
 // ── Language-changed notification (I18N-02) ─────────────────────────────────
 
