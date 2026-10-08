@@ -1,0 +1,200 @@
+category	query	relevant_ids	split
+exact	new game	act.new-game	dev
+exact	load game	act.load-game	test
+exact	save game	act.save-game	dev
+exact	quit	act.quit	test
+exact	board size	act.board-size	dev
+exact	settings	act.settings	test
+exact	about	act.about	dev
+exact	start analysis	act.analyze	test
+exact	stop analysis	act.stop	dev
+exact	analyze mode	act.analyze-mode	test
+exact	undo	act.nav-undo,cmd.undo	dev
+exact	redo	act.nav-redo,cmd.redo	test
+exact	first move	act.nav-first	dev
+exact	last move	act.nav-last	test
+exact	engine path	set.engine-path	dev
+exact	threads	set.threads	test
+exact	hash size	set.hash	dev
+exact	max depth	set.max-depth	test
+exact	max nodes	set.max-nodes	dev
+exact	multi pv	set.multipv	test
+exact	theme	set.theme	dev
+exact	show coordinates	set.coordinates	test
+exact	show move numbers	set.move-numbers	dev
+exact	freestyle gomoku	act.rule-freestyle	test
+exact	free renju	act.rule-renju	dev
+exact	standard gomoku	act.rule-standard	test
+exact	search overlay	act.view-search-overlay	dev
+exact	search winrate tags	act.view-search-winrate	test
+exact	increment	set.increment	dev
+exact	wingraph mode	set.wingraph-mode	test
+exact	analysis detail	set.analysis-detail	dev
+exact	engine plays black	act.engine-plays-black	test
+exact	engine plays white	act.engine-plays-white	dev
+exact	hotkey undo	set.hotkey-undo	test
+exact	hotkey analyze	set.hotkey-analyze	dev
+synonym	preferences	act.settings	dev
+synonym	options	act.settings	test
+synonym	exit	act.quit	dev
+synonym	restart	act.new-game,cmd.new	test
+synonym	open file	act.load-game	dev
+synonym	export	act.save-game	test
+synonym	resize board	act.board-size	dev
+synonym	dark mode	set.theme	test
+synonym	cpu cores	set.threads	dev
+synonym	memory	set.hash	test
+synonym	time limit per move	set.timeout-turn	dev
+synonym	game clock	set.timeout-match	test
+synonym	bonus time	set.increment	dev
+synonym	search depth	set.max-depth	test
+synonym	principal variations	set.multipv	dev
+synonym	take back	act.nav-undo,cmd.undo	test
+synonym	go back	act.nav-undo	dev
+synonym	play against computer	act.engine-plays-black,act.engine-plays-white	test
+synonym	two players	act.engine-plays-off	dev
+synonym	win probability	act.view-search-winrate	test
+synonym	keyboard shortcut	set.hotkey-analyze,set.hotkey-stop,set.hotkey-undo,set.hotkey-redo,set.hotkey-newgame	dev
+synonym	forbidden moves	act.rule-renju	test
+synonym	cancel search	act.stop,cmd.stop	dev
+synonym	think	act.analyze	test
+synonym	rewind	act.nav-first	dev
+synonym	show labels	set.coordinates	test
+synonym	stone numbers	set.move-numbers	dev
+synonym	commands list	cmd.help	test
+synonym	clear log	cmd.clear	dev
+synonym	raw protocol	cmd.send	test
+synonym	plugin	set.ptc	dev
+typo	setings	act.settings	dev
+typo	analize	act.analyze,cmd.analyze	test
+typo	undoo	act.nav-undo,cmd.undo	dev
+typo	boad size	act.board-size	test
+typo	thredas	set.threads	dev
+typo	quitt	act.quit	test
+typo	new gmae	act.new-game	dev
+typo	save gam	act.save-game	test
+typo	max dpeth	set.max-depth	dev
+typo	themee	set.theme	test
+typo	coordiantes	set.coordinates	dev
+typo	renjuu	act.rule-renju	test
+typo	freestyel	act.rule-freestyle	dev
+typo	mutli pv	set.multipv	test
+typo	wingrpah	set.wingraph-mode	dev
+typo	overlya	act.view-search-overlay	test
+typo	analayze mode	act.analyze-mode	dev
+typo	hsah	set.hash	test
+typo	incrment	set.increment	dev
+typo	yxanlz	cmd.yxanalz	test
+typo	loadpoz	cmd.loadpos	dev
+typo	getpoz	cmd.getpos	test
+prefix	sett	act.settings	dev
+prefix	anal	act.analyze,act.analyze-mode,cmd.analyze,set.analysis-detail	test
+prefix	thr	set.threads	dev
+prefix	coord	set.coordinates	test
+prefix	multi	set.multipv	dev
+prefix	renj	act.rule-renju	test
+prefix	board	act.board-size	dev
+prefix	hot	set.hotkey-analyze,set.hotkey-stop,set.hotkey-undo,set.hotkey-redo,set.hotkey-newgame	test
+prefix	hash	set.hash	dev
+prefix	timeo	set.timeout-turn,set.timeout-match	test
+prefix	incr	set.increment	dev
+prefix	engine pa	set.engine-path	test
+prefix	show mo	set.move-numbers	dev
+prefix	theme d	set.theme	test
+prefix	win	act.view-search-winrate,set.wingraph-mode	dev
+prefix	stop	act.stop,cmd.stop	test
+nodiac	cai dat	act.settings	dev
+nodiac	van moi	act.new-game	test
+nodiac	luu van co	act.save-game	dev
+nodiac	mo van co	act.load-game	test
+nodiac	thoat	act.quit	dev
+nodiac	hoan tac	act.nav-undo,cmd.undo	test
+nodiac	lam lai	act.nav-redo,cmd.redo	dev
+nodiac	bat dau phan tich	act.analyze	test
+nodiac	dung phan tich	act.stop	dev
+nodiac	che do phan tich	act.analyze-mode	test
+nodiac	luat renju	act.rule-renju	dev
+nodiac	luat tu do	act.rule-freestyle	test
+nodiac	kich thuoc ban co	act.board-size	dev
+nodiac	bo nho	set.hash	test
+nodiac	do sau toi da	set.max-depth	dev
+nodiac	giao dien	set.theme	test
+nodiac	hien toa do	set.coordinates	dev
+nodiac	phim tat	set.hotkey-analyze,set.hotkey-stop,set.hotkey-undo,set.hotkey-redo,set.hotkey-newgame	test
+nodiac	duong dan engine	set.engine-path	dev
+nodiac	ti le thang	act.view-search-winrate	test
+vi	cài đặt	act.settings	dev
+vi	ván mới	act.new-game	test
+vi	lưu ván	act.save-game	dev
+vi	mở ván cờ	act.load-game	test
+vi	thoát	act.quit	dev
+vi	hoàn tác	act.nav-undo,cmd.undo	test
+vi	làm lại	act.nav-redo,cmd.redo	dev
+vi	phân tích	act.analyze,act.analyze-mode	test
+vi	dừng engine	act.stop	dev
+vi	đổi cỡ bàn cờ	act.board-size	test
+vi	luật cấm	act.rule-renju	dev
+vi	cờ caro	act.rule-freestyle	test
+vi	số luồng cpu	set.threads	dev
+vi	bộ nhớ	set.hash	test
+vi	độ sâu	set.max-depth	dev
+vi	chủ đề tối	set.theme	test
+vi	hiện tọa độ	set.coordinates	dev
+vi	đánh số nước	set.move-numbers	test
+vi	tỉ lệ thắng	act.view-search-winrate	dev
+vi	biểu đồ	set.wingraph-mode	test
+vi	phím tắt hoàn tác	set.hotkey-undo	dev
+vi	máy đánh quân trắng	act.engine-plays-white	test
+vi	hai người chơi	act.engine-plays-off	dev
+vi	về đầu ván	act.nav-first	test
+vi	đến nước cuối	act.nav-last	dev
+vi	thông tin phiên bản	act.about	test
+vi	xem trợ giúp	cmd.help	dev
+vi	xóa log	cmd.clear	test
+vi	giờ cộng thêm	set.increment	dev
+vi	thời gian mỗi nước	set.timeout-turn	test
+mixed	mở file rdb	act.load-game	dev
+mixed	save ván	act.save-game	test
+mixed	đổi theme	set.theme	dev
+mixed	undo nước đi	act.nav-undo,cmd.undo	test
+mixed	chạy analyze	act.analyze	dev
+mixed	set threads cpu	set.threads	test
+mixed	bật winrate	act.view-search-winrate	dev
+mixed	renju luật	act.rule-renju	test
+mixed	board cỡ	act.board-size	dev
+mixed	engine đường dẫn	set.engine-path	test
+mixed	hotkey phím tắt	set.hotkey-analyze,set.hotkey-stop,set.hotkey-undo,set.hotkey-redo,set.hotkey-newgame	dev
+mixed	hiện coordinates	set.coordinates	test
+mixed	multipv số biến	set.multipv	dev
+mixed	new ván	act.new-game	test
+mixed	stop dừng	act.stop	dev
+bang	!help	cmd.help	dev
+bang	!undo	cmd.undo	test
+bang	!analyze	cmd.analyze	dev
+bang	!yxanalz	cmd.yxanalz	test
+bang	!stop	cmd.stop	dev
+bang	!engine	cmd.engine	test
+bang	!send	cmd.send	dev
+bang	!db	cmd.db	test
+bang	!getpos	cmd.getpos	dev
+bang	!loadpos	cmd.loadpos	test
+bang	!clear	cmd.clear	dev
+bang	!rule	cmd.rule	test
+bang	!start	cmd.start	dev
+bang	!pos	cmd.pos,cmd.play	test
+bang	! undo	cmd.undo	dev
+bang	!ana	cmd.analyze	test
+bang	!un	cmd.undo	dev
+bang	!rest	cmd.new,cmd.start	test
+bang	!cl	cmd.clear	dev
+bang	!info	cmd.info,cmd.about	test
+neg	pizza		dev
+neg	weather forecast		test
+neg	asdfghjk		dev
+neg	xyzzy		test
+neg	blockchain		dev
+neg	quantum		test
+neg	recipe		dev
+neg	zzz		test
+neg	bitcoin		dev
+neg	qwerty		test
