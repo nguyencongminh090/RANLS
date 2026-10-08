@@ -31,7 +31,11 @@ Sprint 23 (opened 2026-10-08, goal "Command palette (Ctrl+K): bilingual classica
 
 ## Backlog
 
-No open items.
+Filed 2026-10-08 from the Sprint 23 follow-up discussion:
+
+- 🔲 **PAL-04.** Command palette: separate UI items (actions/settings) from console/protocol commands + scope prefix syntax (`!` / `>` / `@`) — [detail](docs/todo/PAL-04-palette-scoped-search-syntax.md)
+
+Design-stage (not yet a CODE, gated on `planning.md` Q1–Q11): `features/ui-language/` — UI language setting (English / Tiếng Việt / more later).
 
 Filed 2026-10-08 from `features/command-palette/` (user request; Q1–Q10 resolved the same day): PAL-01/02/03 — **pulled into Sprint 23 Active 2026-10-08** (see `docs/sprint/current.md`).
 
