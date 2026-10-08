@@ -154,6 +154,7 @@ points at sprint start to 0 at the end date.
 | 2026-10-08 | 2 / 3 items | — | PAL-01 shipped (PR #56 squash `dccc5ca`): `palette_search` engine, shared dataset, Whoosh benchmark; test-split MRR 0.980 vs 0.950 (Whoosh) vs 0.719 (stock). PAL-02, PAL-03 remain |
 | 2026-10-08 | 1 / 3 items | — | PAL-03 shipped (PR #57 squash `549c512`): `settings_registry.h` + registry-driven `SettingsDialog`, `showSetting(id)`, `MainWindow::openSettings(id)`. PAL-02 remains |
 | 2026-10-08 | 0 / 3 items | — | PAL-02 shipped (PR #58 squash `0a46eba`): Ctrl+K command palette (overlay, catalog of actions/settings/`!` commands, recent items). All Sprint 23 Active items done — sprint ready to close. Live check done under Xvfb only |
+| 2026-10-08 | 0 / 3 items | — | Sprint 23 closed — PAL-01, PAL-02, PAL-03 landed on `main`; archived to `docs/sprint/archive/sprint-23.md`, nothing rolled over. Release `v0.10.0` cut (Ctrl+K command palette). Table reset below for Sprint 24 |
 
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).

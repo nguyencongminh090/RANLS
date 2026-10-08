@@ -13,6 +13,16 @@ internal tracking files for traceability.
 
 _Nothing yet._
 
+## [0.10.0] - 2026-10-08
+
+Sprint 23 — a Ctrl+K command palette: find any action, setting or console command by typing, in English or Vietnamese.
+
+### Added
+
+- **Command palette (Ctrl+K, or View ▸ Command Palette…).** Type a few words and pick from the best matches: menu actions, Settings entries and `!` console commands. Search understands Vietnamese with or without accents ("cài đặt" / "cai dat"), synonyms ("preferences", "hoàn tác"), small typos and partial words; start with `!` to list only console commands (PAL-01, PAL-02).
+- Choosing a Settings entry opens the Settings dialog on the right tab (PAL-03). Console commands that need arguments are placed in the Engine Log entry for you to complete.
+- The palette remembers what you used most recently and shows it when the search box is empty.
+
 ## [0.9.0] - 2026-10-08
 
 Sprint 22 — a clearer board: stacked analysis marks, hover help, a winrate heatmap, and a modern window chrome.
@@ -344,7 +354,8 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.8.2...v0.9.0
 [0.8.2]: https://github.com/nguyencongminh090/RANLS/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.8.0...v0.8.1
