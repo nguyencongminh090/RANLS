@@ -3,7 +3,7 @@
 **Status:** 🔲 OPEN (Backlog)
 **Area:** `src/ui/settings_dialog.cpp` (`btnApply_` sensitivity = `enginePathValid_`), tests
 **Priority:** P3
-**Source:** I18N-06 visual pass, `docs/notes/2026-10-08-vi-ui-visual-verification.md` — 2026-10-08
+**Source:** I18N-06 visual pass, `docs/audit/2026-10-log.md` (2026-10-08 "Vietnamese UI visual verification") — 2026-10-08
 **Design:** none — scoped directly (design call below needs the user)
 **Depends on / relates to:** I18N-03
 
