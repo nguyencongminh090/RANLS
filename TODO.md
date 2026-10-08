@@ -39,7 +39,7 @@ Sprint 24 (opened 2026-10-08, goal "Palette scopes (`!` `>` `@`) and a switchabl
 Sprint 25 (opened 2026-10-08, goal "Palette titles follow the UI language, and the About dialog heading bug is fixed") — pulled from Backlog:
 
 - ✅ **UI-22.** About dialog: "Links & protocol" heading renders blank — [detail](docs/todo/UI-22-about-links-protocol-heading-blank.md) · [instruction](docs/instruction/UI-22-about-links-protocol-heading-blank.md)
-- 🔲 **I18N-04.** UI language: palette titles from the catalog (display follows UI language; search stays bilingual) — [detail](docs/todo/I18N-04-palette-titles-from-catalog.md)
+- ✅ **I18N-04.** UI language: palette titles from the catalog (display follows UI language; search stays bilingual) — [detail](docs/todo/I18N-04-palette-titles-from-catalog.md)
 
 ## Backlog
 

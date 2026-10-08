@@ -2,6 +2,7 @@
 
 #include "command/palette_recent.h"
 #include "i18n/i18n.h"
+#include "ui/palette_catalog.h"
 
 #include <algorithm>
 
@@ -19,6 +20,19 @@ std::string scopeName(const palette_search::Scope &s)
     case '@': return i18n::tr("Settings");
     default: return i18n::tr("Actions + settings");
     }
+}
+
+// I18N-04: the result-group badge follows the UI language. Entry::group stays the
+// English word (it is a ranking field); only this label is translated.
+std::string groupLabel(const std::string &group)
+{
+    if (group == "Action")
+        return i18n::tr("Action");
+    if (group == "Setting")
+        return i18n::tr("Setting");
+    if (group == "Command")
+        return i18n::tr("Command");
+    return group;
 }
 }  // namespace
 
@@ -166,6 +180,11 @@ std::string CommandPalette::emptyStateText() const
            "\n" + prefixHelp();
 }
 
+std::vector<std::string> CommandPalette::resultTitles() const
+{
+    return rowTitle_;
+}
+
 std::vector<std::string> CommandPalette::resultIds() const
 {
     std::vector<std::string> ids;
@@ -207,6 +226,7 @@ void CommandPalette::rebuildRows(const std::vector<std::size_t> &itemIndexes)
     while (auto *child = list_.get_first_child())
         list_.remove(*child);
     rowItem_ = itemIndexes;
+    rowTitle_.clear();
 
     if (itemIndexes.empty()) {
         auto *lbl = Gtk::make_managed<Gtk::Label>(emptyStateText());
@@ -230,13 +250,18 @@ void CommandPalette::rebuildRows(const std::vector<std::size_t> &itemIndexes)
 
         auto *texts = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 0);
         texts->set_hexpand(true);
-        auto *title = Gtk::make_managed<Gtk::Label>(it.entry.titleEn);
+        // I18N-04: primary line = title in the UI language (search data is untouched);
+        // the dim line is the other language, hinting that both are searchable.
+        const std::string shown = palette_catalog::displayTitle(it.entry);
+        rowTitle_.push_back(shown);
+        auto *title = Gtk::make_managed<Gtk::Label>(shown);
         title->set_halign(Gtk::Align::START);
         title->set_xalign(0.f);
         title->set_ellipsize(Pango::EllipsizeMode::END);
         texts->append(*title);
-        if (!it.entry.titleVi.empty() && it.entry.titleVi != it.entry.titleEn) {
-            auto *vi = Gtk::make_managed<Gtk::Label>(it.entry.titleVi);
+        const std::string &other = i18n::currentLanguage() == "en" ? it.entry.titleVi : it.entry.titleEn;
+        if (!other.empty() && other != shown) {
+            auto *vi = Gtk::make_managed<Gtk::Label>(other);
             vi->set_halign(Gtk::Align::START);
             vi->set_xalign(0.f);
             vi->add_css_class("dim-label");
@@ -251,7 +276,7 @@ void CommandPalette::rebuildRows(const std::vector<std::size_t> &itemIndexes)
             sc->set_valign(Gtk::Align::CENTER);
             hbox->append(*sc);
         }
-        auto *kind = Gtk::make_managed<Gtk::Label>(it.entry.group);
+        auto *kind = Gtk::make_managed<Gtk::Label>(groupLabel(it.entry.group));
         kind->add_css_class("dim-label");
         kind->add_css_class("palette-kind");
         kind->set_valign(Gtk::Align::CENTER);

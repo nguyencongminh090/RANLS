@@ -55,7 +55,10 @@ bool containsTerm(const std::string &text, const std::string &term)
     bool needL = isAlnum(term.front());
     bool needR = isAlnum(term.back());
     for (size_t p = text.find(term); p != std::string::npos; p = text.find(term, p + 1)) {
-        bool okL = !needL || p == 0 || !isAlnum(text[p - 1]);
+        // I18N-04: a camel-case join counts as an edge too ("Nhiều biến (MultiPV)" keeps "PV").
+        bool okL = !needL || p == 0 || !isAlnum(text[p - 1]) ||
+                   (std::isupper(static_cast<unsigned char>(term.front())) &&
+                    std::islower(static_cast<unsigned char>(text[p - 1])));
         size_t e = p + term.size();
         bool okR = !needR || e >= text.size() || !isAlnum(text[e]);
         if (okL && okR)
@@ -85,6 +88,9 @@ std::set<std::string> extractKeys(std::string_view src)
             ctx = true;
             ++i;
         }
+        // I18N-04: trNoop( / trcNoop( declare a key without translating it.
+        if (src.substr(i, 4) == "Noop")
+            i += 4;
         skipWs(src, i);
         if (i >= src.size() || src[i] != '(')
             continue;

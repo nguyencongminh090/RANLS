@@ -91,7 +91,7 @@ TEST_CASE("I18N-03 registry has set.language on the UI tab with bilingual search
     REQUIRE(e != nullptr);
     CHECK(e->tab == 3);
     CHECK(e->label == "Language");
-    CHECK(e->titleVi == "Ngôn ngữ");
+    CHECK(e->titleEn == "Language");  // Vietnamese title lives in vi.tsv (I18N-04)
     CHECK_FALSE(e->keywordsEn.empty());
     CHECK_FALSE(e->keywordsVi.empty());
 }

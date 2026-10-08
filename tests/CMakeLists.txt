@@ -65,6 +65,7 @@ add_executable(ranls-gui-tests
     test_i18n01_catalog.cpp
     test_i18n02_wiring.cpp
     test_i18n03_language_setting.cpp
+    test_i18n04_palette_titles.cpp
 
     # Sources under test (model/engine only — no UI, no gtkmm).
     ${CMAKE_SOURCE_DIR}/src/i18n/i18n.cpp
@@ -204,6 +205,7 @@ add_executable(ranls-gui-ui-tests
     test_pal02_command_palette.cpp
     test_i18n02_live_refresh.cpp
     test_i18n03_ui.cpp
+    test_i18n04_ui.cpp
 
     # UI sources under test.
     ${CMAKE_SOURCE_DIR}/src/i18n/i18n.cpp

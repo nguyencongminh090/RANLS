@@ -24,7 +24,6 @@ TEST_CASE("PAL-03 registry rows are well-formed and unique")
         CHECK(e.tab < static_cast<int>(kTabs.size()));
         CHECK_FALSE(e.label.empty());
         CHECK_FALSE(e.titleEn.empty());
-        CHECK_FALSE(e.titleVi.empty());
         CHECK_FALSE(e.keywordsEn.empty());
         CHECK_FALSE(e.keywordsVi.empty());
     }

@@ -197,7 +197,7 @@ Has comment	Có chú thích
 %d variations	%d biến
 Forbidden for Black (still playable)	Cấm với quân Đen (vẫn đi được)
 
-# Command palette chrome (titles/search data are I18N-04)
+# Command palette chrome
 Commands	Lệnh
 Actions	Thao tác
 Actions + settings	Thao tác + cài đặt
@@ -208,3 +208,72 @@ No matching actions or settings.\nTry ! to search console commands.	Không có t
 No matching commands.	Không có lệnh phù hợp.
 No matching actions.	Không có thao tác phù hợp.
 No matching settings.	Không có cài đặt phù hợp.
+
+# Command palette titles (I18N-04). ctx "palette" = action/setting title (key = English title);
+# ctx "palette-cmd" = built-in `!` command (key = command name). The Vietnamese text is also the
+# palette's Vietnamese SEARCH data, so edits here change ranking (see README).
+Action	Thao tác
+Setting	Cài đặt
+Command	Lệnh
+palette|New Game	Ván mới
+palette|Load Game	Mở ván cờ
+palette|Save Game	Lưu ván cờ
+palette|Quit	Thoát
+palette|Board Size	Kích thước bàn cờ
+palette|Rule: Freestyle Gomoku	Rule: Freestyle Gomoku
+palette|Rule: Standard Gomoku	Rule: Standard Gomoku
+palette|Rule: Free Renju	Rule: Free Renju
+palette|Settings	Cài đặt
+palette|About	Giới thiệu
+palette|Start Analysis	Bắt đầu phân tích
+palette|Stop Analysis	Dừng phân tích
+palette|Analyze Mode	Chế độ phân tích
+palette|Engine plays Black	Máy chơi quân đen
+palette|Engine plays White	Máy chơi quân trắng
+palette|Engine plays Off	Tắt máy đánh
+palette|Search Overlay	Hiện lớp gợi ý nước
+palette|Search Winrate Tags	Hiện tỉ lệ thắng
+palette|First Move	Về nước đầu
+palette|Undo	Hoàn tác
+palette|Redo	Làm lại
+palette|Last Move	Đến nước cuối
+palette-cmd|help	Xem trợ giúp
+palette-cmd|about	Hỏi thông tin engine
+palette-cmd|start	Ván mới với cỡ bàn
+palette-cmd|rule	Đặt luật chơi
+palette-cmd|new	Chơi lại ván này
+palette-cmd|undo	Lùi một nước
+palette-cmd|redo	Tiến một nước
+palette-cmd|loadpos	Nạp thế cờ từ chuỗi nước
+palette-cmd|pos	Nhập thế cờ
+palette-cmd|getpos	In thế cờ hiện tại
+palette-cmd|analyze	Bắt đầu phân tích
+palette-cmd|yxanalz	Chỉ phân tích các nước chọn
+palette-cmd|stop	Dừng phân tích
+palette-cmd|play	Nạp nước rồi phân tích
+palette-cmd|engine	Quản lý engine: chạy, dừng, nạp lại
+palette-cmd|send	Gửi dòng lệnh thô tới engine
+palette-cmd|info	Sửa cấu hình engine
+palette-cmd|clear	Xóa nhật ký console
+palette-cmd|db	Lệnh cơ sở dữ liệu
+palette|Engine Path	Đường dẫn engine
+palette|Protocol Extension (.ptc)	Mở rộng giao thức (.ptc)
+palette|Threads	Số luồng
+palette|Hash Size (MB)	Dung lượng hash (MB)
+palette|Timeout / Turn (ms)	Thời gian mỗi nước (ms)
+palette|Timeout / Match (ms)	Tổng thời gian ván (ms)
+palette|Increment (ms)	Cộng thêm giờ (ms)
+palette|Max Depth	Độ sâu tối đa
+palette|Max Nodes	Số nút tối đa
+palette|Multi PV	Nhiều biến (MultiPV)
+palette|Analysis Detail	Mức chi tiết phân tích
+palette|Theme	Giao diện
+palette|Language	Ngôn ngữ
+palette|WinGraph Mode	Chế độ biểu đồ thắng
+palette|Show Move Numbers	Hiện số thứ tự nước
+palette|Show Coordinates	Hiện tọa độ
+palette|Hotkey: Analyze	Phím tắt: Phân tích
+palette|Hotkey: Stop	Phím tắt: Dừng
+palette|Hotkey: Undo	Phím tắt: Hoàn tác
+palette|Hotkey: Redo	Phím tắt: Làm lại
+palette|Hotkey: New Game	Phím tắt: Ván mới
