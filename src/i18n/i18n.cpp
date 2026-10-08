@@ -59,6 +59,8 @@ struct State {
     CatalogLoader loader;
     std::string language = "en";
     Catalog catalog;
+    std::map<ListenerId, std::function<void()>> listeners;
+    ListenerId nextId = 1;
 };
 State &state()
 {
@@ -106,12 +108,35 @@ bool setLanguage(std::string_view code)
     if (!isSupported(code))
         return false;
     auto &s = state();
-    std::lock_guard<std::mutex> lk(s.mu);
-    s.language = std::string(code);
-    s.catalog = Catalog();
-    if (code != "en" && s.loader)
-        s.catalog = Catalog::parse(s.loader(code));
+    std::vector<std::function<void()>> toNotify;
+    {
+        std::lock_guard<std::mutex> lk(s.mu);
+        s.language = std::string(code);
+        s.catalog = Catalog();
+        if (code != "en" && s.loader)
+            s.catalog = Catalog::parse(s.loader(code));
+        for (const auto &[id, fn] : s.listeners)
+            toNotify.push_back(fn);
+    }
+    for (const auto &fn : toNotify)
+        fn();  // outside the lock: listeners call tr()
     return true;
+}
+
+ListenerId addLanguageListener(std::function<void()> listener)
+{
+    auto &s = state();
+    std::lock_guard<std::mutex> lk(s.mu);
+    const ListenerId id = s.nextId++;
+    s.listeners[id] = std::move(listener);
+    return id;
+}
+
+void removeLanguageListener(ListenerId id)
+{
+    auto &s = state();
+    std::lock_guard<std::mutex> lk(s.mu);
+    s.listeners.erase(id);
 }
 
 std::string currentLanguage()

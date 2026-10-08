@@ -158,4 +158,13 @@ std::vector<std::string> check(const Catalog &catalog, const std::set<std::strin
     return problems;
 }
 
+std::vector<std::string> checkCoverage(const Catalog &catalog, const std::set<std::string> &ref)
+{
+    std::vector<std::string> problems;
+    for (const auto &key : ref)
+        if (!catalog.find(key))  // find() is null for absent and for empty
+            problems.push_back("missing translation: " + key);
+    return problems;
+}
+
 }  // namespace i18n::lint

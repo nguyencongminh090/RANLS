@@ -6,6 +6,7 @@
 // key itself. Depends on the standard library only (no gtk, no engine/), so it
 // is unit-tested without a display server. Design: features/ui-language/.
 
+#include <cstdio>
 #include <functional>
 #include <map>
 #include <string>
@@ -61,6 +62,7 @@ void setCatalogLoader(CatalogLoader loader);
 
 /// Select the active language, loading its catalog via the loader. Returns
 /// false (language unchanged) for an unsupported code. "en" clears the catalog.
+/// On success every registered language-changed listener runs (I18N-02).
 bool setLanguage(std::string_view code);
 std::string currentLanguage();
 
@@ -72,5 +74,49 @@ std::string tr(std::string_view key);
 /// Translate with disambiguating context: looks up `ctx|text`, then falls back
 /// to `text` (not the combined key).
 std::string trc(std::string_view ctx, std::string_view text);
+
+// ── Language-changed notification (I18N-02) ─────────────────────────────────
+
+/// Called (on the thread that called setLanguage, after the catalog switched)
+/// so long-lived UI re-reads its texts. Returns an id for removal.
+using ListenerId = unsigned;
+ListenerId addLanguageListener(std::function<void()> listener);
+void removeLanguageListener(ListenerId id);
+
+// ── printf-style templates ──────────────────────────────────────────────────
+
+namespace detail {
+inline const char *fmtArg(const char *s) { return s; }
+inline const char *fmtArg(const std::string &s) { return s.c_str(); }
+inline const char *fmtArg(std::string_view) = delete;  // not NUL-terminated
+template <class T>
+inline T fmtArg(T v)
+{
+    return v;
+}
+}  // namespace detail
+
+/// Substitute printf conversions (%s %d ...) of an already-translated
+/// template; std::string arguments are accepted. Pass tr("...%s...") as `fmt`
+/// so the lint sees one key per template. Arguments must be used in order.
+template <class... Args>
+std::string format(const std::string &fmt, const Args &...args)
+{
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-security"
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
+    int n = std::snprintf(nullptr, 0, fmt.c_str(), detail::fmtArg(args)...);
+    if (n < 0)
+        return fmt;
+    std::string out(static_cast<size_t>(n) + 1, '\0');
+    std::snprintf(out.data(), out.size(), fmt.c_str(), detail::fmtArg(args)...);
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+    out.resize(static_cast<size_t>(n));
+    return out;
+}
 
 }  // namespace i18n
