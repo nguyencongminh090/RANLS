@@ -342,6 +342,11 @@ Wrap in-scope strings, draft vi.tsv, live refresh, Xvfb visual pass; English key
 `language=` key + `set.language` registry row + system-locale default.
 [detail](docs/instruction/I18N-03-language-setting-and-persistence.md)
 
+## UI-22 — about-links-protocol-heading-blank
+
+Bug: verify the `&`-in-markup hypothesis via `systematic-debugging` first; regression test + fix-log; don't change the key.
+[detail](docs/instruction/UI-22-about-links-protocol-heading-blank.md)
+
 ## UI-21 — modern-chrome-icons-css
 
 Icon header bar, hamburger menu and CSS tokens per `features/modern-ui/planning.md` sequencing; filled 16x16 icon paths only.

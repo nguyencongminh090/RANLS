@@ -43,6 +43,7 @@ PAL-04 (filed 2026-10-08 from the Sprint 23 follow-up discussion) — **pulled i
 
 Filed 2026-10-08 from `features/ui-language/` (Q1–Q11 resolved the same day): I18N-01/02/03 — **pulled into Sprint 24 Active 2026-10-08**; I18N-04 stays here:
 
+- 🔲 **UI-22.** About dialog: "Links & protocol" heading renders blank — [detail](docs/todo/UI-22-about-links-protocol-heading-blank.md) · [instruction](docs/instruction/UI-22-about-links-protocol-heading-blank.md)
 - 🔲 **I18N-04.** UI language: palette titles from the catalog (display follows UI language; search stays bilingual) — [detail](docs/todo/I18N-04-palette-titles-from-catalog.md)
 
 Filed 2026-10-08 from `features/command-palette/` (user request; Q1–Q10 resolved the same day): PAL-01/02/03 — **pulled into Sprint 23 Active 2026-10-08** (see `docs/sprint/current.md`).
