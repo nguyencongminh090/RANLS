@@ -158,6 +158,7 @@ points at sprint start to 0 at the end date.
 | 2026-10-08 | 4 / 4 items | — | Sprint 24 opened (goal "Palette scopes and switchable UI language"): PAL-04, I18N-01, I18N-02, I18N-03 pulled from Backlog into Active — see docs/sprint/current.md. Backlog now has 1 item (I18N-04) |
 | 2026-10-08 | 3 / 4 items | — | I18N-01 done (PR #59, squash 732bbd8) — GTK-free `i18n::tr` catalog loader + lint |
 | 2026-10-08 | 2 / 4 items | — | PAL-04 done (PR #60) — scope prefixes ! > @, UI-only default; 8 cmd-only bench rows moved to the ! scope (typo MRR 0.955→0.926, noted in PR) |
+| 2026-10-08 | 1 / 4 items | — | I18N-02 done (PR #61) — 185 UI strings wrapped, complete vi.tsv (user-reviewed), coverage lint, live refresh |
 
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).
