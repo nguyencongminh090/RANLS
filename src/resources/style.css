@@ -7,16 +7,71 @@
  * proves the compiled GResource blob (not just application.cpp's path literal,
  * which string-merging can hide) is actually bundled. Do not remove. */
 
+/* ── Design tokens (UI-21) ──────────────────────────────────────────────────
+ * Theme-neutral: every surface/line/hover is a translucent tint of the
+ * foreground, so it reads correctly on both light and dark GTK themes without
+ * a per-theme override. Spacing scale: 4 / 8 / 12 / 16 px. Radius: 6 / 10 px.
+ * Type scale: 11 (caption) / 13 (body) / 15 (title). Accent: #3584e4. */
+@define-color ranls_accent #3584e4;
+@define-color ranls_line   alpha(currentColor, 0.14);
+
 /* ── Panels ─────────────────────────────────────────────────────────────── */
 .panel {
-    border-radius:    4px;
-    padding:          6px;
+    border-radius:    10px;
+    padding:          8px;
+}
+
+/* ── Header bar (UI-21) ─────────────────────────────────────────────────── */
+headerbar {
+    min-height:       46px;
+    padding:          0 8px;
+}
+
+headerbar button {
+    min-height:       30px;
+    min-width:        30px;
+    padding:          0 8px;
+    border-radius:    8px;
+}
+
+headerbar button image {
+    -gtk-icon-size:   16px;
+}
+
+headerbar .linked > button {
+    border-radius:    0;
+}
+
+headerbar .linked > button:first-child {
+    border-top-left-radius:     8px;
+    border-bottom-left-radius:  8px;
+}
+
+headerbar .linked > button:last-child {
+    border-top-right-radius:    8px;
+    border-bottom-right-radius: 8px;
+}
+
+headerbar button.suggested-action {
+    font-weight:      600;
+    padding:          0 14px;
+}
+
+/* Small pill: current rule in the header bar. */
+.chip {
+    padding:          2px 10px;
+    margin:           0 8px;
+    border-radius:    999px;
+    font-size:        11px;
+    font-weight:      600;
+    background-color: alpha(@ranls_accent, 0.16);
+    color:            @ranls_accent;
 }
 
 /* ── Engine status labels ───────────────────────────────────────────────── */
 .engine-status {
     padding:          8px 12px;
-    border-bottom:    1px solid rgba(128, 128, 128, 0.3);
+    border-bottom:    1px solid @ranls_line;
 }
 
 .engine-status label {
@@ -78,9 +133,14 @@
 }
 
 .engine-status button {
-    padding:          2px 6px;
+    padding:          3px 8px;
     min-height:       0;
-    font-size:        13px;
+    min-width:        0;
+    border-radius:    6px;
+}
+
+.engine-status button image {
+    -gtk-icon-size:   14px;
 }
 
 .monospace {
@@ -90,8 +150,13 @@
 /* ── PV view ────────────────────────────────────────────────────────────── */
 
 .pv-view row {
-    padding:          4px 8px;
-    border-bottom:    1px solid rgba(128, 128, 128, 0.3);
+    padding:          6px 10px;
+    border-bottom:    1px solid @ranls_line;
+    transition:       background-color 150ms ease-out;
+}
+
+.pv-view row:hover {
+    background-color: alpha(currentColor, 0.06);
 }
 
 .pv-view .pv-index {
@@ -120,13 +185,18 @@
 /* ── Tree explorer ──────────────────────────────────────────────────────── */
 
 columnview header {
-    font-weight:      bold;
+    font-weight:      600;
     font-size:        11px;
-    padding:          4px 8px;
+    padding:          6px 10px;
 }
 
 columnview row {
-    padding:          2px 8px;
+    padding:          3px 10px;
+    transition:       background-color 150ms ease-out;
+}
+
+columnview row:hover {
+    background-color: alpha(currentColor, 0.06);
 }
 
 /* Current-position row (UI-02: parity with TreeNodeView's path highlight). */
@@ -137,7 +207,33 @@ columnview row {
 
 /* ── Bottom panel / notebook ────────────────────────────────────────────── */
 .bottom-panel {
-    border-top:       1px solid rgba(128, 128, 128, 0.3);
+    border-top:       1px solid @ranls_line;
+}
+
+notebook > header {
+    padding:          0 4px;
+}
+
+notebook > header > tabs > tab {
+    padding:          6px 14px;
+    min-height:       0;
+    border-radius:    8px 8px 0 0;
+    font-weight:      500;
+}
+
+notebook > header > tabs > tab:checked {
+    font-weight:      600;
+}
+
+/* Thin, quiet pane dividers with a comfortable grab area. */
+paned > separator {
+    min-width:        1px;
+    min-height:       1px;
+    background-color: @ranls_line;
+}
+
+tooltip {
+    border-radius:    6px;
 }
 
 /* ── Text views (engine log, move log) ──────────────────────────────────── */
@@ -148,6 +244,6 @@ textview {
 
 /* ── Engine log gutter (direction labels) ──────────────────────────────────── */
 .engine-gutter {
-    border-right:     1px solid rgba(128, 128, 128, 0.3);
+    border-right:     1px solid @ranls_line;
     padding:          0 4px;
 }

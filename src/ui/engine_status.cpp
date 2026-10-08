@@ -59,21 +59,21 @@ EngineStatusView::EngineStatusView()
     labelState_.add_css_class("engine-off");
     labelState_.set_margin_end(4);
 
-    btnStart_.set_label("▶");
+    btnStart_.set_icon_name("ranls-play-symbolic");
     btnStart_.set_tooltip_text("Start Engine");
     btnStart_.signal_clicked().connect([this]() { signal_start.emit(); });
 
-    btnStop_.set_label("■");
+    btnStop_.set_icon_name("ranls-stop-symbolic");
     btnStop_.set_tooltip_text("Stop Engine");
     btnStop_.signal_clicked().connect([this]() { signal_stop.emit(); });
 
-    btnReload_.set_label("↻");
+    btnReload_.set_icon_name("ranls-reload-symbolic");
     btnReload_.set_tooltip_text("Reload Engine");
     btnReload_.signal_clicked().connect([this]() { signal_reload.emit(); });
 
     // ANLZ-01: continuous "Analyze Mode" toggle. When active, MainWindow
     // re-analyses the current position after every position change.
-    btnAnalyzeMode_.set_label("∞");
+    btnAnalyzeMode_.set_icon_name("ranls-loop-symbolic");
     btnAnalyzeMode_.set_tooltip_text("Analyze Mode: continuously analyse every position");
     btnAnalyzeMode_.signal_toggled().connect([this]() {
         if (suppressAnalyzeModeSignal_) return;
