@@ -11,7 +11,9 @@ internal tracking files for traceability.
 
 ## [Unreleased]
 
-_Nothing yet._
+### Fixed
+
+- About dialog: the "Links & protocol" section heading no longer renders blank (UI-22).
 
 ## [0.11.0] - 2026-10-08
 
