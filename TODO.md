@@ -32,7 +32,7 @@ Sprint 23 (opened 2026-10-08, goal "Command palette (Ctrl+K): bilingual classica
 Sprint 24 (opened 2026-10-08, goal "Palette scopes (`!` `>` `@`) and a switchable UI language (English / Tiếng Việt)") — pulled from Backlog:
 
 - 🔲 **PAL-04.** Palette: UI items vs console commands + scope prefixes `!` / `>` / `@` — [detail](docs/todo/PAL-04-palette-scoped-search-syntax.md) · [instruction](docs/instruction/PAL-04-palette-scoped-search-syntax.md)
-- 🔲 **I18N-01.** GTK-free TSV catalog loader `i18n::tr` + lint tests — [detail](docs/todo/I18N-01-catalog-loader-and-lint.md) · [instruction](docs/instruction/I18N-01-catalog-loader-and-lint.md)
+- ✅ **I18N-01.** GTK-free TSV catalog loader `i18n::tr` + lint tests — [detail](docs/todo/I18N-01-catalog-loader-and-lint.md) · [instruction](docs/instruction/I18N-01-catalog-loader-and-lint.md)
 - 🔲 **I18N-02.** Wrap UI strings in `tr()` + Vietnamese catalog + live refresh — [detail](docs/todo/I18N-02-wire-ui-strings.md) · [instruction](docs/instruction/I18N-02-wire-ui-strings.md)
 - 🔲 **I18N-03.** Language setting (System/English/Tiếng Việt), persistence, system default — [detail](docs/todo/I18N-03-language-setting-and-persistence.md) · [instruction](docs/instruction/I18N-03-language-setting-and-persistence.md)
 
