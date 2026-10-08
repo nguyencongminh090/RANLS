@@ -23,18 +23,17 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 ## Active
 
-Sprint 22 (opened 2026-10-06, goal "Board mark visual language: stacked engine/database/variant marks, best ring, hover tooltips") — pulled from Backlog:
+Sprint 23 (opened 2026-10-08, goal "Command palette (Ctrl+K): bilingual classical-NLP search over actions, settings and ! commands, benchmarked against a Whoosh baseline") — pulled from Backlog:
 
+- 🔲 **PAL-01.** Pure en/vi search engine (BM25F) + shared dataset + Whoosh benchmark — [detail](docs/todo/PAL-01-palette-search-engine-and-benchmark.md) · [instruction](docs/instruction/PAL-01-palette-search-engine-and-benchmark.md)
+- 🔲 **PAL-02.** Ctrl+K overlay + action/`!`-command registries — [detail](docs/todo/PAL-02-palette-overlay-ui-and-registries.md) · [instruction](docs/instruction/PAL-02-palette-overlay-ui-and-registries.md)
+- 🔲 **PAL-03.** Declarative settings registry so settings are searchable — [detail](docs/todo/PAL-03-settings-registry-for-palette.md) · [instruction](docs/instruction/PAL-03-settings-registry-for-palette.md)
 
 ## Backlog
 
-Filed 2026-10-08 from `features/command-palette/` (user request; Q1–Q10 resolved the same day; pull into a sprint via `/sprint`):
+No open items.
 
-- **PAL-01.** Command palette: pure en/vi search engine (classical NLP, BM25F) + shared dataset + Whoosh-baseline benchmark — [detail](docs/todo/PAL-01-palette-search-engine-and-benchmark.md) · [instruction](docs/instruction/PAL-01-palette-search-engine-and-benchmark.md)
-- **PAL-02.** Command palette: Ctrl+K overlay + action/`!`-command registries — [detail](docs/todo/PAL-02-palette-overlay-ui-and-registries.md) · [instruction](docs/instruction/PAL-02-palette-overlay-ui-and-registries.md)
-- **PAL-03.** Declarative settings registry so settings are searchable — [detail](docs/todo/PAL-03-settings-registry-for-palette.md) · [instruction](docs/instruction/PAL-03-settings-registry-for-palette.md)
-
-(Earlier Backlog: no other open items.)
+Filed 2026-10-08 from `features/command-palette/` (user request; Q1–Q10 resolved the same day): PAL-01/02/03 — **pulled into Sprint 23 Active 2026-10-08** (see `docs/sprint/current.md`).
 
 Filed 2026-10-06 from [board marks review audit](docs/audit/2026-10-06-board-marks-ux-review.md) — UI-16/17/18 shipped 2026-10-06 outside a sprint (PRs #46–#48, see Completed); UX-07 and UX-08 **pulled into Sprint 22 Active 2026-10-06** (see `docs/sprint/current.md`).
 
