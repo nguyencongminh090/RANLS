@@ -9,6 +9,7 @@
 #include "ui/analysis_panel.h"
 #include "ui/bottom_panel.h"
 #include "command/command_dispatcher.h"
+#include "ui/command_palette.h"
 
 #include <gtkmm.h>
 #include <sigc++/sigc++.h>
@@ -40,6 +41,9 @@ private:
     // requestGracefulClose()/the signal_close_request handler and observe
     // closeInFlight_ + controller_ state without a live WM to click the X.
     friend struct RanlsEng03Probe;
+    // PAL-02: the palette test drives onCommandPalette()/paletteItems() and the
+    // palette_ member without synthesising a Ctrl+K key event.
+    friend struct RanlsPal02Probe;
 
     void buildMenuBar();
     void buildToolbar();
@@ -107,6 +111,10 @@ private:
     /// PAL-03: open Settings, optionally on the tab of `focusSettingId` (settings_registry id).
     void openSettings(const std::string &focusSettingId);
     void onAbout();
+    /// PAL-02: Ctrl+K command palette.
+    void onCommandPalette();
+    void buildCommandPalette();
+    std::vector<PaletteItem> paletteItems();
     void onStartAnalysis();
     void onStopAnalysis();
 
@@ -220,6 +228,7 @@ private:
     Gtk::Paned         mainHPaned_;
     Gtk::Paned         mainVPaned_;
     Gtk::Box           rootBox_{Gtk::Orientation::VERTICAL};
+    std::unique_ptr<CommandPalette> palette_;  ///< PAL-02, anchored to rootBox_
 
     // UX-05: divider position as a fraction of the pane's own extent, plus
     // the extent we last observed it at (see trackPanedFraction()). Initial

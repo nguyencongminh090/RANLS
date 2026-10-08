@@ -1,4 +1,7 @@
 #include "main_window.h"
+
+#include "command/palette_recent.h"
+#include "ui/palette_catalog.h"
 #include "model/game_file_service.h"
 #include "model/settings_storage.h"
 #include "ui/about_dialog.h"
@@ -7,6 +10,7 @@
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
+#include <unordered_map>
 
 // UX-03: icon-only glyph buttons need both a hover tooltip (sighted users)
 // and an accessible name (screen readers). set_tooltip_text() alone does
@@ -179,6 +183,9 @@ MainWindow::MainWindow()
         if (hotkeyMatches(v.hotkeyUndo, keyval, state)) { onUndo(); return true; }
         if (hotkeyMatches(v.hotkeyRedo, keyval, state)) { onRedo(); return true; }
         if (hotkeyMatches(v.hotkeyNewGame, keyval, state)) { onNewGame(); return true; }
+        // PAL-02: Ctrl+K opens (or closes) the command palette. Same controller as
+        // the hotkeys above on purpose — one key controller per widget.
+        if (hotkeyMatches("Ctrl+K", keyval, state)) { onCommandPalette(); return true; }
         return false;
     }, false);
     add_controller(keyCtrl);
@@ -214,6 +221,7 @@ void MainWindow::buildMenuBar()
     addAction("board-size", &MainWindow::onBoardSize);
     addAction("settings",   &MainWindow::onSettings);
     addAction("about",      &MainWindow::onAbout);
+    addAction("command-palette", &MainWindow::onCommandPalette);
     addAction("analyze",    &MainWindow::onStartAnalysis);
     addAction("stop",       &MainWindow::onStopAnalysis);
 
@@ -317,6 +325,7 @@ void MainWindow::buildMenuBar()
     auto viewMenu = Gio::Menu::create();
     viewMenu->append("Search Overlay",       "win.show-search-overlay");
     viewMenu->append("Search Winrate Tags",  "win.show-search-winrate");
+    viewMenu->append("Command Palette…",     "win.command-palette");
 
     // Help menu.
     auto helpMenu = Gio::Menu::create();
@@ -448,6 +457,7 @@ void MainWindow::buildLayout()
     rootBox_.append(mainVPaned_);
     rootBox_.set_vexpand(true);
     set_child(rootBox_);
+    buildCommandPalette();
 
     // UX-05: keep hPanedFraction_/vPanedFraction_ in sync with whatever the
     // divider is actually at (initial value here, profile-preset switches in
@@ -1061,6 +1071,112 @@ void MainWindow::openSettings(const std::string &focusSettingId)
     dialog->set_visible(true);
     if (!focusSettingId.empty())
         dialog->showSetting(focusSettingId);  // PAL-03: jump to the setting's tab + focus its control
+}
+
+// ─── PAL-02: Ctrl+K command palette ──────────────────────────────────────────
+void MainWindow::buildCommandPalette()
+{
+    std::string lexicon;
+    try {
+        auto bytes = Gio::Resource::lookup_data_global("/org/ranls/palette_lexicon.tsv");
+        gsize size = 0;
+        const char *data = static_cast<const char *>(bytes->get_data(size));
+        if (data)
+            lexicon.assign(data, size);
+    } catch (const Glib::Error &e) {
+        // Not bundled (e.g. a test binary): the palette still works, just with
+        // no synonym/stopword vocabulary.
+        g_warning("palette lexicon unavailable: %s", e.what());
+    }
+    palette_ = std::make_unique<CommandPalette>(rootBox_, lexicon);
+    palette_->setItemsProvider([this]() { return paletteItems(); });
+    palette_->setRecentProvider([this]() { return gameState_.viewConfig().paletteRecent; });
+    palette_->signal_item_run.connect([this](const std::string &id) {
+        ViewConfig v = gameState_.viewConfig();
+        palette_recent::touch(v.paletteRecent, id);
+        gameState_.setViewConfig(v);
+        persistGameSetup();
+    });
+}
+
+void MainWindow::onCommandPalette()
+{
+    if (!palette_)
+        return;
+    if (palette_->isOpen())
+        palette_->close();
+    else
+        palette_->open();
+}
+
+std::vector<PaletteItem> MainWindow::paletteItems()
+{
+    const auto specs = commandDispatcher_->commandSpecs();
+    const ViewConfig &v = gameState_.viewConfig();
+    auto act = [this](const char *name) { return [this, name]() { activate_action(name); }; };
+    auto str = [this](const char *name, const char *value) {
+        return [this, name, value]() { activate_action(name, Glib::Variant<Glib::ustring>::create(value)); };
+    };
+    struct Hook {
+        std::function<void()> run;
+        std::string           shortcut;
+    };
+    const std::unordered_map<std::string, Hook> actions = {
+        {"act.new-game",  {[this]() { onNewGame(); }, v.hotkeyNewGame}},
+        {"act.load-game", {[this]() { onLoadGame(); }, ""}},
+        {"act.save-game", {[this]() { onSaveGame(); }, ""}},
+        {"act.quit",      {[this]() { onQuit(); }, ""}},
+        {"act.board-size", {[this]() { onBoardSize(); }, ""}},
+        {"act.settings",  {[this]() { onSettings(); }, ""}},
+        {"act.about",     {[this]() { onAbout(); }, ""}},
+        {"act.analyze",   {[this]() { onStartAnalysis(); }, v.hotkeyAnalyze}},
+        {"act.stop",      {[this]() { onStopAnalysis(); }, v.hotkeyStop}},
+        {"act.analyze-mode", {act("win.analyze-mode"), ""}},
+        {"act.rule-freestyle", {str("win.set-rule", "freestyle"), ""}},
+        {"act.rule-standard",  {str("win.set-rule", "standard"), ""}},
+        {"act.rule-renju",     {str("win.set-rule", "renju"), ""}},
+        {"act.engine-plays-black", {str("win.engine-plays", "black"), ""}},
+        {"act.engine-plays-white", {str("win.engine-plays", "white"), ""}},
+        {"act.engine-plays-off",   {str("win.engine-plays", "off"), ""}},
+        {"act.view-search-overlay", {act("win.show-search-overlay"), ""}},
+        {"act.view-search-winrate", {act("win.show-search-winrate"), ""}},
+        {"act.nav-first", {[this]() { onUndoAll(); }, ""}},
+        {"act.nav-undo",  {[this]() { onUndo(); }, v.hotkeyUndo}},
+        {"act.nav-redo",  {[this]() { onRedo(); }, v.hotkeyRedo}},
+        {"act.nav-last",  {[this]() { onRedoAll(); }, ""}},
+    };
+
+    std::vector<PaletteItem> items;
+    for (auto &entry : palette_catalog::buildEntries(specs)) {
+        PaletteItem item;
+        if (entry.kind == "act") {
+            const auto it = actions.find(entry.id);
+            if (it == actions.end())
+                continue;  // metadata without a handler: never offer a dead row
+            item.run      = it->second.run;
+            item.shortcut = it->second.shortcut;
+        } else if (entry.kind == "set") {
+            const std::string id = entry.id;
+            item.run = [this, id]() { openSettings(id); };
+        } else {  // cmd
+            const std::string name = entry.id.substr(4);
+            const auto spec = std::find_if(specs.begin(), specs.end(),
+                                           [&](const CommandSpec &s) { return s.name == name; });
+            const bool args = spec != specs.end() && palette_catalog::commandTakesArguments(*spec);
+            item.run = [this, name, args]() {
+                if (args) {
+                    bottomPanel_.focusCommandEntry("!" + name + " ");
+                } else {
+                    bottomPanel_.showEngineLog();
+                    commandDispatcher_->executeLine("!" + name);
+                }
+            };
+            item.shortcut = args ? "…" : "";
+        }
+        item.entry = std::move(entry);
+        items.push_back(std::move(item));
+    }
+    return items;
 }
 
 void MainWindow::onAbout()

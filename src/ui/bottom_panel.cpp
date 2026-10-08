@@ -250,6 +250,19 @@ void BottomPanel::setCommandNameProvider(std::function<std::vector<std::string>(
     commandNameProvider_ = std::move(provider);
 }
 
+void BottomPanel::showEngineLog()
+{
+    set_current_page(page_num(engineLogBox_));
+}
+
+void BottomPanel::focusCommandEntry(const std::string &text)
+{
+    showEngineLog();
+    commandEntry_.set_text(text);
+    commandEntry_.grab_focus();
+    commandEntry_.set_position(-1);
+}
+
 void BottomPanel::setCommandUsageProvider(std::function<std::string(const std::string &)> provider)
 {
     commandUsageProvider_ = std::move(provider);
