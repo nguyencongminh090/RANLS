@@ -32,6 +32,7 @@ add_executable(ranls-gui-tests
     test_engine_log_model.cpp
     test_cons01_command_completer.cpp
     test_cons02_autocorrect.cpp
+    test_pal01_palette_search.cpp
     test_settings_storage.cpp
     test_eng01_engine_state.cpp
     test_eng02_revert_predicate.cpp
@@ -61,6 +62,7 @@ add_executable(ranls-gui-tests
     test_rdb03_node_analysis.cpp
 
     # Sources under test (model/engine only — no UI, no gtkmm).
+    ${CMAKE_SOURCE_DIR}/src/command/palette_search.cpp
     ${CMAKE_SOURCE_DIR}/src/model/move_history.cpp
     ${CMAKE_SOURCE_DIR}/src/model/board_state.cpp
     ${CMAKE_SOURCE_DIR}/src/model/game_state.cpp
@@ -98,7 +100,21 @@ target_compile_features(ranls-gui-tests PRIVATE cxx_std_20)
 target_compile_definitions(ranls-gui-tests PRIVATE
     MOCK_ENGINE_PATH="$<TARGET_FILE:mock_engine>"
     MOCK_ENGINE_QUIT_PATH="$<TARGET_FILE:mock_engine_quit>"
+    PALETTE_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data/palette"
+    PALETTE_LEXICON_PATH="${CMAKE_SOURCE_DIR}/src/resources/palette_lexicon.tsv"
 )
+
+# PAL-01: dev-only benchmark driver for the palette search engine (Model A);
+# scripts/palette_bench.py runs it and the Whoosh baseline over the shared dataset.
+# src/command/palette_search.cpp needs only the standard library + GLib (no gtkmm).
+pkg_check_modules(GLIB2 REQUIRED IMPORTED_TARGET glib-2.0)
+add_executable(ranls-palette-eval
+    palette_eval_main.cpp
+    ${CMAKE_SOURCE_DIR}/src/command/palette_search.cpp
+)
+target_include_directories(ranls-palette-eval PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(ranls-palette-eval PRIVATE PkgConfig::GLIB2)
+target_compile_features(ranls-palette-eval PRIVATE cxx_std_20)
 
 include(CTest)
 
