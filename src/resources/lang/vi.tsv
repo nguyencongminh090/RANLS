@@ -1,0 +1,10 @@
+# Vietnamese UI catalog (I18N-01). `English key<TAB>translation`; \n \t \\ are escapes.
+# Placeholders (%s, %d, {n}) must match the key; do-not-translate terms (Renju,
+# Gomoku, PV, Rapfi, Yixin, .rdb, rule names) must stay verbatim. Empty = untranslated.
+# Seed entries only; the real strings arrive with I18N-02.
+Open...	Mở...
+Save	Lưu
+Move %d of %d	Nước %d trên %d
+Open a .rdb file	Mở tệp .rdb
+Free Renju	Free Renju
+Analysis stopped after {n} moves	Đã dừng phân tích sau {n} nước
