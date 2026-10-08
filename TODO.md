@@ -17,7 +17,7 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 `ENG` engine lifecycle · `NAV` navigation · `UI` display logic · `UX` usability · `TEST` harness ·
 `CLEAN` hygiene · `IO` game persistence · `DOC` documentation · `TOOL` repo tooling ·
 `REL` release/versioning · `PORT` cross-platform portability · `ANLZ` analyze mode ·
-`RDB` `.rdb` save format · `NAME` app naming · `CONS` engine-log command console · `ARCH` architecture/layering refactors · `PAL` command palette (Ctrl+K).
+`RDB` `.rdb` save format · `NAME` app naming · `CONS` engine-log command console · `ARCH` architecture/layering refactors · `PAL` command palette (Ctrl+K) · `I18N` UI language / localisation.
 
 ---
 
@@ -29,13 +29,21 @@ Sprint 23 (opened 2026-10-08, goal "Command palette (Ctrl+K): bilingual classica
 - ✅ **PAL-02.** Ctrl+K overlay + action/`!`-command registries — [detail](docs/todo/PAL-02-palette-overlay-ui-and-registries.md) · [instruction](docs/instruction/PAL-02-palette-overlay-ui-and-registries.md)
 - ✅ **PAL-03.** Declarative settings registry so settings are searchable — [detail](docs/todo/PAL-03-settings-registry-for-palette.md) · [instruction](docs/instruction/PAL-03-settings-registry-for-palette.md)
 
+Sprint 24 (opened 2026-10-08, goal "Palette scopes (`!` `>` `@`) and a switchable UI language (English / Tiếng Việt)") — pulled from Backlog:
+
+- 🔲 **PAL-04.** Palette: UI items vs console commands + scope prefixes `!` / `>` / `@` — [detail](docs/todo/PAL-04-palette-scoped-search-syntax.md) · [instruction](docs/instruction/PAL-04-palette-scoped-search-syntax.md)
+- 🔲 **I18N-01.** GTK-free TSV catalog loader `i18n::tr` + lint tests — [detail](docs/todo/I18N-01-catalog-loader-and-lint.md) · [instruction](docs/instruction/I18N-01-catalog-loader-and-lint.md)
+- 🔲 **I18N-02.** Wrap UI strings in `tr()` + Vietnamese catalog + live refresh — [detail](docs/todo/I18N-02-wire-ui-strings.md) · [instruction](docs/instruction/I18N-02-wire-ui-strings.md)
+- 🔲 **I18N-03.** Language setting (System/English/Tiếng Việt), persistence, system default — [detail](docs/todo/I18N-03-language-setting-and-persistence.md) · [instruction](docs/instruction/I18N-03-language-setting-and-persistence.md)
+
 ## Backlog
 
-Filed 2026-10-08 from the Sprint 23 follow-up discussion:
+PAL-04 (filed 2026-10-08 from the Sprint 23 follow-up discussion) — **pulled into Sprint 24 Active 2026-10-08** (see `docs/sprint/current.md`).
 
-- 🔲 **PAL-04.** Command palette: separate UI items (actions/settings) from console/protocol commands + scope prefix syntax (`!` / `>` / `@`) — [detail](docs/todo/PAL-04-palette-scoped-search-syntax.md)
 
-Design-stage (not yet a CODE, gated on `planning.md` Q1–Q11): `features/ui-language/` — UI language setting (English / Tiếng Việt / more later).
+Filed 2026-10-08 from `features/ui-language/` (Q1–Q11 resolved the same day): I18N-01/02/03 — **pulled into Sprint 24 Active 2026-10-08**; I18N-04 stays here:
+
+- 🔲 **I18N-04.** UI language: palette titles from the catalog (display follows UI language; search stays bilingual) — [detail](docs/todo/I18N-04-palette-titles-from-catalog.md)
 
 Filed 2026-10-08 from `features/command-palette/` (user request; Q1–Q10 resolved the same day): PAL-01/02/03 — **pulled into Sprint 23 Active 2026-10-08** (see `docs/sprint/current.md`).
 

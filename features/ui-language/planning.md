@@ -1,7 +1,6 @@
 # UI Language — planning
 
-See [user_story.md](user_story.md). **Status: design draft 2026-10-08 — open questions, not authorised to
-implement.** Size **L** (cross-layer, adds a mechanism/toolchain choice, touches every UI file) → resolve
+See [user_story.md](user_story.md). **Status: RESOLVED 2026-10-08 (see "Resolution" below) — filed as I18N-01..04.** Size **L** (cross-layer, adds a mechanism/toolchain choice, touches every UI file) → resolve
 these with the user, then `docs/todo/I18N-*` + `docs/instruction/`.
 
 ## Facts (checked 2026-10-08)
@@ -43,3 +42,22 @@ tooling become necessary.
 | Q9 | Who translates the first Vietnamese catalog? | I draft, you review (as with the palette dataset) |
 | Q10 | Fonts/text width: Vietnamese diacritics + longer strings in fixed-width spots (toolbar, header chip)? Needs a visual pass. | Check headless render + live screenshot per tab |
 | Q11 | Split: `I18N-01` mechanism + catalog loader + lint (pure), `I18N-02` wire UI strings (menus/dialogs), `I18N-03` language setting + persistence, `I18N-04` palette titles from catalog? | Yes, in that order |
+
+## Resolution (2026-10-08)
+
+User delegated the answers ("trả lời các câu hỏi mở … rồi chốt thiết kế"); every proposed default above was
+adopted, with these specifics:
+
+| # | Decision |
+|---|---|
+| Q1 | **B** — own TSV catalogs in the GResource (`src/resources/lang/<code>.tsv`), English source text as key; GTK-free `i18n::tr()` in `src/model`-independent header (`src/i18n/`, no gtk). Revisit gettext only if plurals/`.po` tooling are needed. |
+| Q2 | Live apply, best effort: `Settings` emits a language-changed signal; menus rebuilt, header/labels refreshed, dialogs rebuilt on open. Anything not refreshable live is listed in I18N-02's acceptance as "restart to apply" with a note beside the setting. |
+| Q3 | First launch: first supported entry of `g_get_language_names()`, else English. |
+| Q4 | UI chrome + dialog/status/error messages + About. Stay English: Engine Log, `!` commands/`!help`, protocol text. |
+| Q5 | Do-not-translate list (rule names, Renju, Gomoku, PV, engine names, `.rdb`) lives in `docs/knowledge`-style note `src/resources/lang/README.md`; lint checks the vi catalog keeps them verbatim. |
+| Q6 | `set.language` row in Settings → UI tab (System / English / Tiếng Việt), `language=` key (`system`/`en`/`vi`). |
+| Q7 | Palette search stays bilingual; displayed title follows UI language; collapsing duplicate vi strings into the catalog is **I18N-04**, kept in Backlog (not in Sprint 24). |
+| Q8 | Missing key → English; ctest fails on keys absent from the reference catalog, orphan keys, and placeholder (`%s`, `%d`, `{n}`) mismatches. |
+| Q9 | Claude drafts `vi.tsv`, user reviews. |
+| Q10 | Visual pass per Settings tab + toolbar/header under Xvfb (x11 backend) is an acceptance item of I18N-02. |
+| Q11 | Split adopted: I18N-01 → I18N-02 → I18N-03 (→ I18N-04 later). I18N-03 (setting + persistence + system-locale default) is pulled with I18N-02 so the feature is usable at sprint end. |

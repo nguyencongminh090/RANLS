@@ -322,6 +322,26 @@ Ctrl+K overlay over PAL-01; explicit action metadata at registration; re-query `
 Behavior-preserving settings table + open-at-page/focus; test that every setting has an entry.
 [detail](docs/instruction/PAL-03-settings-registry-for-palette.md)
 
+## PAL-04 — palette-scoped-search-syntax
+
+Pure scope parser replaces the `bang` special case; default = UI only; bench rerun.
+[detail](docs/instruction/PAL-04-palette-scoped-search-syntax.md)
+
+## I18N-01 — catalog-loader-and-lint
+
+GTK-free TSV catalog + `tr()`; lint ctest (keys, placeholders, do-not-translate).
+[detail](docs/instruction/I18N-01-catalog-loader-and-lint.md)
+
+## I18N-02 — wire-ui-strings
+
+Wrap in-scope strings, draft vi.tsv, live refresh, Xvfb visual pass; English key = unchanged output.
+[detail](docs/instruction/I18N-02-wire-ui-strings.md)
+
+## I18N-03 — language-setting-and-persistence
+
+`language=` key + `set.language` registry row + system-locale default.
+[detail](docs/instruction/I18N-03-language-setting-and-persistence.md)
+
 ## UI-21 — modern-chrome-icons-css
 
 Icon header bar, hamburger menu and CSS tokens per `features/modern-ui/planning.md` sequencing; filled 16x16 icon paths only.
