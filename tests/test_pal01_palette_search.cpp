@@ -77,6 +77,95 @@ TEST_CASE("PAL-01 leading '!' restricts to console commands")
     CHECK(f.ids("!").size() == 8);   // limit applies to the full command list
 }
 
+namespace {
+bool allKind(const std::vector<std::string> &ids, const char *prefix)
+{
+    for (const auto &id : ids)
+        if (id.rfind(prefix, 0) != 0)
+            return false;
+    return true;
+}
+bool anyCmd(const std::vector<std::string> &ids)
+{
+    for (const auto &id : ids)
+        if (id.rfind("cmd.", 0) == 0)
+            return true;
+    return false;
+}
+}  // namespace
+
+TEST_CASE("PAL-04 parseScope: prefix -> kinds + remaining query")
+{
+    CHECK(parseScope("undo").prefix == 0);
+    CHECK(parseScope("undo").kinds == kUiKinds);
+    CHECK(parseScope("undo").rest == "undo");
+    CHECK(parseScope("  new game ").rest == "new game");
+    CHECK(parseScope("").kinds == kUiKinds);
+
+    CHECK(parseScope("!undo").prefix == '!');
+    CHECK(parseScope("!undo").kinds == KindCmd);
+    CHECK(parseScope("! undo").rest == "undo");
+    CHECK(parseScope(" >new").prefix == '>');          // leading blanks ignored
+    CHECK(parseScope(">new").kinds == KindAct);
+    CHECK(parseScope("@ theme").kinds == KindSet);
+    CHECK(parseScope("@ theme").rest == "theme");
+    CHECK(parseScope("@").rest.empty());
+    CHECK(parseScope(">!undo").prefix == '>');         // only the first character is a scope
+    CHECK(parseScope(">!undo").rest == "!undo");
+    CHECK(parseScope("undo!").prefix == 0);            // prefix chars elsewhere are plain text
+    CHECK(parseScope("a@b").prefix == 0);
+
+    CHECK(kindBit("act") == KindAct);
+    CHECK(kindBit("set") == KindSet);
+    CHECK(kindBit("cmd") == KindCmd);
+    CHECK(kindBit("zzz") == 0);
+}
+
+TEST_CASE("PAL-04 no prefix never returns console commands")
+{
+    Fixture f;
+    for (const auto &q : {"undo", "redo", "new game", "analyze", "stop", "help", "clear", "send", "engine", "info",
+                          "about", "rule", "restart", "take back", "settings", "hoàn tác", "cai dat", "anal", "pos",
+                          "yxanlz", "loadpoz", "commands list", "raw protocol", "xóa log", "undoo"}) {
+        const auto ids = f.ids(q);
+        CHECK_FALSE(anyCmd(ids));
+        for (const auto &id : ids)
+            CHECK((id.rfind("act.", 0) == 0 || id.rfind("set.", 0) == 0));
+    }
+    CHECK(f.ids("undo").front() == "act.nav-undo");
+    // Query that only a console command answers: stays empty (no fallback).
+    CHECK(f.ids("yxanlz").empty());
+}
+
+TEST_CASE("PAL-04 '!' returns only commands, '>' only actions, '@' only settings")
+{
+    Fixture f;
+    for (const auto &q : {"!", "!un", "! undo", "!analyze", "!settings", "!theme"})
+        CHECK(allKind(f.ids(q), "cmd."));
+    for (const auto &q : {">", ">un", "> undo", ">analyze", ">settings", ">theme", ">hoàn tác", ">threads"})
+        CHECK(allKind(f.ids(q), "act."));
+    for (const auto &q : {"@", "@un", "@ undo", "@analyze", "@settings", "@theme", "@hotkey", "@threads"})
+        CHECK(allKind(f.ids(q), "set."));
+
+    CHECK(f.ids(">undo").front() == "act.nav-undo");
+    CHECK(f.ids("@theme").front() == "set.theme");
+    CHECK(f.ids("!undo").front() == "cmd.undo");
+    // A bare prefix lists that scope.
+    CHECK_FALSE(f.ids(">").empty());
+    CHECK_FALSE(f.ids("@").empty());
+    std::size_t nAct = 0, nSet = 0;
+    for (const auto &e : f.entries) {
+        nAct += e.kind == "act";
+        nSet += e.kind == "set";
+    }
+    CHECK(f.ids(">", 1000).size() == nAct);
+    CHECK(f.ids("@", 1000).size() == nSet);
+    // Wrong scope for the query: nothing, not a fallback to another kind.
+    CHECK(f.ids("@pizza").empty());
+    CHECK(f.ids(">pizza").empty());
+    CHECK(f.ids("!pizza").empty());
+}
+
 TEST_CASE("PAL-01 nonsense queries return nothing")
 {
     Fixture f;
@@ -118,6 +207,14 @@ TEST_CASE("PAL-01 golden set: recall@3 >= 0.9 and < 5 ms per query")
         if (c.size() < 2)
             continue;
         const std::string rel = c.size() > 2 ? c[2] : "";
+        // PAL-04: an unprefixed query whose only answers are `!` commands is no
+        // longer expected to find them; it must not return any cmd.* instead.
+        const char first = c[1].empty() ? 0 : c[1][0];
+        if (first != '!' && first != '>' && first != '@' && rel.rfind("cmd.", 0) == 0 &&
+            rel.find("act.") == std::string::npos && rel.find("set.") == std::string::npos) {
+            CHECK_FALSE(anyCmd(f.ids(c[1])));
+            continue;
+        }
         const auto a = std::chrono::steady_clock::now();
         const auto ids = f.ids(c[1]);
         maxUs = std::max<long>(maxUs, std::chrono::duration_cast<std::chrono::microseconds>(

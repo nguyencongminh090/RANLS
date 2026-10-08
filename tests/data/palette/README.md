@@ -15,3 +15,9 @@ Shared by both retrieval models (our C++ `palette_search` and the Whoosh baselin
 **Status: draft — Vietnamese titles/keywords/queries await review by a native speaker (the user).**
 Do not tune the lexicon against `test` rows. Regenerate nothing by hand-editing ids without re-checking that
 every `relevant_ids` entry exists in `entries.tsv`.
+
+**PAL-04 (scope prefixes).** A query with no prefix searches actions + settings only and never returns `cmd.*`;
+`!` = commands only, `>` = actions only, `@` = settings only. Category `scope` holds prefixed rows (added, existing rows untouched).
+Eight pre-PAL-04 rows have only `cmd.*` answers and no `!` (`commands list`, `clear log`, `raw protocol`, `yxanlz`, `loadpoz`,
+`getpoz`, `xem trợ giúp`, `xóa log`): by design they must now return no `cmd.*`; `palette_bench.py` excludes them from the metric
+tables and lists them under "Rows moved to the `!` scope", and the golden-set unit test asserts they leak no `cmd.*`.

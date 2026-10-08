@@ -11,7 +11,9 @@ internal tracking files for traceability.
 
 ## [Unreleased]
 
-_Nothing yet._
+### Changed
+
+- **Command palette: console commands are now separate from actions and settings.** A plain search shows only actions and settings (no more `!info`/`!db` among the results for "cài đặt"). Narrow a search with a prefix: `!` console commands, `>` actions, `@` settings. A chip beside the search box shows the active scope, and the placeholder and "no matches" text list the prefixes; when nothing in actions or settings matches, the palette suggests `!` for console commands. The recent list on an empty search now shows actions and settings only (PAL-04).
 
 ## [0.10.0] - 2026-10-08
 

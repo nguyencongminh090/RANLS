@@ -22,7 +22,7 @@ namespace palette_search {
 /// One searchable thing: a window action, a setting or a `!` console command.
 struct Entry {
     std::string id;
-    std::string kind;        ///< "act" | "set" | "cmd" (`!` filter keeps "cmd").
+    std::string kind;        ///< "act" | "set" | "cmd" (scope prefixes filter by kind).
     std::string titleEn;
     std::string titleVi;
     std::string keywordsEn;  ///< ';'-separated.
@@ -58,6 +58,25 @@ struct Hit {
     double      score;
 };
 
+/// PAL-04: which entry kinds a query may return (bit set over Entry::kind).
+enum KindBit : unsigned { KindAct = 1u, KindSet = 2u, KindCmd = 4u };
+constexpr unsigned kUiKinds = KindAct | KindSet;  ///< Default scope: no prefix.
+
+/// Result of splitting a query into its scope prefix and the text to search.
+struct Scope {
+    char        prefix = 0;         ///< '!' | '>' | '@', or 0 when the query has no prefix.
+    unsigned    kinds  = kUiKinds;  ///< Allowed KindBit mask.
+    std::string rest;               ///< Query after the prefix, trimmed.
+};
+
+/// Pure scope parser. Looks only at the first non-blank character: '!' -> console
+/// commands, '>' -> actions, '@' -> settings, anything else -> actions + settings
+/// (console commands never appear without '!').
+Scope parseScope(const std::string &query);
+
+/// KindBit for an Entry::kind string ("act"/"set"/"cmd"); 0 for unknown kinds.
+unsigned kindBit(const std::string &kind);
+
 /// NFD, strip combining marks, map d-stroke to d, lowercase. "Cài đặt" -> "cai dat".
 std::string foldText(const std::string &utf8);
 
@@ -68,8 +87,10 @@ class Index {
 public:
     Index(std::vector<Entry> entries, const Lexicon &lexicon, Options opts = {});
 
-    /// Ranked hits, best first, at most `limit`. A leading '!' restricts to
-    /// kind "cmd" ("!" alone lists every command). Empty when nothing matches.
+    /// Ranked hits, best first, at most `limit`. The query's scope prefix (see
+    /// parseScope) selects the kinds searched; a prefix with nothing after it
+    /// lists every entry of that scope. Without a prefix only actions and
+    /// settings are searched. Empty when nothing matches.
     std::vector<Hit> search(const std::string &query, std::size_t limit = 8) const;
 
     const Entry &entry(std::size_t i) const { return entries_[i]; }

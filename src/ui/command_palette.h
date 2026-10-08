@@ -43,6 +43,8 @@ public:
     // ── test seams ──
     void                     setQuery(const std::string &text);
     std::vector<std::string> resultIds() const;
+    std::string              scopeText() const;   ///< Text of the active-scope chip.
+    std::string              emptyStateText() const;  ///< Text shown when no row matches.
     bool                     runSelected();       ///< Same path as Enter.
     void                     moveSelection(int delta);  ///< Same path as Up/Down.
 
@@ -55,7 +57,9 @@ private:
     Gtk::Widget &anchor_;
     Gtk::Popover popover_;
     Gtk::Box     box_{Gtk::Orientation::VERTICAL, 6};
+    Gtk::Box         entryRow_{Gtk::Orientation::HORIZONTAL, 6};
     Gtk::SearchEntry entry_;
+    Gtk::Label       scopeChip_;  ///< PAL-04: shows which kinds the query searches.
     Gtk::ScrolledWindow scroller_;
     Gtk::ListBox list_;
 

@@ -22,7 +22,6 @@ constexpr double kSylWeight = 0.5;  // a syllable of a merged phrase
 constexpr double kPrefixWeight = 0.6;
 constexpr double kExactTitleBoost = 1.5;
 constexpr double kDiacriticBonus  = 0.1;  // per exactly-matching accented query token
-constexpr double kCommandPenalty  = 0.9;  // `!` commands rank below actions/settings unless '!' is typed
 constexpr double kMinScore        = 0.15;
 
 std::string gstr(gchar *p)
@@ -357,19 +356,45 @@ void Index::addDoc(std::size_t doc)
     foldedTitles_.push_back(variants);
 }
 
+unsigned kindBit(const std::string &kind)
+{
+    if (kind == "act")
+        return KindAct;
+    if (kind == "set")
+        return KindSet;
+    if (kind == "cmd")
+        return KindCmd;
+    return 0;
+}
+
+Scope parseScope(const std::string &queryIn)
+{
+    Scope       s;
+    std::string q = trim(queryIn);
+    if (!q.empty()) {
+        switch (q[0]) {
+        case '!': s.prefix = '!'; s.kinds = KindCmd; break;
+        case '>': s.prefix = '>'; s.kinds = KindAct; break;
+        case '@': s.prefix = '@'; s.kinds = KindSet; break;
+        default: break;
+        }
+        if (s.prefix)
+            q = trim(q.substr(1));
+    }
+    s.rest = q;
+    return s;
+}
+
 std::vector<Hit> Index::search(const std::string &queryIn, std::size_t limit) const
 {
-    std::string query = trim(queryIn);
-    bool        bang  = false;
-    if (!query.empty() && query[0] == '!') {
-        bang  = true;
-        query = trim(query.substr(1));
-    }
+    const Scope       scope = parseScope(queryIn);
+    const std::string query = scope.rest;
+    auto inScope = [&](std::size_t d) { return (kindBit(entries_[d].kind) & scope.kinds) != 0; };
     auto norm = [&](const std::string &s) { return opts_.fold ? foldText(s) : nfcLower(s); };
     std::vector<Hit> hits;
-    if (bang && query.empty()) {
+    if (scope.prefix && query.empty()) {
         for (std::size_t d = 0; d < entries_.size() && hits.size() < limit; ++d)
-            if (entries_[d].kind == "cmd")
+            if (inScope(d))
                 hits.push_back({d, 1.0});
         return hits;
     }
@@ -454,14 +479,12 @@ std::vector<Hit> Index::search(const std::string &queryIn, std::size_t limit) co
             if (std::find(exactTokens_[d].begin(), exactTokens_[d].end(), a) != exactTokens_[d].end())
                 ++hit;
         score[d] *= 1.0 + kDiacriticBonus * hit;
-        if (!bang && entries_[d].kind == "cmd")
-            score[d] *= kCommandPenalty;
         if (!entries_[d].enabled)
             score[d] *= 0.5;
     }
 
     for (std::size_t d = 0; d < entries_.size(); ++d) {
-        if (bang && entries_[d].kind != "cmd")
+        if (!inScope(d))
             continue;
         if (score[d] >= kMinScore)
             hits.push_back({d, score[d]});
@@ -474,7 +497,7 @@ std::vector<Hit> Index::search(const std::string &queryIn, std::size_t limit) co
                 compact += c;
         const auto qg = trigrams(compact);
         for (std::size_t d = 0; d < entries_.size(); ++d) {
-            if (bang && entries_[d].kind != "cmd")
+            if (!inScope(d))
                 continue;
             double best = 0;
             for (const auto &v : foldedTitles_[d]) {

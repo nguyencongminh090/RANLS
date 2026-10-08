@@ -6,7 +6,20 @@
 
 namespace {
 constexpr int kMaxRows = 8;
+
+// PAL-04: one line documenting the scope prefixes (placeholder + empty state).
+constexpr const char *kPrefixHelp = "!  commands     >  actions     @  settings";
+
+std::string scopeName(const palette_search::Scope &s)
+{
+    switch (s.prefix) {
+    case '!': return "Commands";
+    case '>': return "Actions";
+    case '@': return "Settings";
+    default: return "Actions + settings";
+    }
 }
+}  // namespace
 
 CommandPalette::CommandPalette(Gtk::Widget &anchor, const std::string &lexiconTsv)
     : anchor_(anchor), lexiconTsv_(lexiconTsv)
@@ -17,8 +30,14 @@ CommandPalette::CommandPalette(Gtk::Widget &anchor, const std::string &lexiconTs
     popover_.set_position(Gtk::PositionType::BOTTOM);
     popover_.add_css_class("palette-popover");
 
-    entry_.set_placeholder_text("Search actions, settings and ! commands…");
+    entry_.set_placeholder_text("Search…   ! commands · > actions · @ settings");
     entry_.set_hexpand(true);
+    scopeChip_.add_css_class("chip");
+    scopeChip_.add_css_class("palette-scope");
+    scopeChip_.set_valign(Gtk::Align::CENTER);
+    scopeChip_.set_text(scopeText());
+    entryRow_.append(entry_);
+    entryRow_.append(scopeChip_);
 
     list_.set_selection_mode(Gtk::SelectionMode::BROWSE);
     list_.set_activate_on_single_click(true);
@@ -31,7 +50,7 @@ CommandPalette::CommandPalette(Gtk::Widget &anchor, const std::string &lexiconTs
 
     box_.set_margin(8);
     box_.set_size_request(560, -1);
-    box_.append(entry_);
+    box_.append(entryRow_);
     box_.append(scroller_);
     popover_.set_child(box_);
 
@@ -120,6 +139,22 @@ void CommandPalette::setQuery(const std::string &text)
         refresh();
 }
 
+std::string CommandPalette::scopeText() const
+{
+    return scopeName(palette_search::parseScope(entry_.get_text()));
+}
+
+std::string CommandPalette::emptyStateText() const
+{
+    const auto scope = palette_search::parseScope(entry_.get_text());
+    if (scope.rest.empty() && !scope.prefix)
+        return std::string("Type to search — try \"settings\" or \"cài đặt\"\n") + kPrefixHelp;
+    if (!scope.prefix)
+        return std::string("No matching actions or settings.\nTry ! to search console commands.\n") + kPrefixHelp;
+    return "No matching " + std::string(scope.prefix == '!' ? "commands" : scope.prefix == '>' ? "actions" : "settings") +
+           ".\n" + kPrefixHelp;
+}
+
 std::vector<std::string> CommandPalette::resultIds() const
 {
     std::vector<std::string> ids;
@@ -136,11 +171,14 @@ void CommandPalette::refresh()
         return;
     }
     const std::string q = entry_.get_text();
+    scopeChip_.set_text(scopeText());
     if (q.find_first_not_of(" \t") == std::string::npos) {
-        // Empty query: the recently run items, newest first.
+        // Empty query: the recently run items, newest first (UI kinds only, like
+        // any unprefixed search; console commands are reached with '!').
         for (const auto &id : recent_)
             for (std::size_t i = 0; i < items_.size(); ++i)
-                if (items_[i].entry.id == id && shown.size() < kMaxRows) {
+                if (items_[i].entry.id == id && (palette_search::kindBit(items_[i].entry.kind) & palette_search::kUiKinds) &&
+                    shown.size() < kMaxRows) {
                     shown.push_back(i);
                     break;
                 }
@@ -160,9 +198,9 @@ void CommandPalette::rebuildRows(const std::vector<std::size_t> &itemIndexes)
     rowItem_ = itemIndexes;
 
     if (itemIndexes.empty()) {
-        const bool empty = entry_.get_text().find_first_not_of(" \t") == std::string::npos;
-        auto *lbl = Gtk::make_managed<Gtk::Label>(empty ? "Type to search — try \"settings\", \"cài đặt\" or \"!undo\""
-                                                        : "No matches");
+        auto *lbl = Gtk::make_managed<Gtk::Label>(emptyStateText());
+        lbl->set_wrap(true);
+        lbl->set_justify(Gtk::Justification::CENTER);
         lbl->add_css_class("dim-label");
         lbl->set_margin(10);
         auto *row = Gtk::make_managed<Gtk::ListBoxRow>();
