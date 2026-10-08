@@ -13,6 +13,23 @@ internal tracking files for traceability.
 
 _Nothing yet._
 
+## [0.9.0] - 2026-10-08
+
+Sprint 22 — a clearer board: stacked analysis marks, hover help, a winrate heatmap, and a modern window chrome.
+
+### Added
+
+- Board marks have a consistent visual language: engine, database and variant marks can stack on the same point, the best move gets a ring, database marks are outlined diamonds, and variants show a ring with a branch count (UX-07).
+- Hovering the board shows a row/column crosshair, highlights the margin labels, and gives marks a tooltip with value, depth, bound and best/comment flags (UX-08).
+- Winrate heatmap on the board in the style of Sabaki, with a steeper colour scale (1 step per 4 winrate points below the best move).
+- Modern window chrome: icon header bar with tooltips, a hamburger menu (F10), and refreshed styling (UI-21).
+
+### Fixed
+
+- The best-move ring no longer covers the winrate tag text, and move numbers on stones are centred and bold (UI-19, UI-20).
+- Hover and PV ghost stones no longer draw over occupied points; the best-move mark is no longer hidden by a winrate tag (UI-16, UI-18).
+- Winrate in the status bar and PV panel now matches the board tag, and database marker colours follow the engine's own label instead of a fixed scale.
+
 ## [0.8.2] - 2026-10-06
 
 Sprint 21 — internal clean-up only; no user-visible change.
@@ -327,7 +344,8 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.8.2...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.8.2...v0.9.0
 [0.8.2]: https://github.com/nguyencongminh090/RANLS/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.7.0...v0.8.0
