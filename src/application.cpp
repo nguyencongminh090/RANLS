@@ -1,5 +1,7 @@
 #include "application.h"
 #include "main_window.h"
+#include "model/settings_storage.h"
+#include "ui/language_setting.h"
 
 #include <iostream>
 
@@ -22,6 +24,12 @@ void RapfiApplication::on_activate()
     // desktop and on Windows, independent of the installed icon theme.
     Gtk::IconTheme::get_for_display(Gdk::Display::get_default())
         ->add_resource_path("/org/ranls/icons");
+
+    // I18N-03: choose the UI language before any widget exists, so the first
+    // frame is already translated. `system` resolves from the desktop locale;
+    // a missing/unknown stored value loads as `system`.
+    language_setting::installBundledCatalogs();
+    language_setting::applySetting(SettingsStorage::load().view.language);
 
     auto *window = new MainWindow();
     add_window(*window);

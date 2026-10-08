@@ -213,3 +213,11 @@ scope	@thread	set.threads	test
 scope	@send		test
 scope	>pizza		dev
 scope	@asdfghjk		test
+exact	language	set.language	dev
+synonym	interface language	set.language	test
+typo	languge	set.language	dev
+vi	ngôn ngữ	set.language	dev
+vi	chuyển sang tiếng việt	set.language	test
+nodiac	ngon ngu	set.language	test
+mixed	đổi language	set.language	dev
+scope	@language	set.language	test

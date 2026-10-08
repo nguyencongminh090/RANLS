@@ -53,7 +53,7 @@ TEST_CASE("PAL-02 buildEntries: actions + settings + one entry per live command"
     auto specs = builtinSpecs();
     specs.push_back({"extension", "mycmd", "!mycmd", "An extension command"});  // .ptc, no catalog meta
     const auto entries = palette_catalog::buildEntries(specs);
-    CHECK(entries.size() == palette_catalog::kActions.size() + 20 + specs.size());
+    CHECK(entries.size() == palette_catalog::kActions.size() + 21 + specs.size());
 
     std::map<std::string, const palette_search::Entry *> byId;
     for (const auto &e : entries) {

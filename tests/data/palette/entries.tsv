@@ -33,6 +33,7 @@ set.max-nodes	set	Max Nodes	Số nút tối đa	node budget;limit search	giới 
 set.multipv	set	Multi PV	Nhiều biến (MultiPV)	principal variations;lines;candidates	số biến;nhiều đường	Setting
 set.analysis-detail	set	Analysis Detail	Mức chi tiết phân tích	show detail;verbosity;info	chi tiết;mức độ	Setting
 set.theme	set	Theme	Giao diện	dark;light;colours;appearance	tối;sáng;màu sắc;chủ đề	Setting
+set.language	set	Language	Ngôn ngữ	locale;interface language;english;vietnamese;translation	ngôn ngữ giao diện;tiếng việt;tiếng anh;dịch	Setting
 set.wingraph-mode	set	WinGraph Mode	Chế độ biểu đồ thắng	graph;chart;winrate graph;plot	đồ thị;biểu đồ	Setting
 set.move-numbers	set	Show Move Numbers	Hiện số thứ tự nước	ordinal;stone numbers;digits	số nước;đánh số	Setting
 set.coordinates	set	Show Coordinates	Hiện tọa độ	labels;letters;rows;columns	nhãn;hàng cột;chữ cái	Setting

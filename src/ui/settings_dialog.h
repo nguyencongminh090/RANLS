@@ -37,6 +37,9 @@ public:
     std::vector<std::string> registeredSettingIds() const;
 
 private:
+    /// I18N-03: language settings in dropdown order ("system", then i18n::languages()).
+    static std::vector<std::string> languageChoices();
+    friend struct RanlsI18n03Probe;  // tests only
     void onApply();
     void onChooseEngine();
     void onChoosePtc();
@@ -64,6 +67,7 @@ private:
     Gtk::Button        *btnApply_ = nullptr;
     bool                enginePathValid_ = false;
     Gtk::DropDown       dropTheme_;
+    Gtk::DropDown       dropLanguage_;     ///< I18N-03: System / English / Tiếng Việt
     Gtk::DropDown       dropWinGraphMode_;
     Gtk::CheckButton    checkMoveNumbers_;
     Gtk::CheckButton    checkCoordinates_;

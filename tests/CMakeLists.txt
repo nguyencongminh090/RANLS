@@ -64,6 +64,7 @@ add_executable(ranls-gui-tests
     test_rdb03_node_analysis.cpp
     test_i18n01_catalog.cpp
     test_i18n02_wiring.cpp
+    test_i18n03_language_setting.cpp
 
     # Sources under test (model/engine only — no UI, no gtkmm).
     ${CMAKE_SOURCE_DIR}/src/i18n/i18n.cpp
@@ -202,6 +203,7 @@ add_executable(ranls-gui-ui-tests
     test_pal03_settings_dialog.cpp
     test_pal02_command_palette.cpp
     test_i18n02_live_refresh.cpp
+    test_i18n03_ui.cpp
 
     # UI sources under test.
     ${CMAKE_SOURCE_DIR}/src/i18n/i18n.cpp
@@ -218,6 +220,8 @@ add_executable(ranls-gui-ui-tests
     ${CMAKE_SOURCE_DIR}/src/ui/board_view.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/board_renderer.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/settings_dialog.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/language_setting.cpp
+    ${CMAKE_SOURCE_DIR}/src/i18n/i18n_resource.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/command_palette.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/palette_catalog.cpp
     ${CMAKE_SOURCE_DIR}/src/command/palette_search.cpp

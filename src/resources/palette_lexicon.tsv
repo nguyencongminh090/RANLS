@@ -23,6 +23,7 @@ syn	node;nút
 syn	time;clock;timeout;second;thời gian;giờ;đồng hồ;giới hạn;giây
 syn	increment;bonus;thêm giờ;cộng thêm
 syn	coordinate;label;tọa độ;nhãn
+syn	language;locale;lang;translation;ngôn ngữ;tiếng;dịch
 syn	number;ordinal;digit;số;đánh số
 syn	shortcut;hotkey;keybinding;key;keyboard;phím tắt;bàn phím;tổ hợp phím
 syn	engine;computer;ai;machine;máy

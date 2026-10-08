@@ -172,7 +172,7 @@ TEST_CASE("PAL-02 MainWindow: every catalog action has a handler and Ctrl+K path
         cmd += it.entry.kind == "cmd";
     }
     CHECK(act == 22);   // no dead rows dropped: every act.* has a handler
-    CHECK(set == 20);
+    CHECK(set == 21);
     CHECK(cmd >= 19);   // built-ins (+ any extension commands)
 
     CHECK_FALSE(p.palette().isOpen());
