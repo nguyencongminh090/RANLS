@@ -21,6 +21,8 @@ Gtk::Label *makeKeyLabel(const Glib::ustring &text)
 }
 
 // A left-aligned "value" label; `markup` linkifies embedded <a href> anchors.
+// With `markup` the text is parsed as Pango markup, so it must already be
+// escaped — use makeLinkLabel() to build it from translated text.
 Gtk::Label *makeValueLabel(const Glib::ustring &text, bool markup = false)
 {
     auto *lbl = Gtk::make_managed<Gtk::Label>();
@@ -32,6 +34,17 @@ Gtk::Label *makeValueLabel(const Glib::ustring &text, bool markup = false)
     else
         lbl->set_text(text);
     return lbl;
+}
+
+// A "<translated prefix>%s" label whose %s is replaced by `linkMarkup` (raw
+// Pango markup, e.g. an <a href> anchor). The translated format string is
+// escaped BEFORE the substitution, so a bare '&' or '<' in a translation
+// cannot make the parser reject the string and blank the label (I18N-05).
+Gtk::Label *makeLinkLabel(const std::string &translatedFormat, const std::string &linkMarkup)
+{
+    // i18n::format takes std::string / const char* arguments (not ustring).
+    const std::string escaped = Glib::Markup::escape_text(translatedFormat);
+    return makeValueLabel(i18n::format(escaped, linkMarkup), true);
 }
 
 // A titled sub-section: a bold heading followed by its body widget.
@@ -134,14 +147,14 @@ AboutDialog::AboutDialog(Gtk::Window &parent)
     // ── Links & protocol ───────────────────────────────────────────────
     {
         auto *body = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 3);
-        body->append(*makeValueLabel(
-            i18n::format(i18n::tr("Repository: %s"),
-                         "<a href=\"https://github.com/nguyencongminh090/RANLS\">"
-                         "github.com/nguyencongminh090/RANLS</a>"), true));
-        body->append(*makeValueLabel(
-            i18n::format(i18n::tr("Engine protocol: %s"),
-                         "<a href=\"https://github.com/accreator/Yixin-protocol/blob/master/protocol.pdf\">"
-                         "Gomocup / Yixin protocol</a>"), true));
+        body->append(*makeLinkLabel(
+            i18n::tr("Repository: %s"),
+            "<a href=\"https://github.com/nguyencongminh090/RANLS\">"
+            "github.com/nguyencongminh090/RANLS</a>"));
+        body->append(*makeLinkLabel(
+            i18n::tr("Engine protocol: %s"),
+            "<a href=\"https://github.com/accreator/Yixin-protocol/blob/master/protocol.pdf\">"
+            "Gomocup / Yixin protocol</a>"));
         body->append(*makeValueLabel(
             i18n::tr("Supported engines: Rapfi, Yixin, and any Gomocup / "
                      "Yixin-protocol-compatible engine")));
