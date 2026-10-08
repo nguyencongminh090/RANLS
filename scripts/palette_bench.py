@@ -109,6 +109,18 @@ class Prep:
         return out
 
 
+# PAL-04 scope prefixes -> entry kinds (mirrors palette_search::parseScope).
+SCOPES = {"!": ("cmd",), ">": ("act",), "@": ("set",)}
+
+
+def is_legacy_cmd_row(qtext, rel):
+    """Pre-PAL-04 row: unprefixed query whose only answers are `!` commands.
+
+    By design these no longer match without `!`, so they are reported separately
+    instead of counting as a retrieval regression."""
+    return bool(rel) and qtext[:1] not in SCOPES and all(r.startswith("cmd.") for r in rel)
+
+
 # --------------------------------------------------------------------------- Model B
 class WhooshModel:
     def __init__(self, entries, prep, syn, expand=True, name="B"):
@@ -143,11 +155,13 @@ class WhooshModel:
 
     def search(self, q, limit=8):
         q = q.strip()
-        bang = q.startswith("!")
-        if bang:
+        kinds = SCOPES.get(q[:1], ("act", "set"))  # PAL-04: no prefix = UI only
+        prefixed = q[:1] in SCOPES
+        if prefixed:
             q = q[1:].strip()
-            if not q:
-                return [d["id"] for d in self.searcher.search(Term("kind", "cmd"), limit=limit)]
+        kind_q = Or([Term("kind", k) for k in kinds])
+        if not q and prefixed:
+            return [d["id"] for d in self.searcher.search(kind_q, limit=limit)]
         terms = {}
         def put(t, w):
             terms[t] = max(terms.get(t, 0), w)
@@ -172,8 +186,7 @@ class WhooshModel:
         if not clauses:
             return []
         query = Or(clauses)
-        if bang:
-            query = And([Term("kind", "cmd"), query])
+        query = And([kind_q, query])
         return [d["id"] for d in self.searcher.search(query, limit=limit)]
 
 
@@ -197,7 +210,8 @@ class StockWhoosh:
         self.parser = MultifieldParser(["title", "kw", "grp"], ix.schema, group=OrGroup)
 
     def search(self, q, limit=8):
-        q = q.strip().lstrip("!").strip() if q.strip().startswith("!") else q
+        q = q.strip()
+        q = q[1:].strip() if q[:1] in SCOPES else q
         try:
             return [d["id"] for d in self.searcher.search(self.parser.parse(q), limit=limit)]
         except Exception:
@@ -247,6 +261,9 @@ def main():
     _, entries = read_tsv(os.path.join(DATA, "entries.tsv"))
     _, queries = read_tsv(os.path.join(DATA, "queries.tsv"))
     queries = [q for q in queries if args.split == "all" or q[3] == args.split]
+    legacy = [q for q in queries if is_legacy_cmd_row(q[1], set(x for x in q[2].split(",") if x))]
+    queries_all = queries
+    queries = [q for q in queries if q not in legacy]
     syn, stop, phrases = load_lexicon(LEXICON)
     prep = Prep(stop, phrases)
 
@@ -256,7 +273,7 @@ def main():
                          capture_output=True, text=True, check=True).stdout.splitlines()
     cpp_rss = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
     a_build_us = int(out[0].split("\t")[1])
-    a_rows = {(r[0], r[1]): (r[2].split(",") if r[2] else [], int(r[3]))
+    a_rows = {(r[0], r[1]): (r[2].split(",") if len(r) > 2 and r[2] else [], int(r[3]))
               for r in (l.split("\t") for l in out[1:])}
 
     models = {"B": WhooshModel(entries, prep, syn), "B-stock": StockWhoosh(entries)}
@@ -297,6 +314,12 @@ def main():
     for p, lab in ((0.5, "p50"), (0.95, "p95")):
         L.append(f"| query latency {lab} | {pct(lat['A'], p):.0f} µs | {pct(lat['B'], p):.0f} µs | {pct(lat['B-stock'], p):.0f} µs |")
     L.append(f"| peak RSS | {cpp_rss/1024:.1f} MB (C++ process) | {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1024:.1f} MB (whole Python run) | — |")
+    L.append(f"\n## Rows moved to the `!` scope ({len(legacy)}, excluded from the tables above)\n")
+    L.append("Unprefixed queries whose only answer is a console command; with PAL-04 they must not return `cmd.*`.\n")
+    for c, qtext, rel_s, split in legacy:
+        got = a_rows.get((c, qtext), ([], 0))[0]
+        L.append(f"- `{c}` “{qtext}” (expected {rel_s}) -> A returns {got or 'nothing'}"
+                 + ("" if not any(g.startswith("cmd.") for g in got) else " **LEAK: cmd.* returned**"))
     L.append("\n## Disagreements (A vs B top-1)\n")
     n = 0
     for c, qtext, rel, per in rows:

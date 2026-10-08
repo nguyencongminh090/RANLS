@@ -102,7 +102,15 @@ TEST_CASE("PAL-02 recent: recency lifts a tied hit, never invents one")
 {
     palette_search::Index idx(palette_catalog::buildEntries(builtinSpecs()),
                               palette_search::Lexicon::parse(slurp(PALETTE_LEXICON_PATH)));
-    auto hits = idx.search("redo");
+    // Pick a query whose runner-up is within the maximum recency boost of the leader
+    // (PAL-04 removed console commands from unprefixed results, so "redo" no longer is).
+    std::vector<palette_search::Hit> hits;
+    for (const char *q : {"redo", "undo", "analyze", "stop", "engine plays", "rule", "save game", "new game"}) {
+        hits = idx.search(q);
+        if (hits.size() >= 2 && hits[1].score * (1.0 + palette_recent::kMaxBoost) > hits[0].score * 1.01)
+            break;
+        hits.clear();
+    }
     REQUIRE(hits.size() >= 2);
     const std::string second = idx.entry(hits[1].index).id;
     palette_recent::applyRecency(hits, idx, {second});

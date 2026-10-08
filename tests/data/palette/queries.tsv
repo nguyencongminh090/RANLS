@@ -198,3 +198,18 @@ neg	recipe		dev
 neg	zzz		test
 neg	bitcoin		dev
 neg	qwerty		test
+scope	>undo	act.nav-undo	dev
+scope	> new game	act.new-game	test
+scope	>analy	act.analyze,act.analyze-mode	dev
+scope	>hoàn tác	act.nav-undo	test
+scope	@coordinates	set.coordinates	dev
+scope	@threads	set.threads	test
+scope	@hotkey undo	set.hotkey-undo	dev
+scope	@cài đặt chủ đề	set.theme	test
+scope	!new	cmd.new	dev
+scope	!clear log	cmd.clear	test
+scope	>undoo	act.nav-undo	dev
+scope	@thread	set.threads	test
+scope	@send		test
+scope	>pizza		dev
+scope	@asdfghjk		test
