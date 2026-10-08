@@ -11,6 +11,10 @@ internal tracking files for traceability.
 
 ## [Unreleased]
 
+### Added
+
+- **Switchable interface language: English and Tiếng Việt.** The whole interface (menus, toolbar, panels, dialogs, tooltips, Settings, About) can now be shown in Vietnamese. Settings ▸ UI ▸ Language offers System / English / Tiếng Việt; the change applies as soon as you press Apply and is remembered. "System" (the default) follows your desktop language: Vietnamese on a Vietnamese system, English everywhere else, so existing English setups look exactly as before. The setting is also searchable from the command palette ("language" / "ngôn ngữ"). Palette entry titles and console/engine text stay English for now (I18N-01, I18N-02, I18N-03).
+
 ### Changed
 
 - **Command palette: console commands are now separate from actions and settings.** A plain search shows only actions and settings (no more `!info`/`!db` among the results for "cài đặt"). Narrow a search with a prefix: `!` console commands, `>` actions, `@` settings. A chip beside the search box shows the active scope, and the placeholder and "no matches" text list the prefixes; when nothing in actions or settings matches, the palette suggests `!` for console commands. The recent list on an empty search now shows actions and settings only (PAL-04).
