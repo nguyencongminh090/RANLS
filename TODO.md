@@ -43,7 +43,7 @@ Sprint 25 (opened 2026-10-08, goal "Palette titles follow the UI language, and t
 
 Sprint 26 (opened 2026-10-08, goal "Harden the About dialog's markup against bad translations, and visually verify the Vietnamese UI") — pulled from Backlog:
 
-- 🔲 **I18N-05.** Escape translated text before Pango markup in `makeValueLabel` (hardening; same class as UI-22). [Model: Sonnet] — [detail](docs/todo/I18N-05-escape-translated-text-in-value-label-markup.md)
+- ✅ **I18N-05.** Escape translated text before Pango markup in `makeValueLabel` (hardening; same class as UI-22). [Model: Sonnet] — [detail](docs/todo/I18N-05-escape-translated-text-in-value-label-markup.md)
 - 🔲 **I18N-06.** Visual verification pass of the Vietnamese UI (palette live switch, `!` view, engine-on states, Settings row). Verification only; defects become new CODEs. [Model: Sonnet] — [detail](docs/todo/I18N-06-vietnamese-ui-visual-verification.md)
 
 ## Backlog

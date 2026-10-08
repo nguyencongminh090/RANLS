@@ -191,3 +191,57 @@ TEST_CASE("UI-22: every About section heading keeps its visible text (en and vi)
         CHECK(WarningCounter::markupErrors().empty());
     }
 }
+
+// I18N-05: the two markup=true value labels ("Repository: %s", "Engine
+// protocol: %s") build Pango markup from a translated prefix. A prefix with a
+// bare '&' or '<' must not blank the label, and the <a href> link must stay live.
+namespace {
+
+// First GtkLabel in `root`'s subtree whose text contains `needle`.
+GtkLabel *findLabelContaining(GtkWidget *root, const std::string &needle)
+{
+    if (!root) return nullptr;
+    if (GTK_IS_LABEL(root)) {
+        const char *t = gtk_label_get_text(GTK_LABEL(root));
+        if (t && std::string(t).find(needle) != std::string::npos) return GTK_LABEL(root);
+    }
+    for (GtkWidget *c = gtk_widget_get_first_child(root); c;
+         c = gtk_widget_get_next_sibling(c))
+        if (auto *l = findLabelContaining(c, needle)) return l;
+    return nullptr;
+}
+
+}  // namespace
+
+TEST_CASE("I18N-05: a translated link prefix with '&' and '<' still renders and keeps its link")
+{
+    if (!gtkReady()) return;
+    UiLanguageGuard guard;
+
+    i18n::setCatalogLoader([](std::string_view code) {
+        return code == "vi" ? std::string("Repository: %s\tKho & <ma nguon>: %s\n"
+                                          "Engine protocol: %s\tGiao thuc & <engine>: %s\n")
+                            : std::string();
+    });
+    REQUIRE(i18n::setLanguage("vi"));
+
+    WarningCounter warnings;
+    Gtk::Window parent;
+    AboutDialog dialog{parent};
+    GtkWidget *root = GTK_WIDGET(dialog.gobj());
+
+    struct Case { const char *prefix; const char *linkText; };
+    for (const Case &c : {Case{"Kho & <ma nguon>: ", "github.com/nguyencongminh090/RANLS"},
+                          Case{"Giao thuc & <engine>: ", "Gomocup / Yixin protocol"}}) {
+        INFO("prefix=" << c.prefix);
+        GtkLabel *lbl = findLabelContaining(root, c.linkText);
+        REQUIRE(lbl != nullptr);
+        CHECK(std::string(gtk_label_get_text(lbl)) == std::string(c.prefix) + c.linkText);
+        CHECK(gtk_label_get_use_markup(lbl));
+        // The anchor survived: the label carries a link.
+        const char *markup = gtk_label_get_label(lbl);
+        CHECK(std::string(markup ? markup : "").find("<a href=") != std::string::npos);
+    }
+    for (const auto &m : WarningCounter::markupErrors()) MESSAGE("warning: " << m);
+    CHECK(WarningCounter::markupErrors().empty());
+}
