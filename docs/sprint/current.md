@@ -13,7 +13,7 @@
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| I18N-04 | Palette titles from the catalog | I18N-01..03 (done) | — | 🔲 Not started |
+| I18N-04 | Palette titles from the catalog | I18N-01..03 (done) | — | ✅ Done (PR #64) |
 | UI-22 | About "Links & protocol" heading blank | — | — | ✅ Done (PR #63) |
 
 Points not yet estimated (consistent with Sprints 3–24).

@@ -163,6 +163,7 @@ points at sprint start to 0 at the end date.
 | 2026-10-08 | 0 / 4 items | — | Sprint 24 closed — PAL-04, I18N-01, I18N-02, I18N-03 landed on `main`; archived to `docs/sprint/archive/sprint-24.md`, nothing rolled over. Release `v0.11.0` cut (palette scopes + switchable UI language). Table reset below for Sprint 25 |
 | 2026-10-08 | 2 / 2 items | — | Sprint 25 opened (goal "Palette titles follow the UI language, and the About dialog heading bug is fixed"): I18N-04, UI-22 pulled from Backlog into Active — see docs/sprint/current.md. Backlog now empty |
 | 2026-10-08 | 1 / 2 items | — | UI-22 done (PR #63) — About heading escaped before Pango markup; regression test + fix-log |
+| 2026-10-08 | 0 / 2 items | — | I18N-04 done (PR #64) — palette titles follow the UI language, search data unchanged; all Sprint 25 items landed |
 
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).
