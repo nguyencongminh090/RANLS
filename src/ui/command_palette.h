@@ -46,6 +46,7 @@ public:
     // ── test seams ──
     void                     setQuery(const std::string &text);
     std::vector<std::string> resultIds() const;
+    std::vector<std::string> resultTitles() const;  ///< Primary (UI-language) title of each row.
     std::string              scopeText() const;   ///< Text of the active-scope chip.
     std::string              emptyStateText() const;  ///< Text shown when no row matches.
     bool                     runSelected();       ///< Same path as Enter.
@@ -72,6 +73,7 @@ private:
     std::vector<PaletteItem>       items_;
     std::vector<std::string>       recent_;
     std::unique_ptr<palette_search::Index> index_;
+    std::vector<std::string>       rowTitle_;  ///< Displayed primary title per row.
     std::vector<std::size_t>       rowItem_;  ///< Row position -> items_ index.
     GtkWidget                     *prevFocus_ = nullptr;  ///< Weak pointer, cleared on destroy.
     bool                           suppress_ = false;

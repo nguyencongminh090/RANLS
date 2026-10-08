@@ -5,6 +5,7 @@
 #include "vendor/doctest.h"
 
 #include "command/palette_recent.h"
+#include "i18n/i18n.h"
 #include "model/settings_storage.h"
 #include "ui/palette_catalog.h"
 
@@ -23,6 +24,16 @@ std::string slurp(const std::string &path)
     ss << f.rdbuf();
     return ss.str();
 }
+
+// I18N-04: the Vietnamese search titles come from vi.tsv, so buildEntries() needs the catalog loader.
+struct ViLoader {
+    ViLoader()
+    {
+        const std::string text = slurp(I18N_VI_PATH);
+        i18n::setCatalogLoader([text](std::string_view code) { return code == "vi" ? text : std::string(); });
+    }
+    ~ViLoader() { i18n::setCatalogLoader(nullptr); }
+};
 
 std::vector<CommandSpec> builtinSpecs()
 {
@@ -50,6 +61,7 @@ TEST_CASE("PAL-02 catalog act.*/cmd.* ids are exactly the dataset's")
 
 TEST_CASE("PAL-02 buildEntries: actions + settings + one entry per live command")
 {
+    ViLoader vi;
     auto specs = builtinSpecs();
     specs.push_back({"extension", "mycmd", "!mycmd", "An extension command"});  // .ptc, no catalog meta
     const auto entries = palette_catalog::buildEntries(specs);
@@ -70,6 +82,7 @@ TEST_CASE("PAL-02 buildEntries: actions + settings + one entry per live command"
 
 TEST_CASE("PAL-02 the live catalog is searchable end to end")
 {
+    ViLoader vi;
     palette_search::Index idx(palette_catalog::buildEntries(builtinSpecs()),
                               palette_search::Lexicon::parse(slurp(PALETTE_LEXICON_PATH)));
     auto first = [&](const char *q) { return idx.entry(idx.search(q).front().index).id; };
@@ -100,6 +113,7 @@ TEST_CASE("PAL-02 recent: touch de-dupes, orders newest first and caps")
 
 TEST_CASE("PAL-02 recent: recency lifts a tied hit, never invents one")
 {
+    ViLoader vi;
     palette_search::Index idx(palette_catalog::buildEntries(builtinSpecs()),
                               palette_search::Lexicon::parse(slurp(PALETTE_LEXICON_PATH)));
     // Pick a query whose runner-up is within the maximum recency boost of the leader
@@ -129,4 +143,25 @@ TEST_CASE("PAL-02 recent list round-trips through the settings file")
     const auto loaded = SettingsStorage::load();
     CHECK(loaded.view.paletteRecent == v.paletteRecent);
     std::remove(SettingsStorage::settingsFilePath().string().c_str());
+}
+
+TEST_CASE("I18N-04 catalog-derived search data equals the shared dataset for actions and settings")
+{
+    ViLoader vi;
+    const auto ds      = palette_search::parseEntriesTsv(slurp(std::string(PALETTE_DATA_DIR) + "/entries.tsv"));
+    const auto entries = palette_catalog::buildEntries(builtinSpecs());
+    std::map<std::string, const palette_search::Entry *> built;
+    for (const auto &e : entries) built[e.id] = &e;
+    int compared = 0;
+    for (const auto &d : ds) {
+        if (d.kind == "cmd") continue;  // command wording is built from live specs
+        REQUIRE_MESSAGE(built.count(d.id), d.id);
+        const auto &b = *built[d.id];
+        CHECK_MESSAGE(b.titleEn == d.titleEn, d.id);
+        CHECK_MESSAGE(b.titleVi == d.titleVi, d.id);
+        CHECK_MESSAGE(b.keywordsEn == d.keywordsEn, d.id);
+        CHECK_MESSAGE(b.keywordsVi == d.keywordsVi, d.id);
+        ++compared;
+    }
+    CHECK(compared == 22 + 21);
 }
