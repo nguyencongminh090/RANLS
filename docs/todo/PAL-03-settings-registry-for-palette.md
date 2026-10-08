@@ -1,6 +1,6 @@
 # PAL-03 — Declarative settings registry (searchable settings)
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** ✅ DONE (2026-10-08, PR #57 squash `549c512`) — `src/ui/settings_registry.h` (20 rows: id, tab, label, en/vi title + keywords); `SettingsDialog::addRow` by id (fails loudly if a row is missing/wrong tab), `showSetting(id)` + `registeredSettingIds()`, `MainWindow::openSettings(id)`. Tests: `test_pal03_settings_registry.cpp` (well-formed, in sync with `entries.tsv`), `test_pal03_settings_dialog.cpp` (dialog builds exactly the registry rows; tab switch). Release ctest 5/5. Not verified: control focus (dialog not shown in test) and a live-window look.
 **Area:** `src/ui/settings_dialog.{h,cpp}`, new `SettingEntry` table
 **Priority:** P3
 **Source:** user request 2026-10-08 (palette must search settings)

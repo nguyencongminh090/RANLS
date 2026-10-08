@@ -27,7 +27,7 @@ Sprint 23 (opened 2026-10-08, goal "Command palette (Ctrl+K): bilingual classica
 
 - ✅ **PAL-01.** Pure en/vi search engine (BM25F) + shared dataset + Whoosh benchmark — [detail](docs/todo/PAL-01-palette-search-engine-and-benchmark.md) · [instruction](docs/instruction/PAL-01-palette-search-engine-and-benchmark.md)
 - 🔲 **PAL-02.** Ctrl+K overlay + action/`!`-command registries — [detail](docs/todo/PAL-02-palette-overlay-ui-and-registries.md) · [instruction](docs/instruction/PAL-02-palette-overlay-ui-and-registries.md)
-- 🔲 **PAL-03.** Declarative settings registry so settings are searchable — [detail](docs/todo/PAL-03-settings-registry-for-palette.md) · [instruction](docs/instruction/PAL-03-settings-registry-for-palette.md)
+- ✅ **PAL-03.** Declarative settings registry so settings are searchable — [detail](docs/todo/PAL-03-settings-registry-for-palette.md) · [instruction](docs/instruction/PAL-03-settings-registry-for-palette.md)
 
 ## Backlog
 

@@ -15,7 +15,7 @@
 |---|---|---|---|---|
 | PAL-01 | Pure en/vi search engine (BM25F) + shared dataset + Whoosh benchmark | — | — | ✅ Done (PR #56, `dccc5ca`) |
 | PAL-02 | Ctrl+K overlay + action/`!`-command registries | PAL-01 | — | 🔲 Not started |
-| PAL-03 | Declarative settings registry so settings are searchable | — | — | 🔲 Not started |
+| PAL-03 | Declarative settings registry so settings are searchable | — | — | ✅ Done (PR #57, `549c512`) |
 
 Points not yet estimated (consistent with Sprints 3–…).
 
