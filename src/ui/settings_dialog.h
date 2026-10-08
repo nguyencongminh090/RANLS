@@ -4,6 +4,10 @@
 
 #include <gtkmm.h>
 
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 namespace settings_dialog_detail {
 
 /// PORT-01: true if `path` ends in a Windows executable extension
@@ -24,6 +28,14 @@ public:
     /// Signal emitted when the user clicks Apply.
     sigc::signal<void(EngineConfig, ViewConfig)> signal_applied;
 
+    /// PAL-03: switch to the notebook tab that holds setting `id` (a
+    /// settings_registry id such as "set.threads") and focus its control.
+    /// Returns false for an unknown id (dialog left as is).
+    bool showSetting(const std::string &id);
+
+    /// PAL-03: ids of every setting row built (for the registry-coverage test).
+    std::vector<std::string> registeredSettingIds() const;
+
 private:
     void onApply();
     void onChooseEngine();
@@ -43,6 +55,12 @@ private:
     Gtk::Entry          entryEnginePath_;
     Gtk::Label          lblEnginePathStatus_;
     Gtk::Entry          entryPtcPath_;   ///< PROTO-03: optional .ptc extension file
+    Gtk::Notebook      *notebook_ = nullptr;
+    struct Target {
+        int         tab;
+        Gtk::Widget *focus;
+    };
+    std::unordered_map<std::string, Target> targets_;  ///< PAL-03: registry id -> tab + control
     Gtk::Button        *btnApply_ = nullptr;
     bool                enginePathValid_ = false;
     Gtk::DropDown       dropTheme_;

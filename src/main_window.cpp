@@ -1024,6 +1024,11 @@ void MainWindow::onBoardSize()
 
 void MainWindow::onSettings()
 {
+    openSettings({});
+}
+
+void MainWindow::openSettings(const std::string &focusSettingId)
+{
     // CLEAN-01: see onBoardSize() above — same delete-on-hide pattern. A
     // fresh dialog is still constructed on every open (so it always reflects
     // the current EngineConfig/ViewConfig, unlike a reused-instance approach
@@ -1054,6 +1059,8 @@ void MainWindow::onSettings()
         }
     });
     dialog->set_visible(true);
+    if (!focusSettingId.empty())
+        dialog->showSetting(focusSettingId);  // PAL-03: jump to the setting's tab + focus its control
 }
 
 void MainWindow::onAbout()
