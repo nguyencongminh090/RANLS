@@ -39,7 +39,10 @@ Gtk::Box *makeSection(const Glib::ustring &title, Gtk::Widget &body)
 {
     auto *box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 4);
     auto *heading = Gtk::make_managed<Gtk::Label>();
-    heading->set_markup("<b>" + title + "</b>");
+    // The title is plain (translated) text: escape it before wrapping in
+    // markup, or a bare '&' ("Links & protocol") fails to parse and the
+    // heading renders blank (UI-22).
+    heading->set_markup("<b>" + Glib::Markup::escape_text(title) + "</b>");
     heading->set_halign(Gtk::Align::START);
     heading->set_xalign(0.0f);
     box->append(*heading);
