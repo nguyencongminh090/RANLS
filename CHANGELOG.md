@@ -11,6 +11,12 @@ internal tracking files for traceability.
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.11.0] - 2026-10-08
+
+Sprint 24 — palette scopes and a switchable interface language (English / Tiếng Việt).
+
 ### Added
 
 - **Switchable interface language: English and Tiếng Việt.** The whole interface (menus, toolbar, panels, dialogs, tooltips, Settings, About) can now be shown in Vietnamese. Settings ▸ UI ▸ Language offers System / English / Tiếng Việt; the change applies as soon as you press Apply and is remembered. "System" (the default) follows your desktop language: Vietnamese on a Vietnamese system, English everywhere else, so existing English setups look exactly as before. The setting is also searchable from the command palette ("language" / "ngôn ngữ"). Palette entry titles and console/engine text stay English for now (I18N-01, I18N-02, I18N-03).
@@ -360,7 +366,8 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.8.2...v0.9.0
 [0.8.2]: https://github.com/nguyencongminh090/RANLS/compare/v0.8.1...v0.8.2

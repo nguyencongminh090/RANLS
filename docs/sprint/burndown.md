@@ -160,6 +160,7 @@ points at sprint start to 0 at the end date.
 | 2026-10-08 | 2 / 4 items | — | PAL-04 done (PR #60) — scope prefixes ! > @, UI-only default; 8 cmd-only bench rows moved to the ! scope (typo MRR 0.955→0.926, noted in PR) |
 | 2026-10-08 | 1 / 4 items | — | I18N-02 done (PR #61) — 185 UI strings wrapped, complete vi.tsv (user-reviewed), coverage lint, live refresh |
 | 2026-10-08 | 0 / 4 items | — | I18N-03 done (PR #62) — language= setting, Settings dropdown, system-locale startup; all Sprint 24 items landed |
+| 2026-10-08 | 0 / 4 items | — | Sprint 24 closed — PAL-04, I18N-01, I18N-02, I18N-03 landed on `main`; archived to `docs/sprint/archive/sprint-24.md`, nothing rolled over. Release `v0.11.0` cut (palette scopes + switchable UI language). Table reset below for Sprint 25 |
 
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).
