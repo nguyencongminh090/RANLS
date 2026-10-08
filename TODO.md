@@ -44,9 +44,14 @@ Sprint 25 (opened 2026-10-08, goal "Palette titles follow the UI language, and t
 Sprint 26 (opened 2026-10-08, goal "Harden the About dialog's markup against bad translations, and visually verify the Vietnamese UI") — pulled from Backlog:
 
 - ✅ **I18N-05.** Escape translated text before Pango markup in `makeValueLabel` (hardening; same class as UI-22). [Model: Sonnet] — [detail](docs/todo/I18N-05-escape-translated-text-in-value-label-markup.md)
-- 🔲 **I18N-06.** Visual verification pass of the Vietnamese UI (palette live switch, `!` view, engine-on states, Settings row). Verification only; defects become new CODEs. [Model: Sonnet] — [detail](docs/todo/I18N-06-vietnamese-ui-visual-verification.md)
+- ✅ **I18N-06.** Visual verification pass of the Vietnamese UI (palette live switch, `!` view, engine-on states, Settings row). Verification only; defects become new CODEs. [Model: Sonnet] — [detail](docs/todo/I18N-06-vietnamese-ui-visual-verification.md)
 
 ## Backlog
+
+- 🔲 **I18N-07.** Confirm dialogs show English Yes/No under `vi` (`YES_NO` stock labels). [Model: Sonnet] — [detail](docs/todo/I18N-07-confirm-dialog-yes-no-buttons-not-translated.md)
+- 🔲 **UX-09.** Settings Apply is disabled on every tab while the engine path is invalid (blocks Language/Theme; design call with user). [Model: Sonnet] — [detail](docs/todo/UX-09-apply-disabled-when-engine-path-invalid.md)
+
+Filed 2026-10-08 from the I18N-06 visual pass (`docs/notes/2026-10-08-vi-ui-visual-verification.md`): I18N-07, UX-09.
 
 Filed 2026-10-08 from the Sprint 25 follow-ups: I18N-05, I18N-06 — **pulled into Sprint 26 Active 2026-10-08** (see docs/sprint/current.md).
 

@@ -1,6 +1,6 @@
 # I18N-06 — Visual verification pass of the Vietnamese UI
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** ✅ DONE (verified 2026-10-08; findings in `docs/notes/2026-10-08-vi-ui-visual-verification.md`, filed as I18N-07, UX-09)
 **Area:** verification only (Xvfb + `GDK_BACKEND=x11` screenshots); fixes found become separate CODEs
 **Priority:** P3
 **Source:** Sprint 25 follow-up (human-owed visual checks) — user asked to file it 2026-10-08
