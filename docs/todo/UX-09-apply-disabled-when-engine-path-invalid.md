@@ -1,6 +1,6 @@
 # UX-09 — Settings "Apply" is disabled on every tab while the engine path is invalid
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** 🔲 OPEN (Active — Sprint 27)
 **Area:** `src/ui/settings_dialog.cpp` (`btnApply_` sensitivity = `enginePathValid_`), tests
 **Priority:** P3
 **Source:** I18N-06 visual pass, `docs/audit/2026-10-log.md` (2026-10-08 "Vietnamese UI visual verification") — 2026-10-08

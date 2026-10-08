@@ -1,6 +1,6 @@
 # I18N-07 — Confirm dialogs show English "Yes" / "No" under the Vietnamese UI
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** 🔲 OPEN (Active — Sprint 27)
 **Area:** `src/main_window.cpp` (`Gtk::MessageDialog` with `ButtonsType::YES_NO` ~line 849), `src/resources/lang/vi.tsv`, tests
 **Priority:** P3
 **Source:** I18N-06 visual pass, `docs/audit/2026-10-log.md` (2026-10-08 "Vietnamese UI visual verification") — 2026-10-08
