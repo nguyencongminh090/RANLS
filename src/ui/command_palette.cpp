@@ -30,7 +30,7 @@ CommandPalette::CommandPalette(Gtk::Widget &anchor, const std::string &lexiconTs
     popover_.set_position(Gtk::PositionType::BOTTOM);
     popover_.add_css_class("palette-popover");
 
-    entry_.set_placeholder_text("Search actions and settings…  (! commands · > actions · @ settings)");
+    entry_.set_placeholder_text("Search…   ! commands · > actions · @ settings");
     entry_.set_hexpand(true);
     scopeChip_.add_css_class("chip");
     scopeChip_.add_css_class("palette-scope");
