@@ -1,6 +1,6 @@
 # I18N-05 — Escape translated text before Pango markup in makeValueLabel
 
-**Status:** 🔲 OPEN (Backlog)
+**Status:** ✅ DONE (2026-10-08, branch `i18n-05/escape-translated-text-in-value-label-markup`) — hardening, no live defect. New `makeLinkLabel(translatedFormat, linkMarkup)` in `src/ui/about_dialog.cpp` escapes the translated format string (`Glib::Markup::escape_text`) BEFORE substituting the raw `<a href>` markup for `%s`; the two markup=true callers ("Repository: %s", "Engine protocol: %s") use it. `makeValueLabel`'s plain-text path, other About sections and `vi.tsv` untouched. **Verification:** new case in `tests/test_ui11_about_dialog.cpp` (injected vi catalog with `&` and `<` in both prefixes: label text = prefix + link text, `<a href=` kept, no markup warning) failed before (label blank + Gtk-WARNING), passes after; `xvfb-run` (GDK_BACKEND=x11, no WAYLAND_DISPLAY) `RUN_TESTS=1 ./build.sh` ctest 5/5; the UI-22 case confirms no markup warning building the real About dialog in en and vi. Detail: `docs/fix-log/2026-10-08-i18n-05-escape-markup-value-label.md`.
 **Area:** `src/ui/about_dialog.cpp` (`makeValueLabel`, its two `markup=true` callers), `tests/test_ui11_about_dialog.cpp`
 **Priority:** P3
 **Source:** Sprint 25 follow-up (UI-22 lesson; `docs/sprint/archive/sprint-25.md`) — user asked to file it 2026-10-08
