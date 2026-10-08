@@ -56,6 +56,7 @@ if(NOT GLIB_COMPILE_RESOURCES)
     message(FATAL_ERROR "glib-compile-resources not found (needed to bundle style.css)")
 endif()
 
+file(GLOB_RECURSE RANLS_ICON_SVGS CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/icons/*.svg)
 set(RANLS_GRESOURCE_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/ranls.gresource.xml)
 set(RANLS_GRESOURCE_C    ${CMAKE_CURRENT_BINARY_DIR}/generated/ranls_gresource.c)
 add_custom_command(
@@ -67,7 +68,8 @@ add_custom_command(
             ${RANLS_GRESOURCE_XML}
     DEPENDS ${RANLS_GRESOURCE_XML}
             ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/style.css
-    COMMENT "Compiling GResource bundle (style.css)"
+            ${RANLS_ICON_SVGS}
+    COMMENT "Compiling GResource bundle (style.css + icons)"
     VERBATIM
 )
 

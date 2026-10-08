@@ -209,7 +209,7 @@ private:
 
     // ── Layout ──────────────────────────────────────────────────────────────
     Gtk::HeaderBar     headerBar_;
-    Gtk::PopoverMenuBar menuBar_;
+    Gtk::MenuButton    menuButton_;   // UI-21: hamburger menu replaces the menu-bar row
     /// UI-03: persistent rule indicator, always visible in the header bar
     /// (not just inside the Game > Rule menu) -- kept in sync with
     /// gameState_.rule() via updateRuleLabel(), called at startup and on

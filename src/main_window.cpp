@@ -15,7 +15,7 @@
 // btnStop_/btnReload_ (src/ui/engine_status.cpp) for the existing in-repo
 // pattern this mirrors (that widget only calls set_tooltip_text(), so the
 // accessible-label half is the new part introduced here).
-static void setButtonTooltipAndLabel(Gtk::Button &button, const Glib::ustring &text)
+static void setButtonTooltipAndLabel(Gtk::Widget &button, const Glib::ustring &text)
 {
     button.set_tooltip_text(text);
     Glib::Value<Glib::ustring> value;
@@ -328,21 +328,47 @@ void MainWindow::buildMenuBar()
     menuModel->append_submenu("View",         viewMenu);
     menuModel->append_submenu("Help",         helpMenu);
 
-    menuBar_.set_menu_model(menuModel);
+    // UI-21: the former menu-bar row is now a hamburger menu in the header bar
+    // (same Gio::Menu model, so every "win.*" action and shortcut is unchanged).
+    menuButton_.set_icon_name("ranls-menu-symbolic");
+    menuButton_.set_menu_model(menuModel);
+    menuButton_.set_primary(true);   // F10 opens it, like a menu bar
+    setButtonTooltipAndLabel(menuButton_, "Main menu");
 }
 
 // ─── Toolbar (header bar buttons) ────────────────────────────────────────────
+// UI-21: icon-first header bar. File and navigation actions are symbolic
+// icons (tooltip + accessible name each); Analyze/Stop are the one place a
+// text label stays, because they are the primary actions.
 void MainWindow::buildToolbar()
 {
     headerBar_.set_show_title_buttons(true);
 
-    // ── File group (linked) ─────────────────────────────────────────────────
+    auto makeIconButton = [](const char *icon, const char *tip) {
+        auto *btn = Gtk::make_managed<Gtk::Button>();
+        btn->set_icon_name(icon);
+        setButtonTooltipAndLabel(*btn, tip);
+        return btn;
+    };
+    auto makeLabelButton = [](const char *icon, const char *text, const char *tip) {
+        auto *box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 6);
+        box->append(*Gtk::make_managed<Gtk::Image>(Gio::ThemedIcon::create(icon)));
+        box->append(*Gtk::make_managed<Gtk::Label>(text));
+        auto *btn = Gtk::make_managed<Gtk::Button>();
+        btn->set_child(*box);
+        setButtonTooltipAndLabel(*btn, tip);
+        return btn;
+    };
+
+    // ── Start: hamburger menu, then file group (linked) ─────────────────────
+    headerBar_.pack_start(menuButton_);
+
     auto *fileGroup = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 0);
     fileGroup->add_css_class("linked");
 
-    btnNew_  = Gtk::make_managed<Gtk::Button>("New");
-    btnLoad_ = Gtk::make_managed<Gtk::Button>("Load");
-    auto *btnSave = Gtk::make_managed<Gtk::Button>("Save");
+    btnNew_  = makeIconButton("ranls-new-symbolic",  "New game");
+    btnLoad_ = makeIconButton("ranls-open-symbolic", "Load game");
+    auto *btnSave = makeIconButton("ranls-save-symbolic", "Save game");
 
     btnNew_->signal_clicked().connect(sigc::mem_fun(*this, &MainWindow::onNewGame));
     btnLoad_->signal_clicked().connect(sigc::mem_fun(*this, &MainWindow::onLoadGame));
@@ -355,16 +381,18 @@ void MainWindow::buildToolbar()
 
     // UI-03: persistent rule indicator -- always visible in the header bar,
     // not only inside the Game > Rule menu. Kept current by updateRuleLabel().
-    ruleLabel_.add_css_class("dim-label");
-    ruleLabel_.set_margin_start(8);
+    // UI-21: styled as a small pill ("chip") instead of bare dim text.
+    ruleLabel_.add_css_class("chip");
+    ruleLabel_.set_valign(Gtk::Align::CENTER);
     headerBar_.pack_start(ruleLabel_);
 
     // ── Center: analysis group (linked) ─────────────────────────────────────
     auto *analysisGroup = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 0);
     analysisGroup->add_css_class("linked");
 
-    auto *btnStart = Gtk::make_managed<Gtk::Button>("▶ Analyze");
-    auto *btnStop  = Gtk::make_managed<Gtk::Button>("■ Stop");
+    auto *btnStart = makeLabelButton("ranls-play-symbolic", "Analyze", "Start analysis");
+    auto *btnStop  = makeLabelButton("ranls-stop-symbolic", "Stop",    "Stop analysis");
+    btnStart->add_css_class("suggested-action");
 
     btnStart->signal_clicked().connect(sigc::mem_fun(*this, &MainWindow::onStartAnalysis));
     btnStop->signal_clicked().connect(sigc::mem_fun(*this, &MainWindow::onStopAnalysis));
@@ -377,16 +405,10 @@ void MainWindow::buildToolbar()
     auto *navGroup = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 0);
     navGroup->add_css_class("linked");
 
-    btnFirst_ = Gtk::make_managed<Gtk::Button>("⏮");
-    btnUndo_  = Gtk::make_managed<Gtk::Button>("↶");
-    btnRedo_  = Gtk::make_managed<Gtk::Button>("↷");
-    btnLast_  = Gtk::make_managed<Gtk::Button>("⏭");
-
-    // UX-03: these were bare glyphs with no tooltip/accessible name.
-    setButtonTooltipAndLabel(*btnFirst_, "Jump to first move");
-    setButtonTooltipAndLabel(*btnUndo_,  "Undo move");
-    setButtonTooltipAndLabel(*btnRedo_,  "Redo move");
-    setButtonTooltipAndLabel(*btnLast_,  "Jump to last move");
+    btnFirst_ = makeIconButton("ranls-first-symbolic", "Jump to first move");
+    btnUndo_  = makeIconButton("ranls-undo-symbolic",  "Undo move");
+    btnRedo_  = makeIconButton("ranls-redo-symbolic",  "Redo move");
+    btnLast_  = makeIconButton("ranls-last-symbolic",  "Jump to last move");
 
     btnFirst_->signal_clicked().connect(sigc::mem_fun(*this, &MainWindow::onUndoAll));
     btnUndo_->signal_clicked().connect(sigc::mem_fun(*this, &MainWindow::onUndo));
@@ -423,7 +445,6 @@ void MainWindow::buildLayout()
     mainVPaned_.set_shrink_end_child(false);
     mainVPaned_.set_position(580);
 
-    rootBox_.append(menuBar_);
     rootBox_.append(mainVPaned_);
     rootBox_.set_vexpand(true);
     set_child(rootBox_);

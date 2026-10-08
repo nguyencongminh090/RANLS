@@ -2,5 +2,17 @@
 <gresources>
   <gresource prefix="/org/ranls/">
     <file>style.css</file>
+    <file>icons/scalable/actions/ranls-new-symbolic.svg</file>
+    <file>icons/scalable/actions/ranls-open-symbolic.svg</file>
+    <file>icons/scalable/actions/ranls-save-symbolic.svg</file>
+    <file>icons/scalable/actions/ranls-play-symbolic.svg</file>
+    <file>icons/scalable/actions/ranls-stop-symbolic.svg</file>
+    <file>icons/scalable/actions/ranls-first-symbolic.svg</file>
+    <file>icons/scalable/actions/ranls-last-symbolic.svg</file>
+    <file>icons/scalable/actions/ranls-undo-symbolic.svg</file>
+    <file>icons/scalable/actions/ranls-redo-symbolic.svg</file>
+    <file>icons/scalable/actions/ranls-menu-symbolic.svg</file>
+    <file>icons/scalable/actions/ranls-reload-symbolic.svg</file>
+    <file>icons/scalable/actions/ranls-loop-symbolic.svg</file>
   </gresource>
 </gresources>

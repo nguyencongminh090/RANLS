@@ -18,6 +18,10 @@ Glib::RefPtr<RapfiApplication> RapfiApplication::create()
 void RapfiApplication::on_activate()
 {
     loadStylesheet();
+    // UI-21: bundled symbolic icons (src/resources/icons/) -- same look on every
+    // desktop and on Windows, independent of the installed icon theme.
+    Gtk::IconTheme::get_for_display(Gdk::Display::get_default())
+        ->add_resource_path("/org/ranls/icons");
 
     auto *window = new MainWindow();
     add_window(*window);

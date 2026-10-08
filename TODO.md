@@ -139,3 +139,4 @@ Sprint 22:
 
 - ✅ **UX-07.** redesign board mark language (engine / database / variant / best) — size L, design gate `features/board-marks/` first — [detail](docs/todo/UX-07-board-mark-visual-language.md) (PR #49)
 - ✅ **UX-08.** board hover crosshair, margin highlight, mark tooltips (after UX-07) — [detail](docs/todo/UX-08-board-hover-crosshair-and-tooltips.md) (PR #50)
+- ✅ **UI-21.** modern chrome: icon header bar, hamburger menu, CSS tokens — size L, design gate `features/modern-ui/` — [detail](docs/todo/UI-21-modern-chrome-icons-css.md)
