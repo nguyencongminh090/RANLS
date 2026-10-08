@@ -1,5 +1,6 @@
 #include "analysis_panel.h"
 
+#include "i18n/i18n.h"
 #include "ui/win_graph_series.h"
 
 #include <algorithm>
@@ -36,7 +37,8 @@ AnalysisPanel::AnalysisPanel(GameState &gameState)
     crashBannerLabel_.set_hexpand(true);
     crashBannerLabel_.set_xalign(0.0f);
     crashBannerLabel_.set_wrap(true);
-    auto *dismissBtn = Gtk::make_managed<Gtk::Button>("Dismiss");
+    auto *dismissBtn = Gtk::make_managed<Gtk::Button>();
+    dismissBtn_ = dismissBtn;
     dismissBtn->signal_clicked().connect([this]() { hideEngineCrashBanner(); });
     bannerBox->append(crashBannerLabel_);
     bannerBox->append(*dismissBtn);
@@ -60,18 +62,12 @@ AnalysisPanel::AnalysisPanel(GameState &gameState)
     // The two tabs show different datasets (UI-02), so the labels say which:
     // Visual is the whole variation tree (all branches); Table is only the
     // current line (moves from game start to the current position).
-    auto makeTabLabel = [](const std::string &text, const std::string &tooltip) {
-        auto *label = Gtk::make_managed<Gtk::Label>(text);
-        label->set_tooltip_text(tooltip);
-        return label;
-    };
-    treeNotebook_.append_page(treeNodeView_,
-        *makeTabLabel("Visual (All Branches)",
-            "Shows the full variation tree, including all explored branches."));
-    treeNotebook_.append_page(treeExplorer_,
-        *makeTabLabel("Table (Current Line)",
-            "Shows only the current line: moves from the game start to the current position."));
+    tabVisual_ = Gtk::make_managed<Gtk::Label>();
+    tabTable_  = Gtk::make_managed<Gtk::Label>();
+    treeNotebook_.append_page(treeNodeView_, *tabVisual_);
+    treeNotebook_.append_page(treeExplorer_, *tabTable_);
     treeNotebook_.add_css_class("bottom-panel");
+    retranslate();
 
     // ── Vertical Paned: upper | lower ───────────────────────────────────────
     graphTreePaned_.set_orientation(Gtk::Orientation::VERTICAL);
@@ -86,6 +82,20 @@ AnalysisPanel::AnalysisPanel(GameState &gameState)
     append(graphTreePaned_);
 
     connectSignals();
+}
+
+// I18N-02: texts that live for the window's lifetime; re-applied on a language
+// change. (A crash banner already on screen keeps its text until dismissed.)
+void AnalysisPanel::retranslate()
+{
+    dismissBtn_->set_label(i18n::tr("Dismiss"));
+    tabVisual_->set_text(i18n::tr("Visual (All Branches)"));
+    tabVisual_->set_tooltip_text(i18n::tr("Shows the full variation tree, including all explored branches."));
+    tabTable_->set_text(i18n::tr("Table (Current Line)"));
+    tabTable_->set_tooltip_text(
+        i18n::tr("Shows only the current line: moves from the game start to the current position."));
+    engineStatus_.retranslate();
+    treeExplorer_.retranslate();
 }
 
 void AnalysisPanel::connectSignals()
@@ -161,8 +171,8 @@ void AnalysisPanel::connectSignals()
 
 void AnalysisPanel::showEngineCrashBanner(const std::string &enginePath)
 {
-    std::string path = enginePath.empty() ? "(no engine path configured)" : enginePath;
-    crashBannerLabel_.set_text("Engine crashed: " + path);
+    std::string path = enginePath.empty() ? i18n::tr("(no engine path configured)") : enginePath;
+    crashBannerLabel_.set_text(i18n::format(i18n::tr("Engine crashed: %s"), path));
     crashBannerRevealer_.set_reveal_child(true);
 }
 

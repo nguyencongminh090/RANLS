@@ -1,6 +1,7 @@
 #include "bottom_panel.h"
 
 #include "command/command_completer.h"
+#include "i18n/i18n.h"
 
 #include <algorithm>
 
@@ -25,7 +26,7 @@ BottomPanel::BottomPanel()
     // `scroll_to` was a silent no-op and each new move fell off the bottom —
     // the identical bug fixed for the Engine Log in UI-10 (PR #4).
     scrolledMoveLog_.set_child(moveLogView_);
-    append_page(scrolledMoveLog_, "Move Log");
+    append_page(scrolledMoveLog_, i18n::tr("Move Log"));
 
     // UI-12: one permanent right-gravity mark at the end of the Move Log buffer
     // — `scrollMoveLogToEnd` scrolls to THIS instead of creating and immediately
@@ -110,7 +111,7 @@ BottomPanel::BottomPanel()
         sigc::mem_fun(*this, &BottomPanel::flushPending), kFlushIntervalMs);
 
     // Command entry.
-    commandEntry_.set_placeholder_text("Type command…");
+    commandEntry_.set_placeholder_text(i18n::tr("Type command…"));
     commandEntry_.signal_activate().connect([this]() {
         auto text = commandEntry_.get_text();
         if (text.empty())
@@ -226,7 +227,7 @@ BottomPanel::BottomPanel()
 
     engineLogBox_.append(engineLogRow_);
     engineLogBox_.append(commandOverlay_);  // CONS-01: entry + ghost-text overlay
-    append_page(engineLogBox_, "Engine Log");
+    append_page(engineLogBox_, i18n::tr("Engine Log"));
 
     set_size_request(-1, 120);
 }
@@ -762,6 +763,15 @@ void BottomPanel::appendMoveLog(const Glib::ustring &text)
 void BottomPanel::clear()
 {
     moveLogView_.get_buffer()->set_text("");
+}
+
+// I18N-02: tab titles + command placeholder follow the UI language (the log
+// lines themselves stay English: they are engine / protocol text).
+void BottomPanel::retranslate()
+{
+    set_tab_label_text(scrolledMoveLog_, i18n::tr("Move Log"));
+    set_tab_label_text(engineLogBox_, i18n::tr("Engine Log"));
+    commandEntry_.set_placeholder_text(i18n::tr("Type command…"));
 }
 
 void BottomPanel::clearEngineLog()

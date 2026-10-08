@@ -37,6 +37,9 @@ public:
     sigc::signal<void(std::string)> signal_item_run;
 
     void open();
+
+    /// I18N-02: re-apply placeholder / chip text after a language change.
+    void retranslate();
     void close();
     bool isOpen() const { return popover_.is_visible(); }
 

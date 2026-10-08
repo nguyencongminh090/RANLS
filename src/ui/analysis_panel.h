@@ -31,6 +31,9 @@ public:
     /// (no libadwaita Adw::Toast in this build) to show an arbitrary message.
     void showInfoBanner(const std::string &message);
 
+    /// I18N-02: re-apply translated texts after a language change.
+    void retranslate();
+
 private:
     void connectSignals();
 
@@ -41,6 +44,9 @@ private:
     // ── Crash announcement banner ───────────────────────────────────────────
     Gtk::Revealer crashBannerRevealer_;
     Gtk::Label    crashBannerLabel_;
+    Gtk::Button  *dismissBtn_ = nullptr;
+    Gtk::Label   *tabVisual_  = nullptr;
+    Gtk::Label   *tabTable_   = nullptr;
     WinGraphView     winGraph_;
     PVView           pvView_;
     TreeNodeView     treeNodeView_;
