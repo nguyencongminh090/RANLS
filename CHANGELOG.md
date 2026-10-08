@@ -11,6 +11,12 @@ internal tracking files for traceability.
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.11.1] - 2026-10-08
+
+Sprint 25 — the command palette follows the interface language; About heading fix.
+
 ### Changed
 
 - **Command palette follows the interface language.** With the language set to Tiếng Việt, result titles and the Action / Setting / Command badges are shown in Vietnamese (the other language stays as a dim second line); searching still matches both languages, with the same results in either (I18N-04).
@@ -372,7 +378,8 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.11.1...HEAD
+[0.11.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.11.0...v0.11.1
 [0.11.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.8.2...v0.9.0
