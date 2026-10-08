@@ -204,3 +204,43 @@ TEST_CASE("PAL-02 MainWindow: running a palette item records it as recent and pe
     CHECK(SettingsStorage::load().view.paletteRecent.front() == id);
     std::remove(SettingsStorage::settingsFilePath().string().c_str());
 }
+
+TEST_CASE("PAL-04 palette: scope prefixes filter by kind, the chip and empty state show them")
+{
+    if (!gtkReady()) { MESSAGE("no display: skipped"); return; }
+    Fixture f;
+    f.items.push_back(item("cmd.undo", "!undo — Take back the last move", "", "undo", &f.ranExt));
+    f.items.push_back(item("set.hotkey-undo", "Hotkey: Undo", "", "shortcut", &f.ranExt));
+    f.palette->open();
+
+    f.palette->setQuery("undo");                 // default: actions + settings, never cmd.*
+    CHECK(f.palette->scopeText() == "Actions + settings");
+    CHECK(f.palette->resultIds() == std::vector<std::string>{"act.nav-undo", "set.hotkey-undo"});
+
+    f.palette->setQuery(">undo");
+    CHECK(f.palette->scopeText() == "Actions");
+    CHECK(f.palette->resultIds() == std::vector<std::string>{"act.nav-undo"});
+
+    f.palette->setQuery("@undo");
+    CHECK(f.palette->scopeText() == "Settings");
+    CHECK(f.palette->resultIds() == std::vector<std::string>{"set.hotkey-undo"});
+
+    f.palette->setQuery("!undo");
+    CHECK(f.palette->scopeText() == "Commands");
+    CHECK(f.palette->resultIds() == std::vector<std::string>{"cmd.undo"});
+
+    // Only a console command answers: the default scope stays empty and hints at '!'.
+    f.items.push_back(item("cmd.zzzonly", "!zzzonly — Console only", "", "zzzonly", &f.ranExt));
+    f.palette->close();
+    pump();
+    f.palette->open();
+    f.palette->setQuery("zzzonly");
+    CHECK(f.palette->resultIds().empty());
+    CHECK(f.palette->emptyStateText().find("! to search console commands") != std::string::npos);
+
+    // The empty (no-query) state documents every prefix.
+    f.palette->setQuery("");
+    const std::string hint = f.palette->emptyStateText();
+    for (const char *p : {"!  commands", ">  actions", "@  settings"})
+        CHECK(hint.find(p) != std::string::npos);
+}
