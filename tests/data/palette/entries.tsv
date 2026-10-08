@@ -4,9 +4,9 @@ act.load-game	act	Load Game	Mở ván cờ	open;file;import;read;rdb	tải;mở 
 act.save-game	act	Save Game	Lưu ván cờ	write;export;store;file	ghi;xuất;lưu file	Action
 act.quit	act	Quit	Thoát	exit;close;leave	đóng;thoát chương trình	Action
 act.board-size	act	Board Size	Kích thước bàn cờ	resize;dimensions;grid;15x15;19x19	cỡ bàn;đổi cỡ;lưới	Action
-act.rule-freestyle	act	Rule: Freestyle Gomoku	Luật tự do	gomoku;free;rules;overline	luật chơi;cờ caro;năm quân	Action
-act.rule-standard	act	Rule: Standard Gomoku	Luật tiêu chuẩn	exactly five;gomoku;rules	luật chuẩn;đúng năm	Action
-act.rule-renju	act	Rule: Free Renju	Luật Renju	renju;forbidden;black restrictions	cấm tay;luật cấm;quân đen	Action
+act.rule-freestyle	act	Rule: Freestyle Gomoku	Rule: Freestyle Gomoku	gomoku;free;rules;overline	luật chơi;cờ caro;năm quân	Action
+act.rule-standard	act	Rule: Standard Gomoku	Rule: Standard Gomoku	exactly five;gomoku;rules	luật chuẩn;đúng năm	Action
+act.rule-renju	act	Rule: Free Renju	Rule: Free Renju	renju;forbidden;black restrictions	cấm tay;luật cấm;quân đen	Action
 act.settings	act	Settings	Cài đặt	preferences;options;configure;config	tùy chọn;thiết lập;cấu hình	Action
 act.about	act	About	Giới thiệu	version;info;credits	phiên bản;thông tin	Action
 act.analyze	act	Start Analysis	Bắt đầu phân tích	analyze;search;think;engine	chạy engine;tính nước;suy nghĩ	Action
