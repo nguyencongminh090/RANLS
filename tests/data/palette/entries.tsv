@@ -1,0 +1,62 @@
+id	kind	title_en	title_vi	keywords_en	keywords_vi	group
+act.new-game	act	New Game	Ván mới	start;restart;reset;fresh;clear board	chơi lại;bắt đầu;làm mới;xóa bàn	Action
+act.load-game	act	Load Game	Mở ván cờ	open;file;import;read;rdb	tải;mở file;nhập;đọc	Action
+act.save-game	act	Save Game	Lưu ván cờ	write;export;store;file	ghi;xuất;lưu file	Action
+act.quit	act	Quit	Thoát	exit;close;leave	đóng;thoát chương trình	Action
+act.board-size	act	Board Size	Kích thước bàn cờ	resize;dimensions;grid;15x15;19x19	cỡ bàn;đổi cỡ;lưới	Action
+act.rule-freestyle	act	Rule: Freestyle Gomoku	Rule: Freestyle Gomoku	gomoku;free;rules;overline	tự do;luật tự do;luật chơi;cờ caro;năm quân	Action
+act.rule-standard	act	Rule: Standard Gomoku	Rule: Standard Gomoku	exactly five;gomoku;rules	tiêu chuẩn;luật tiêu chuẩn;luật chuẩn;đúng năm	Action
+act.rule-renju	act	Rule: Free Renju	Rule: Free Renju	renju;forbidden;black restrictions	renju;luật renju;cấm tay;luật cấm;quân đen	Action
+act.settings	act	Settings	Cài đặt	preferences;options;configure;config	tùy chọn;thiết lập;cấu hình	Action
+act.about	act	About	Giới thiệu	version;info;credits	phiên bản;thông tin	Action
+act.analyze	act	Start Analysis	Bắt đầu phân tích	analyze;search;think;engine	chạy engine;tính nước;suy nghĩ	Action
+act.stop	act	Stop Analysis	Dừng phân tích	stop;halt;cancel;interrupt	ngừng;hủy;dừng engine	Action
+act.analyze-mode	act	Analyze Mode	Chế độ phân tích	continuous;auto analyze;live	liên tục;tự động phân tích	Action
+act.engine-plays-black	act	Engine plays Black	Máy chơi quân đen	computer;ai;opponent;play black	máy đánh;đấu với máy	Action
+act.engine-plays-white	act	Engine plays White	Máy chơi quân trắng	computer;ai;opponent;play white	máy đánh;đấu với máy	Action
+act.engine-plays-off	act	Engine plays Off	Tắt máy đánh	disable computer;two players;manual	hai người;tự đánh	Action
+act.view-search-overlay	act	Search Overlay	Hiện lớp gợi ý nước	candidates;markers;engine marks;board overlay	gợi ý nước;đánh dấu;lớp phủ	Action
+act.view-search-winrate	act	Search Winrate Tags	Hiện tỉ lệ thắng	percent;win probability;tags;heatmap	xác suất thắng;phần trăm;nhãn	Action
+act.nav-first	act	First Move	Về nước đầu	start;beginning;rewind;home	đầu ván;quay về đầu	Action
+act.nav-undo	act	Undo	Hoàn tác	back;previous move;take back	lùi;quay lại;đi lại	Action
+act.nav-redo	act	Redo	Làm lại	forward;next move;replay	tiến;nước kế	Action
+act.nav-last	act	Last Move	Đến nước cuối	end;final;latest	cuối ván;nước mới nhất	Action
+set.engine-path	set	Engine Path	Đường dẫn engine	executable;binary;rapfi;yixin;exe	file chạy;chương trình;đặt engine	Setting
+set.ptc	set	Protocol Extension (.ptc)	Mở rộng giao thức (.ptc)	extension;plugin;commands	tiện ích;lệnh mở rộng	Setting
+set.threads	set	Threads	Số luồng	cpu;cores;parallel;processors	nhân;đa luồng;bộ xử lý	Setting
+set.hash	set	Hash Size (MB)	Dung lượng hash (MB)	memory;transposition table;ram	bộ nhớ;bảng chuyển vị	Setting
+set.timeout-turn	set	Timeout / Turn (ms)	Thời gian mỗi nước (ms)	time limit;move time;seconds	giới hạn;giây;suy nghĩ	Setting
+set.timeout-match	set	Timeout / Match (ms)	Tổng thời gian ván (ms)	clock;game time;total	đồng hồ;cả ván	Setting
+set.increment	set	Increment (ms)	Cộng thêm giờ (ms)	fischer;bonus time	thời gian cộng;thêm giờ	Setting
+set.max-depth	set	Max Depth	Độ sâu tối đa	plies;search depth;deeper	độ sâu;số tầng	Setting
+set.max-nodes	set	Max Nodes	Số nút tối đa	node budget;limit search	giới hạn nút	Setting
+set.multipv	set	Multi PV	Nhiều biến (MultiPV)	principal variations;lines;candidates	số biến;nhiều đường	Setting
+set.analysis-detail	set	Analysis Detail	Mức chi tiết phân tích	show detail;verbosity;info	chi tiết;mức độ	Setting
+set.theme	set	Theme	Giao diện	dark;light;colours;appearance	tối;sáng;màu sắc;chủ đề	Setting
+set.wingraph-mode	set	WinGraph Mode	Chế độ biểu đồ thắng	graph;chart;winrate graph;plot	đồ thị;biểu đồ	Setting
+set.move-numbers	set	Show Move Numbers	Hiện số thứ tự nước	ordinal;stone numbers;digits	số nước;đánh số	Setting
+set.coordinates	set	Show Coordinates	Hiện tọa độ	labels;letters;rows;columns	nhãn;hàng cột;chữ cái	Setting
+set.hotkey-analyze	set	Hotkey: Analyze	Phím tắt: Phân tích	shortcut;keybinding;key	bàn phím;tổ hợp phím	Setting
+set.hotkey-stop	set	Hotkey: Stop	Phím tắt: Dừng	shortcut;keybinding;key	bàn phím;tổ hợp phím	Setting
+set.hotkey-undo	set	Hotkey: Undo	Phím tắt: Hoàn tác	shortcut;keybinding;key	bàn phím;tổ hợp phím	Setting
+set.hotkey-redo	set	Hotkey: Redo	Phím tắt: Làm lại	shortcut;keybinding;key	bàn phím;tổ hợp phím	Setting
+set.hotkey-newgame	set	Hotkey: New Game	Phím tắt: Ván mới	shortcut;keybinding;key	bàn phím;tổ hợp phím	Setting
+cmd.help	cmd	!help — Show this help	!help — Xem trợ giúp	commands;list;manual	danh sách lệnh;hướng dẫn	Command
+cmd.about	cmd	!about — Send ABOUT to the engine	!about — Hỏi thông tin engine	engine info;version	phiên bản engine	Command
+cmd.start	cmd	!start — New game with board size	!start — Ván mới với cỡ bàn	size;restart	đổi cỡ;chơi lại	Command
+cmd.rule	cmd	!rule — Set rule and sync engine	!rule — Đặt luật chơi	freestyle;standard;renju	luật;cờ caro	Command
+cmd.new	cmd	!new — Restart current game	!new — Chơi lại ván này	reset;keep size	làm mới;giữ cỡ bàn	Command
+cmd.undo	cmd	!undo — Undo one move	!undo — Lùi một nước	back;take back	hoàn tác;đi lại	Command
+cmd.redo	cmd	!redo — Redo one move	!redo — Tiến một nước	forward;replay	làm lại	Command
+cmd.loadpos	cmd	!loadpos — Load position from move text	!loadpos — Nạp thế cờ từ chuỗi nước	moves;paste;position	dán nước đi;thế cờ	Command
+cmd.pos	cmd	!pos — Position input helper	!pos — Nhập thế cờ	moves;setup	đặt thế;nhập nước	Command
+cmd.getpos	cmd	!getpos — Print current position	!getpos — In thế cờ hiện tại	dump;coordinates;export	xuất tọa độ;thế cờ	Command
+cmd.analyze	cmd	!analyze — Start analysis (optional MultiPV)	!analyze — Bắt đầu phân tích	search;think	chạy engine;suy nghĩ	Command
+cmd.yxanalz	cmd	!yxanalz — Analyze chosen root moves only	!yxanalz — Chỉ phân tích các nước chọn	allow-list;candidates;root moves	nước chỉ định;giới hạn nước	Command
+cmd.stop	cmd	!stop — Stop analysis	!stop — Dừng phân tích	halt;cancel	ngừng;hủy	Command
+cmd.play	cmd	!play — Load moves then start analysis	!play — Nạp nước rồi phân tích	moves;analyze	nạp nước đi	Command
+cmd.engine	cmd	!engine — Engine lifecycle: start, stop, reload	!engine — Quản lý engine: chạy, dừng, nạp lại	restart engine;process	khởi động lại engine	Command
+cmd.send	cmd	!send — Send a raw protocol line to the engine	!send — Gửi dòng lệnh thô tới engine	raw;protocol;gomocup	giao thức;lệnh thô	Command
+cmd.info	cmd	!info — Edit engine config	!info — Sửa cấu hình engine	set key value;config	đặt tham số;cấu hình	Command
+cmd.clear	cmd	!clear — Clear the console log	!clear — Xóa nhật ký console	empty;wipe log	làm sạch;xóa log	Command
+cmd.db	cmd	!db — Database commands	!db — Lệnh cơ sở dữ liệu	query;load;save;label;comment	truy vấn;nhãn;ghi chú	Command

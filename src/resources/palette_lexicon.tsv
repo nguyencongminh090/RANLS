@@ -1,0 +1,48 @@
+# Command-palette lexicon (PAL-01). Hand-authored en/vi vocabulary; matched after
+# Unicode NFC + diacritic folding, so entries may be written with or without accents.
+# syn  = synonym group (members expand to each other at weight 0.7)
+# stop = stopwords        phrase = multi-word term kept as one token
+# Authored from the app's vocabulary (entries.tsv), NOT from the test queries.
+syn	settings;preferences;options;configure;configuration;config;cài đặt;tùy chọn;thiết lập;cấu hình
+syn	quit;exit;close;leave;thoát;đóng
+syn	new;restart;reset;fresh;chơi lại;làm mới
+syn	undo;revert;take back;go back;back;hoàn tác;lùi;quay lại
+syn	redo;forward;replay;làm lại;tiến
+syn	analyze;analyse;analysis;analyzing;think;phân tích;suy nghĩ;tính nước
+syn	stop;halt;cancel;interrupt;abort;dừng;ngừng;hủy
+syn	save;write;export;store;lưu;ghi;xuất
+syn	load;open;import;read;mở;tải;nhập;đọc
+syn	game;match;ván;ván cờ
+syn	board;bàn cờ;bàn
+syn	size;dimension;resize;cỡ;kích thước
+syn	theme;appearance;skin;dark;light;giao diện;chủ đề;tối;sáng
+syn	thread;core;cpu;processor;parallel;luồng;nhân;đa luồng
+syn	memory;ram;hash;bộ nhớ;transposition table;bảng chuyển vị
+syn	depth;ply;plies;độ sâu;tầng
+syn	node;nút
+syn	time;clock;timeout;second;thời gian;giờ;đồng hồ;giới hạn;giây
+syn	increment;bonus;thêm giờ;cộng thêm
+syn	coordinate;label;tọa độ;nhãn
+syn	number;ordinal;digit;số;đánh số
+syn	shortcut;hotkey;keybinding;key;keyboard;phím tắt;bàn phím;tổ hợp phím
+syn	engine;computer;ai;machine;máy
+syn	winrate;win probability;percent;percentage;tỉ lệ thắng;tỷ lệ thắng;xác suất thắng;phần trăm
+syn	graph;chart;plot;đồ thị;biểu đồ
+syn	help;manual;guide;trợ giúp;hướng dẫn
+syn	clear;empty;wipe;clean;xóa;làm sạch
+syn	log;console;nhật ký
+syn	command;lệnh
+syn	rule;luật
+syn	forbidden;cấm;luật cấm;cấm tay
+syn	version;phiên bản
+syn	first;beginning;home;đầu;về đầu
+syn	last;end;final;latest;cuối;mới nhất
+syn	plugin;extension;tiện ích;mở rộng
+syn	query;truy vấn
+syn	multipv;multi pv
+syn	two players;hai người;manual play
+syn	freestyle;tự do
+syn	standard;tiêu chuẩn
+stop	the;a;an;to;of;for;in;on;at;is;are;me;my;with;and;or;please;do;i;want
+stop	các;của;là;hãy;cho;tôi;muốn;và;với;một;những
+phrase	nhiều biến;thứ tự;nước đi;nước cuối;nước đầu
