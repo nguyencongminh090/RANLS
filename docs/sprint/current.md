@@ -15,7 +15,7 @@
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| PAL-04 | Palette scope prefixes, UI-only default | — | — | 🔲 Not started |
+| PAL-04 | Palette scope prefixes, UI-only default | — | — | ✅ Done (PR #60) |
 | I18N-01 | Catalog loader `i18n::tr` + lint | — | — | ✅ Done (PR #59) |
 | I18N-02 | Wire UI strings + vi catalog + live refresh | I18N-01 | — | 🔲 Not started |
 | I18N-03 | Language setting + persistence + system default | I18N-01 | — | 🔲 Not started |
