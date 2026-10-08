@@ -6,6 +6,7 @@
 #include "model/game_file_service.h"
 #include "model/settings_storage.h"
 #include "ui/about_dialog.h"
+#include "ui/language_setting.h"
 #include "ui/settings_dialog.h"
 
 #include <algorithm>
@@ -1103,6 +1104,8 @@ void MainWindow::openSettings(const std::string &focusSettingId)
         // block — the Settings dialog owns neither, so pass their current values
         // through rather than letting save()'s default arguments reset
         // engine_plays / rule / board_size (STATE-02 hazard).
+        // I18N-03: switch the UI language live (listeners re-text the window).
+        language_setting::applySetting(vConfig.language);
         SettingsStorage::save(eConfig, vConfig, gameState_.matchConfig(),
                               {gameState_.rule(), gameState_.boardSize()});
 

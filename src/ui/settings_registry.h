@@ -52,6 +52,8 @@ inline constexpr std::array kSettings = std::to_array<SettingEntry>({
      "show detail;verbosity;info", "chi tiết;mức độ"},
     {"set.theme", 3, "Theme", "Theme", "Giao diện",
      "dark;light;colours;appearance", "tối;sáng;màu sắc;chủ đề"},
+    {"set.language", 3, "Language", "Language", "Ngôn ngữ",
+     "locale;interface language;english;vietnamese;translation", "ngôn ngữ giao diện;tiếng việt;tiếng anh;dịch"},
     {"set.wingraph-mode", 3, "WinGraph Mode", "WinGraph Mode", "Chế độ biểu đồ thắng",
      "graph;chart;winrate graph;plot", "đồ thị;biểu đồ"},
     {"set.move-numbers", 3, "Show Move Numbers", "Show Move Numbers", "Hiện số thứ tự nước",

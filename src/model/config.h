@@ -25,6 +25,10 @@ enum class WinGraphMode {
 /// Configuration for View/UI options.
 struct ViewConfig {
     AppTheme theme           = AppTheme::Dark;
+    /// I18N-03: UI language setting -- "system" (follow the desktop locale),
+    /// or a supported code ("en", "vi"). Persisted as `language=`; any other
+    /// stored value loads as "system".
+    std::string language     = "system";
     bool     showMoveNumbers = true;
     bool     showCoordinates = true;
     bool     showDatabase    = true;

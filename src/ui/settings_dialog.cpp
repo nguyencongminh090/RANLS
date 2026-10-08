@@ -82,6 +82,7 @@ std::string settingLabel(const settings_registry::SettingEntry &e)
     if (l == "Multi PV")                  return i18n::tr("Multi PV");
     if (l == "Analysis Detail")           return i18n::tr("Analysis Detail");
     if (l == "Theme")                     return i18n::tr("Theme");
+    if (l == "Language")                  return i18n::tr("Language");
     if (l == "WinGraph Mode")             return i18n::tr("WinGraph Mode");
     if (l == "Show Move Numbers")         return i18n::tr("Show Move Numbers");
     if (l == "Show Coordinates")          return i18n::tr("Show Coordinates");
@@ -249,6 +250,21 @@ SettingsDialog::SettingsDialog(Gtk::Window &parent, const EngineConfig &eConfig,
     addRow(uiTab, "set.theme", dropTheme_,
            i18n::tr("System follows your desktop setting; Light / Dark force it."));
 
+    // I18N-03: choices are System (translated) + each language's native name.
+    // Applied on Apply via signal_applied; the dialog closes then, so a later
+    // open is rebuilt in the new language (nothing to retranslate in place).
+    {
+        auto langModel = Gtk::StringList::create({i18n::tr("System")});
+        for (const auto &lang : i18n::languages())
+            langModel->append(lang.nativeName);
+        dropLanguage_.set_model(langModel);
+        const auto choices = languageChoices();
+        const auto it = std::find(choices.begin(), choices.end(), i18n::normalizeLanguageSetting(vConfig.language));
+        dropLanguage_.set_selected(static_cast<guint>(it == choices.end() ? 0 : it - choices.begin()));
+        addRow(uiTab, "set.language", dropLanguage_,
+               i18n::tr("Language of the interface. System follows your desktop language."));
+    }
+
     auto modeModel = Gtk::StringList::create(
         {i18n::tr("Single line (Black's perspective)"), i18n::tr("Two lines (Black & White)")});
     dropWinGraphMode_.set_model(modeModel);
@@ -339,6 +355,14 @@ void SettingsDialog::onEnginePathChanged()
     updateApplySensitivity();
 }
 
+std::vector<std::string> SettingsDialog::languageChoices()
+{
+    std::vector<std::string> v{i18n::kSystemLanguage};
+    for (const auto &lang : i18n::languages())
+        v.push_back(lang.code);
+    return v;
+}
+
 void SettingsDialog::updateApplySensitivity()
 {
     if (btnApply_)
@@ -374,6 +398,11 @@ void SettingsDialog::onApply()
 
     ViewConfig vConfig = baseViewConfig_;
     vConfig.theme           = static_cast<AppTheme>(dropTheme_.get_selected());
+    {
+        const auto choices = languageChoices();
+        const guint sel = dropLanguage_.get_selected();
+        vConfig.language = sel < choices.size() ? choices[sel] : std::string(i18n::kSystemLanguage);
+    }
     vConfig.winGraphMode    = static_cast<WinGraphMode>(dropWinGraphMode_.get_selected());
     vConfig.showMoveNumbers = checkMoveNumbers_.get_active();
     vConfig.showCoordinates = checkCoordinates_.get_active();

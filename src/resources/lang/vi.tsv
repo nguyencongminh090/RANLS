@@ -80,6 +80,7 @@ Max Nodes	Số nút tối đa
 Multi PV	Multi PV (nhiều biến)
 Analysis Detail	Mức chi tiết phân tích
 Theme	Chủ đề
+Language	Ngôn ngữ
 WinGraph Mode	Chế độ biểu đồ thắng
 Show Move Numbers	Hiện số thứ tự nước
 Show Coordinates	Hiện tọa độ
@@ -103,6 +104,7 @@ Node budget per search. 0 = unlimited.	Số nút tối đa cho mỗi lần tìm 
 Number of principal variations the engine reports.	Số biến chính mà engine báo cáo.
 How much incremental search output the engine streams (INFO SHOW_DETAIL). 0 = final result only; 2 = per-depth PV blocks; 3 = also the live move feed. Default 3. A SHOW_DETAIL set via the console still overrides this.	Lượng kết quả tìm kiếm tăng dần mà engine gửi liên tục (INFO SHOW_DETAIL). 0 = chỉ kết quả cuối; 2 = khối PV theo từng độ sâu; 3 = thêm luồng nước đi trực tiếp. Mặc định 3. SHOW_DETAIL đặt qua console vẫn được ưu tiên.
 System follows your desktop setting; Light / Dark force it.	Hệ thống theo cài đặt máy; Sáng / Tối sẽ ép dùng giao diện đó.
+Language of the interface. System follows your desktop language.	Ngôn ngữ của giao diện. Hệ thống theo ngôn ngữ của máy.
 Single line: one win-rate curve, always from Black's perspective. Two lines: Black and White win-rate each in its own perspective.	Một đường: một đường tỉ lệ thắng, luôn theo góc nhìn quân Đen. Hai đường: tỉ lệ thắng của Đen và Trắng, mỗi bên theo góc nhìn riêng.
 Draw the move ordinal on each stone.	Hiện số thứ tự nước trên mỗi quân.
 Draw A–O column and 1–N row labels around the board.	Hiện nhãn cột A–O và hàng 1–N quanh bàn cờ.

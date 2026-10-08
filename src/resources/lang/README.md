@@ -21,6 +21,14 @@ commands and `!help`, Engine Log text, protocol text, palette entry titles/searc
 wrapped. Long-lived widgets re-read their texts on `i18n::setLanguage()` (see `MainWindow::applyLanguage`);
 dialogs are built on open.
 
+## Language setting (I18N-03)
+
+`language=` in the settings file is `system` (default), `en` or `vi`; any other value loads as `system`. At startup
+`language_setting::applySetting()` (src/ui/language_setting.cpp) installs the bundled loader, resolves `system` from
+`g_get_language_names()` via `i18n::resolveSystem` and calls `setLanguage`. The Settings > UI > Language dropdown applies
+on Apply (live refresh) and persists with the other settings; the dialog closes on Apply, so the next open is rebuilt in
+the new language.
+
 ## Vietnamese terminology (draft for review)
 
 One term per concept; please review and amend in `vi.tsv`, then the lint keeps it consistent.

@@ -55,6 +55,17 @@ bool isSupported(std::string_view code);
 /// supported language wins; otherwise "en". Pure.
 std::string resolveSystem(const std::vector<std::string> &localeNames);
 
+/// I18N-03: the persisted `language=` setting is "system" or a supported code.
+inline constexpr const char *kSystemLanguage = "system";
+
+/// Map any stored value to a valid setting: a supported code is kept, "system"
+/// and everything else (unknown, empty, wrong case) becomes "system". Pure.
+std::string normalizeLanguageSetting(std::string_view setting);
+
+/// Resolve a language setting to a concrete supported code: "system" (or an
+/// invalid value) -> resolveSystem(localeNames); a supported code -> itself. Pure.
+std::string resolveSetting(std::string_view setting, const std::vector<std::string> &localeNames);
+
 /// Supplies a language's catalog text (e.g. from the GResource). Tests pass
 /// strings instead. Returning an empty string means "no catalog".
 using CatalogLoader = std::function<std::string(std::string_view code)>;

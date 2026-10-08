@@ -28,7 +28,7 @@ TEST_CASE("PAL-03 registry rows are well-formed and unique")
         CHECK_FALSE(e.keywordsEn.empty());
         CHECK_FALSE(e.keywordsVi.empty());
     }
-    CHECK(kSettings.size() == 20);
+    CHECK(kSettings.size() == 21);
 }
 
 TEST_CASE("PAL-03 find() resolves known ids only")

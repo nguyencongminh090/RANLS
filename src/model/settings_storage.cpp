@@ -1,5 +1,7 @@
 #include "settings_storage.h"
 
+#include "i18n/i18n.h"
+
 #include <cctype>
 #include <filesystem>
 #include <fstream>
@@ -198,6 +200,8 @@ SettingsBundle load()
     }
 
     out.view.theme = static_cast<AppTheme>(parseNumber<int>(get("theme"), static_cast<int>(out.view.theme)));
+    // I18N-03: unknown / missing value -> "system" (never sticks, never throws).
+    out.view.language = i18n::normalizeLanguageSetting(get("language"));
     out.view.showMoveNumbers = parseBool(get("show_move_numbers"), out.view.showMoveNumbers);
     out.view.showCoordinates = parseBool(get("show_coordinates"), out.view.showCoordinates);
     int mode = parseNumber<int>(get("win_graph_mode"), static_cast<int>(out.view.winGraphMode));
@@ -275,6 +279,7 @@ bool save(const EngineConfig &engine, const ViewConfig &view, const MatchConfig 
     for (const auto &[key, value] : engine.customParams)
         out << "custom_param." << key << "=" << escapeValue(value) << "\n";
     out << "theme=" << static_cast<int>(view.theme) << "\n";
+    out << "language=" << i18n::normalizeLanguageSetting(view.language) << "\n";
     out << "show_move_numbers=" << (view.showMoveNumbers ? "true" : "false") << "\n";
     out << "show_coordinates=" << (view.showCoordinates ? "true" : "false") << "\n";
     out << "win_graph_mode=" << static_cast<int>(view.winGraphMode) << "\n";

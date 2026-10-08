@@ -127,6 +127,7 @@ set(GUI_SOURCES
     src/ui/tree_node_view.cpp
     src/ui/bottom_panel.cpp
     src/ui/settings_dialog.cpp
+    src/ui/language_setting.cpp
     src/ui/command_palette.cpp
     src/ui/palette_catalog.cpp
     src/command/palette_search.cpp

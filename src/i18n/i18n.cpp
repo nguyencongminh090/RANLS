@@ -96,6 +96,17 @@ std::string resolveSystem(const std::vector<std::string> &localeNames)
     return "en";
 }
 
+std::string normalizeLanguageSetting(std::string_view setting)
+{
+    return isSupported(setting) ? std::string(setting) : std::string(kSystemLanguage);
+}
+
+std::string resolveSetting(std::string_view setting, const std::vector<std::string> &localeNames)
+{
+    const std::string s = normalizeLanguageSetting(setting);
+    return s == kSystemLanguage ? resolveSystem(localeNames) : s;
+}
+
 void setCatalogLoader(CatalogLoader loader)
 {
     auto &s = state();
