@@ -1,5 +1,6 @@
 #include "settings_dialog.h"
 
+#include "i18n/i18n.h"
 #include "ui/settings_registry.h"
 
 #include <algorithm>
@@ -34,32 +35,62 @@ namespace {
 bool isValidEnginePath(const std::string &path, std::string &reason)
 {
     if (path.empty()) {
-        reason = "Path is empty";
+        reason = i18n::tr("Path is empty");
         return false;
     }
     std::error_code ec;
     if (!std::filesystem::exists(path, ec) || ec) {
-        reason = "Path does not exist";
+        reason = i18n::tr("Path does not exist");
         return false;
     }
     if (!std::filesystem::is_regular_file(path, ec) || ec) {
-        reason = "Not a regular file";
+        reason = i18n::tr("Not a regular file");
         return false;
     }
 #if defined(_WIN32)
     // MSVC/Windows CRT has no X_OK; the execute bit is meaningless. Fall back to
     // an executable-extension check (existence + is_regular_file already passed).
     if (!settings_dialog_detail::hasExecutableExtension(path)) {
-        reason = "Not an executable (.exe / .bat / .cmd / .com)";
+        reason = i18n::tr("Not an executable (.exe / .bat / .cmd / .com)");
         return false;
     }
 #else
     if (access(path.c_str(), X_OK) != 0) {
-        reason = "Not executable";
+        reason = i18n::tr("Not executable");
         return false;
     }
 #endif
     return true;
+}
+
+// I18N-02: the dialog's row labels live in settings_registry (shared with the
+// palette, whose titles are I18N-04). Translating them needs literal keys the
+// lint can see, so the dialog maps the registry label to a tr() literal here.
+// tests/test_i18n02_wiring.cpp asserts every registry label has a case.
+std::string settingLabel(const settings_registry::SettingEntry &e)
+{
+    const std::string_view l = e.label;
+    if (l == "Engine Path")               return i18n::tr("Engine Path");
+    if (l == "Protocol Extension (.ptc)") return i18n::tr("Protocol Extension (.ptc)");
+    if (l == "Threads")                   return i18n::tr("Threads");
+    if (l == "Hash Size (MB)")            return i18n::tr("Hash Size (MB)");
+    if (l == "Timeout / Turn (ms)")       return i18n::tr("Timeout / Turn (ms)");
+    if (l == "Timeout / Match (ms)")      return i18n::tr("Timeout / Match (ms)");
+    if (l == "Increment (ms)")            return i18n::tr("Increment (ms)");
+    if (l == "Max Depth")                 return i18n::tr("Max Depth");
+    if (l == "Max Nodes")                 return i18n::tr("Max Nodes");
+    if (l == "Multi PV")                  return i18n::tr("Multi PV");
+    if (l == "Analysis Detail")           return i18n::tr("Analysis Detail");
+    if (l == "Theme")                     return i18n::tr("Theme");
+    if (l == "WinGraph Mode")             return i18n::tr("WinGraph Mode");
+    if (l == "Show Move Numbers")         return i18n::tr("Show Move Numbers");
+    if (l == "Show Coordinates")          return i18n::tr("Show Coordinates");
+    if (l == "Analyze")                   return i18n::tr("Analyze");
+    if (l == "Stop")                      return i18n::tr("Stop");
+    if (l == "Undo")                      return i18n::tr("Undo");
+    if (l == "Redo")                      return i18n::tr("Redo");
+    if (l == "New Game")                  return i18n::tr("New Game");
+    return std::string(l);  // a new registry row without a key above shows English
 }
 
 } // namespace
@@ -68,7 +99,7 @@ bool isValidEnginePath(const std::string &path, std::string &reason)
 SettingsDialog::SettingsDialog(Gtk::Window &parent, const EngineConfig &eConfig, const ViewConfig &vConfig)
     : baseEngineConfig_(eConfig), baseViewConfig_(vConfig)
 {
-    set_title("Settings");
+    set_title(i18n::tr("Settings"));
     set_transient_for(parent);
     set_modal(true);
     set_default_size(480, 520);
@@ -90,7 +121,7 @@ SettingsDialog::SettingsDialog(Gtk::Window &parent, const EngineConfig &eConfig,
         int        row = 0;
         int        index = 0;
     };
-    auto makeTab = [&](const char *title) -> std::shared_ptr<Tab> {
+    auto makeTab = [&](const std::string &title) -> std::shared_ptr<Tab> {
         auto *grid = Gtk::make_managed<Gtk::Grid>();
         grid->set_row_spacing(8);
         grid->set_column_spacing(12);
@@ -109,16 +140,16 @@ SettingsDialog::SettingsDialog(Gtk::Window &parent, const EngineConfig &eConfig,
     // metadata + tab). `focus` is the widget Ctrl+K should focus when the
     // row's widget is a container (e.g. the engine-path box).
     auto addRow = [this](const std::shared_ptr<Tab> &t, const char *id, Gtk::Widget &widget,
-                         const char *tooltip = nullptr, Gtk::Widget *focus = nullptr) {
+                         const std::string &tooltip = {}, Gtk::Widget *focus = nullptr) {
         const auto *reg = settings_registry::find(id);
         g_return_if_fail(reg != nullptr);              // a new setting needs a registry row
         g_return_if_fail(reg->tab == t->index);        // registry tab must match where it is built
-        auto *lbl = Gtk::make_managed<Gtk::Label>(std::string(reg->label));
+        auto *lbl = Gtk::make_managed<Gtk::Label>(settingLabel(*reg));
         lbl->set_halign(Gtk::Align::END);
         t->grid->attach(*lbl, 0, t->row, 1, 1);
         widget.set_hexpand(true);
         t->grid->attach(widget, 1, t->row, 1, 1);
-        if (tooltip) {
+        if (!tooltip.empty()) {
             lbl->set_tooltip_text(tooltip);
             widget.set_tooltip_text(tooltip);
         }
@@ -126,17 +157,17 @@ SettingsDialog::SettingsDialog(Gtk::Window &parent, const EngineConfig &eConfig,
         t->row++;
     };
 
-    auto engineTab  = makeTab("Engine");
-    auto timeTab    = makeTab("Time");
-    auto searchTab  = makeTab("Search");
-    auto uiTab      = makeTab("UI");
-    auto hotkeysTab = makeTab("Hotkeys");
+    auto engineTab  = makeTab(i18n::tr("Engine"));
+    auto timeTab    = makeTab(i18n::tr("Time"));
+    auto searchTab  = makeTab(i18n::tr("Search"));
+    auto uiTab      = makeTab(i18n::tr("UI"));
+    auto hotkeysTab = makeTab(i18n::tr("Hotkeys"));
 
     // ── Engine tab ──────────────────────────────────────────────────────────
     auto *pathBox = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 4);
     entryEnginePath_.set_text(eConfig.enginePath);
     entryEnginePath_.set_hexpand(true);
-    auto *btnBrowse = Gtk::make_managed<Gtk::Button>("Browse…");
+    auto *btnBrowse = Gtk::make_managed<Gtk::Button>(i18n::tr("Browse…"));
     btnBrowse->signal_clicked().connect(sigc::mem_fun(*this, &SettingsDialog::onChooseEngine));
     pathBox->append(entryEnginePath_);
     pathBox->append(*btnBrowse);
@@ -153,96 +184,96 @@ SettingsDialog::SettingsDialog(Gtk::Window &parent, const EngineConfig &eConfig,
     pathContainer->append(*pathBox);
     pathContainer->append(lblEnginePathStatus_);
     addRow(engineTab, "set.engine-path", *pathContainer,
-           "Path to the Gomocup/Yixin-protocol engine executable.", &entryEnginePath_);
+           i18n::tr("Path to the Gomocup/Yixin-protocol engine executable."), &entryEnginePath_);
 
     // PROTO-03: optional protocol-extension (.ptc) file. Empty = none.
     auto *ptcBox = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 4);
     entryPtcPath_.set_text(eConfig.protocolExtensionPath);
     entryPtcPath_.set_hexpand(true);
-    auto *btnPtcBrowse = Gtk::make_managed<Gtk::Button>("Browse…");
+    auto *btnPtcBrowse = Gtk::make_managed<Gtk::Button>(i18n::tr("Browse…"));
     btnPtcBrowse->signal_clicked().connect(sigc::mem_fun(*this, &SettingsDialog::onChoosePtc));
-    auto *btnPtcClear = Gtk::make_managed<Gtk::Button>("Clear");
+    auto *btnPtcClear = Gtk::make_managed<Gtk::Button>(i18n::tr("Clear"));
     btnPtcClear->signal_clicked().connect([this]() { entryPtcPath_.set_text(""); });
     ptcBox->append(entryPtcPath_);
     ptcBox->append(*btnPtcBrowse);
     ptcBox->append(*btnPtcClear);
     addRow(engineTab, "set.ptc", *ptcBox,
-           "Optional TOML file declaring extra console commands for this engine "
-           "(PROTO-03). Takes effect on engine start / Reload.", &entryPtcPath_);
+           i18n::tr("Optional TOML file declaring extra console commands for this engine "
+                    "(PROTO-03). Takes effect on engine start / Reload."), &entryPtcPath_);
 
     spinThreads_.set_adjustment(Gtk::Adjustment::create(eConfig.threads, 1, 256, 1));
     spinThreads_.set_digits(0);
-    addRow(engineTab, "set.threads", spinThreads_, "Number of search threads the engine may use.");
+    addRow(engineTab, "set.threads", spinThreads_, i18n::tr("Number of search threads the engine may use."));
 
     spinHash_.set_adjustment(Gtk::Adjustment::create(eConfig.hashSizeMB, 1, 65536, 64));
     spinHash_.set_digits(0);
-    addRow(engineTab, "set.hash", spinHash_, "Transposition-table size in megabytes.");
+    addRow(engineTab, "set.hash", spinHash_, i18n::tr("Transposition-table size in megabytes."));
 
     // ── Time tab ────────────────────────────────────────────────────────────
     spinTimeoutTurn_.set_adjustment(Gtk::Adjustment::create(eConfig.timeoutTurn, 0, 6000000, 1000));
     spinTimeoutTurn_.set_digits(0);
-    addRow(timeTab, "set.timeout-turn", spinTimeoutTurn_, "Milliseconds allowed per move. 0 = unlimited.");
+    addRow(timeTab, "set.timeout-turn", spinTimeoutTurn_, i18n::tr("Milliseconds allowed per move. 0 = unlimited."));
 
     spinTimeoutMatch_.set_adjustment(Gtk::Adjustment::create(eConfig.timeoutMatch, 0, 99000000, 10000));
     spinTimeoutMatch_.set_digits(0);
-    addRow(timeTab, "set.timeout-match", spinTimeoutMatch_, "Total milliseconds for the whole game. 0 = unlimited.");
+    addRow(timeTab, "set.timeout-match", spinTimeoutMatch_, i18n::tr("Total milliseconds for the whole game. 0 = unlimited."));
 
     spinIncrement_.set_adjustment(Gtk::Adjustment::create(eConfig.increment, 0, 60000, 500));
     spinIncrement_.set_digits(0);
-    addRow(timeTab, "set.increment", spinIncrement_, "Time added back to the clock after each move.");
+    addRow(timeTab, "set.increment", spinIncrement_, i18n::tr("Time added back to the clock after each move."));
 
     // ── Search tab ──────────────────────────────────────────────────────────
     spinMaxDepth_.set_adjustment(Gtk::Adjustment::create(eConfig.maxDepth, 1, 225, 1));
     spinMaxDepth_.set_digits(0);
-    addRow(searchTab, "set.max-depth", spinMaxDepth_, "Maximum search depth in plies.");
+    addRow(searchTab, "set.max-depth", spinMaxDepth_, i18n::tr("Maximum search depth in plies."));
 
     spinMaxNodes_.set_adjustment(Gtk::Adjustment::create(eConfig.maxNodes, 0, 100000000000, 1000000));
     spinMaxNodes_.set_digits(0);
-    addRow(searchTab, "set.max-nodes", spinMaxNodes_, "Node budget per search. 0 = unlimited.");
+    addRow(searchTab, "set.max-nodes", spinMaxNodes_, i18n::tr("Node budget per search. 0 = unlimited."));
 
     spinMultiPV_.set_adjustment(Gtk::Adjustment::create(eConfig.multiPV, 1, 20, 1));
     spinMultiPV_.set_digits(0);
-    addRow(searchTab, "set.multipv", spinMultiPV_, "Number of principal variations the engine reports.");
+    addRow(searchTab, "set.multipv", spinMultiPV_, i18n::tr("Number of principal variations the engine reports."));
 
     spinShowDetail_.set_adjustment(Gtk::Adjustment::create(eConfig.showDetail, 0, 3, 1));
     spinShowDetail_.set_digits(0);
     addRow(searchTab, "set.analysis-detail", spinShowDetail_,
-           "How much incremental search output the engine streams (INFO SHOW_DETAIL). "
-           "0 = final result only; 2 = per-depth PV blocks; 3 = also the live move feed. "
-           "Default 3. A SHOW_DETAIL set via the console still overrides this.");
+           i18n::tr("How much incremental search output the engine streams (INFO SHOW_DETAIL). "
+                    "0 = final result only; 2 = per-depth PV blocks; 3 = also the live move feed. "
+                    "Default 3. A SHOW_DETAIL set via the console still overrides this."));
 
     // ── UI tab ──────────────────────────────────────────────────────────────
-    auto themeModel = Gtk::StringList::create({"System", "Light", "Dark"});
+    auto themeModel = Gtk::StringList::create({i18n::tr("System"), i18n::tr("Light"), i18n::tr("Dark")});
     dropTheme_.set_model(themeModel);
     dropTheme_.set_selected(static_cast<guint>(vConfig.theme));
     addRow(uiTab, "set.theme", dropTheme_,
-           "System follows your desktop setting; Light / Dark force it.");
+           i18n::tr("System follows your desktop setting; Light / Dark force it."));
 
     auto modeModel = Gtk::StringList::create(
-        {"Single line (Black's perspective)", "Two lines (Black & White)"});
+        {i18n::tr("Single line (Black's perspective)"), i18n::tr("Two lines (Black & White)")});
     dropWinGraphMode_.set_model(modeModel);
     dropWinGraphMode_.set_selected(static_cast<guint>(vConfig.winGraphMode));
     addRow(uiTab, "set.wingraph-mode", dropWinGraphMode_,
-           "Single line: one win-rate curve, always from Black's perspective. "
-           "Two lines: Black and White win-rate each in its own perspective.");
+           i18n::tr("Single line: one win-rate curve, always from Black's perspective. "
+                    "Two lines: Black and White win-rate each in its own perspective."));
 
     checkMoveNumbers_.set_active(vConfig.showMoveNumbers);
-    addRow(uiTab, "set.move-numbers", checkMoveNumbers_, "Draw the move ordinal on each stone.");
+    addRow(uiTab, "set.move-numbers", checkMoveNumbers_, i18n::tr("Draw the move ordinal on each stone."));
 
     checkCoordinates_.set_active(vConfig.showCoordinates);
-    addRow(uiTab, "set.coordinates", checkCoordinates_, "Draw A–O column and 1–N row labels around the board.");
+    addRow(uiTab, "set.coordinates", checkCoordinates_, i18n::tr("Draw A–O column and 1–N row labels around the board."));
 
     // ── Hotkeys tab ─────────────────────────────────────────────────────────
     entryHotkeyAnalyze_.set_text(vConfig.hotkeyAnalyze);
-    addRow(hotkeysTab, "set.hotkey-analyze", entryHotkeyAnalyze_, "e.g. F5 or Ctrl+A");
+    addRow(hotkeysTab, "set.hotkey-analyze", entryHotkeyAnalyze_, i18n::tr("e.g. F5 or Ctrl+A"));
     entryHotkeyStop_.set_text(vConfig.hotkeyStop);
-    addRow(hotkeysTab, "set.hotkey-stop", entryHotkeyStop_, "e.g. Escape");
+    addRow(hotkeysTab, "set.hotkey-stop", entryHotkeyStop_, i18n::tr("e.g. Escape"));
     entryHotkeyUndo_.set_text(vConfig.hotkeyUndo);
-    addRow(hotkeysTab, "set.hotkey-undo", entryHotkeyUndo_, "e.g. Ctrl+Z");
+    addRow(hotkeysTab, "set.hotkey-undo", entryHotkeyUndo_, i18n::tr("e.g. Ctrl+Z"));
     entryHotkeyRedo_.set_text(vConfig.hotkeyRedo);
-    addRow(hotkeysTab, "set.hotkey-redo", entryHotkeyRedo_, "e.g. Ctrl+Y");
+    addRow(hotkeysTab, "set.hotkey-redo", entryHotkeyRedo_, i18n::tr("e.g. Ctrl+Y"));
     entryHotkeyNewGame_.set_text(vConfig.hotkeyNewGame);
-    addRow(hotkeysTab, "set.hotkey-newgame", entryHotkeyNewGame_, "e.g. Ctrl+N");
+    addRow(hotkeysTab, "set.hotkey-newgame", entryHotkeyNewGame_, i18n::tr("e.g. Ctrl+N"));
 
     root->append(*notebook);
 
@@ -251,8 +282,8 @@ SettingsDialog::SettingsDialog(Gtk::Window &parent, const EngineConfig &eConfig,
     btnBox->set_halign(Gtk::Align::END);
     btnBox->set_margin_top(12);
 
-    auto *btnCancel = Gtk::make_managed<Gtk::Button>("Cancel");
-    auto *btnApply  = Gtk::make_managed<Gtk::Button>("Apply");
+    auto *btnCancel = Gtk::make_managed<Gtk::Button>(i18n::tr("Cancel"));
+    auto *btnApply  = Gtk::make_managed<Gtk::Button>(i18n::tr("Apply"));
     btnApply->add_css_class("suggested-action");
     btnApply_ = btnApply;
 
@@ -297,11 +328,11 @@ void SettingsDialog::onEnginePathChanged()
     enginePathValid_ = isValidEnginePath(path, reason);
 
     if (enginePathValid_) {
-        lblEnginePathStatus_.set_text("✓ Executable found");
+        lblEnginePathStatus_.set_text(i18n::tr("✓ Executable found"));
         lblEnginePathStatus_.remove_css_class("error");
         entryEnginePath_.remove_css_class("error");
     } else {
-        lblEnginePathStatus_.set_text("✗ " + reason);
+        lblEnginePathStatus_.set_text(i18n::format(i18n::tr("✗ %s"), reason));
         lblEnginePathStatus_.add_css_class("error");
         entryEnginePath_.add_css_class("error");
     }
@@ -359,10 +390,10 @@ void SettingsDialog::onApply()
 void SettingsDialog::onChoosePtc()
 {
     auto dialog = Gtk::FileDialog::create();
-    dialog->set_title("Select Protocol Extension (.ptc)");
+    dialog->set_title(i18n::tr("Select Protocol Extension (.ptc)"));
 
     auto filter = Gtk::FileFilter::create();
-    filter->set_name("Protocol extension (*.ptc)");
+    filter->set_name(i18n::tr("Protocol extension (*.ptc)"));
     filter->add_pattern("*.ptc");
     auto filters = Gio::ListStore<Gtk::FileFilter>::create();
     filters->append(filter);
@@ -383,7 +414,7 @@ void SettingsDialog::onChoosePtc()
 void SettingsDialog::onChooseEngine()
 {
     auto dialog = Gtk::FileDialog::create();
-    dialog->set_title("Select Engine Executable");
+    dialog->set_title(i18n::tr("Select Engine Executable"));
     dialog->open(*this, [this, dialog](Glib::RefPtr<Gio::AsyncResult> &result) {
         try {
             auto file = dialog->open_finish(result);

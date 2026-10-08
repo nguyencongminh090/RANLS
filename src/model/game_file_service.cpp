@@ -1,6 +1,7 @@
 #include "game_file_service.h"
 
 #include "game_state.h"
+#include "i18n/i18n.h"
 #include "rdb/game_archive.h"
 #include "rdb/game_graph_convert.h"
 
@@ -18,7 +19,7 @@ Result save(const GameState &gs, const std::filesystem::path &path,
 
     auto writer = rdb::archiveWriterFor(fsPath);
     if (!writer)
-        return {false, "RANLS only saves games in the .rdb format."};
+        return {false, i18n::tr("RANLS only saves games in the .rdb format.")};
 
     rdb::GraphMeta meta;
     meta.generator = generator;
