@@ -17,8 +17,7 @@ Gomoku, PV, Rapfi, Yixin, `.rdb`.
 needs a non-empty entry in `vi.tsv` (`i18n::lint::checkCoverage`). Strings built from parts are one
 template key with printf placeholders (`"Rule: %s"`, `"Value %d, depth %d, bound %s"`), substituted with
 `i18n::format(tr("..."), args...)`. Rule names (Freestyle Gomoku / Standard Gomoku / Free Renju), `!`
-commands and `!help`, Engine Log text, protocol text, palette entry titles/search data (I18N-04) are not
-wrapped. Long-lived widgets re-read their texts on `i18n::setLanguage()` (see `MainWindow::applyLanguage`);
+commands and `!help`, Engine Log text and protocol text are not wrapped. Long-lived widgets re-read their texts on `i18n::setLanguage()` (see `MainWindow::applyLanguage`);
 dialogs are built on open.
 
 ## Language setting (I18N-03)
@@ -28,6 +27,17 @@ dialogs are built on open.
 `g_get_language_names()` via `i18n::resolveSystem` and calls `setLanguage`. The Settings > UI > Language dropdown applies
 on Apply (live refresh) and persists with the other settings; the dialog closes on Apply, so the next open is rebuilt in
 the new language.
+
+## Palette titles (I18N-04)
+
+Palette titles are catalog keys declared with `i18n::trcNoop("palette", "<English title>")` (actions in
+`palette_catalog.cpp`, settings in `settings_registry.h`) and `trcNoop("palette-cmd", "<command name>")` (built-in `!`
+commands); `vi.tsv` holds `palette|<English title>` / `palette-cmd|<name>` lines. The row shows the title in the UI
+language (`palette_catalog::displayTitle`), with the other language as a dim second line. The **same Vietnamese text
+is also the palette's Vietnamese search data** (read with `i18n::trIn("vi", ...)` whatever the UI language is, so ranking
+never depends on the UI language, story L7): editing a `palette|` / `palette-cmd|` line changes search results, so
+rerun `python3.13 scripts/palette_bench.py --split test`. The keyword lists (`keywordsEn/Vi`) are search data only and
+stay in code. Result-group badges (`Action` / `Setting` / `Command`) are ordinary `tr()` keys.
 
 ## Vietnamese terminology (draft for review)
 

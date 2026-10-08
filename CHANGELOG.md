@@ -11,6 +11,10 @@ internal tracking files for traceability.
 
 ## [Unreleased]
 
+### Changed
+
+- **Command palette follows the interface language.** With the language set to Tiếng Việt, result titles and the Action / Setting / Command badges are shown in Vietnamese (the other language stays as a dim second line); searching still matches both languages, with the same results in either (I18N-04).
+
 ### Fixed
 
 - About dialog: the "Links & protocol" section heading no longer renders blank (UI-22).
