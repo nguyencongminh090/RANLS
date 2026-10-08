@@ -33,6 +33,7 @@ add_executable(ranls-gui-tests
     test_cons01_command_completer.cpp
     test_cons02_autocorrect.cpp
     test_pal01_palette_search.cpp
+    test_pal03_settings_registry.cpp
     test_settings_storage.cpp
     test_eng01_engine_state.cpp
     test_eng02_revert_predicate.cpp
@@ -190,6 +191,7 @@ add_executable(ranls-gui-ui-tests
     test_eng03_close_request.cpp
     test_rdb02_save_open.cpp
     test_rdb03_ui_node_analysis.cpp
+    test_pal03_settings_dialog.cpp
 
     # UI sources under test.
     ${CMAKE_SOURCE_DIR}/src/main_window.cpp

@@ -104,6 +104,8 @@ private:
     // save never wipes engine/view/match state (STATE-02 hazard).
     void persistGameSetup();
     void onSettings();
+    /// PAL-03: open Settings, optionally on the tab of `focusSettingId` (settings_registry id).
+    void openSettings(const std::string &focusSettingId);
     void onAbout();
     void onStartAnalysis();
     void onStopAnalysis();
