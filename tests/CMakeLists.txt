@@ -63,6 +63,7 @@ add_executable(ranls-gui-tests
     test_rdb02_archive.cpp
     test_rdb03_node_analysis.cpp
     test_i18n01_catalog.cpp
+    test_i18n02_wiring.cpp
 
     # Sources under test (model/engine only — no UI, no gtkmm).
     ${CMAKE_SOURCE_DIR}/src/i18n/i18n.cpp
@@ -110,7 +111,6 @@ target_compile_definitions(ranls-gui-tests PRIVATE
     PALETTE_LEXICON_PATH="${CMAKE_SOURCE_DIR}/src/resources/palette_lexicon.tsv"
     I18N_SRC_DIR="${CMAKE_SOURCE_DIR}/src"
     I18N_VI_PATH="${CMAKE_SOURCE_DIR}/src/resources/lang/vi.tsv"
-    I18N_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data/i18n"
 )
 
 # PAL-01: dev-only benchmark driver for the palette search engine (Model A);
@@ -201,8 +201,10 @@ add_executable(ranls-gui-ui-tests
     test_rdb03_ui_node_analysis.cpp
     test_pal03_settings_dialog.cpp
     test_pal02_command_palette.cpp
+    test_i18n02_live_refresh.cpp
 
     # UI sources under test.
+    ${CMAKE_SOURCE_DIR}/src/i18n/i18n.cpp
     ${CMAKE_SOURCE_DIR}/src/main_window.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/about_dialog.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/bottom_panel.cpp
@@ -262,6 +264,7 @@ target_compile_features(ranls-gui-ui-tests PRIVATE cxx_std_20)
 # PORT-03: on-disk paths of the portable stand-in engines (see mock_engine/).
 target_compile_definitions(ranls-gui-ui-tests PRIVATE
     PALETTE_LEXICON_PATH="${CMAKE_SOURCE_DIR}/src/resources/palette_lexicon.tsv"
+    I18N_VI_PATH="${CMAKE_SOURCE_DIR}/src/resources/lang/vi.tsv"
     MOCK_ENGINE_PATH="$<TARGET_FILE:mock_engine>"
     MOCK_ENGINE_QUIT_PATH="$<TARGET_FILE:mock_engine_quit>"
 )

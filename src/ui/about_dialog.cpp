@@ -1,6 +1,7 @@
 #include "about_dialog.h"
 
 #include "build_info.h"
+#include "i18n/i18n.h"
 #include "version.h"
 
 #include <cairo.h>
@@ -51,7 +52,7 @@ Gtk::Box *makeSection(const Glib::ustring &title, Gtk::Widget &body)
 // ═════════════════════════════════════════════════════════════════════════════
 AboutDialog::AboutDialog(Gtk::Window &parent)
 {
-    set_title("About RANLS");
+    set_title(i18n::tr("About RANLS"));
     set_transient_for(parent);
     set_modal(true);
     set_resizable(true);
@@ -84,14 +85,14 @@ AboutDialog::AboutDialog(Gtk::Window &parent)
     name->add_css_class("title-1");
     info->append(*name);
 
-    auto *version = Gtk::make_managed<Gtk::Label>(Glib::ustring("Version ") + APP_VERSION);
+    auto *version = Gtk::make_managed<Gtk::Label>(i18n::format(i18n::tr("Version %s"), APP_VERSION));
     version->set_halign(Gtk::Align::START);
     version->set_xalign(0.0f);
     version->add_css_class("dim-label");
     version->set_selectable(true);
     info->append(*version);
 
-    auto *tagline = Gtk::make_managed<Gtk::Label>("Professional Gomoku / Renju analysis tool");
+    auto *tagline = Gtk::make_managed<Gtk::Label>(i18n::tr("Professional Gomoku / Renju analysis tool"));
     tagline->set_halign(Gtk::Align::START);
     tagline->set_xalign(0.0f);
     tagline->set_margin_bottom(4);
@@ -100,9 +101,9 @@ AboutDialog::AboutDialog(Gtk::Window &parent)
     // ── Developer credit ────────────────────────────────────────────────
     {
         auto *body = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 2);
-        body->append(*makeValueLabel("Developer: Nguyen Minh"));
+        body->append(*makeValueLabel(i18n::format(i18n::tr("Developer: %s"), "Nguyen Minh")));
         body->append(*makeValueLabel("Copyright © 2026 Nguyen Minh"));
-        info->append(*makeSection("Developer", *body));
+        info->append(*makeSection(i18n::tr("Developer"), *body));
     }
 
     // ── Tech / build info ───────────────────────────────────────────────
@@ -121,31 +122,33 @@ AboutDialog::AboutDialog(Gtk::Window &parent)
         addRow("gtkmm", Glib::ustring::format(GTKMM_MAJOR_VERSION, '.', GTKMM_MINOR_VERSION,
                                               '.', GTKMM_MICRO_VERSION));
         addRow("Cairo", cairo_version_string());
-        addRow("Build date", APP_BUILD_DATE);
-        addRow("Commit", APP_GIT_COMMIT);
-        addRow("License", "BSD-style — see LICENSE.md");
-        info->append(*makeSection("Tech / build info", *grid));
+        addRow(i18n::tr("Build date"), APP_BUILD_DATE);
+        addRow(i18n::tr("Commit"), APP_GIT_COMMIT);
+        addRow(i18n::tr("License"), i18n::tr("BSD-style — see LICENSE.md"));
+        info->append(*makeSection(i18n::tr("Tech / build info"), *grid));
     }
 
     // ── Links & protocol ───────────────────────────────────────────────
     {
         auto *body = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 3);
         body->append(*makeValueLabel(
-            "Repository: <a href=\"https://github.com/nguyencongminh090/RANLS\">"
-            "github.com/nguyencongminh090/RANLS</a>", true));
+            i18n::format(i18n::tr("Repository: %s"),
+                         "<a href=\"https://github.com/nguyencongminh090/RANLS\">"
+                         "github.com/nguyencongminh090/RANLS</a>"), true));
         body->append(*makeValueLabel(
-            "Engine protocol: <a href=\"https://github.com/accreator/Yixin-protocol/blob/master/protocol.pdf\">"
-            "Gomocup / Yixin protocol</a>", true));
+            i18n::format(i18n::tr("Engine protocol: %s"),
+                         "<a href=\"https://github.com/accreator/Yixin-protocol/blob/master/protocol.pdf\">"
+                         "Gomocup / Yixin protocol</a>"), true));
         body->append(*makeValueLabel(
-            "Supported engines: Rapfi, Yixin, and any Gomocup / "
-            "Yixin-protocol-compatible engine"));
-        info->append(*makeSection("Links & protocol", *body));
+            i18n::tr("Supported engines: Rapfi, Yixin, and any Gomocup / "
+                     "Yixin-protocol-compatible engine")));
+        info->append(*makeSection(i18n::tr("Links & protocol"), *body));
     }
 
     // ── Close button, bottom-right ─────────────────────────────────────
     auto *btnRow = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 0);
     btnRow->set_halign(Gtk::Align::END);
-    auto *close = Gtk::make_managed<Gtk::Button>("Close");
+    auto *close = Gtk::make_managed<Gtk::Button>(i18n::tr("Close"));
     close->add_css_class("suggested-action");
     close->signal_clicked().connect([this]() { set_visible(false); });
     btnRow->append(*close);

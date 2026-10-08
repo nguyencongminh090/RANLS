@@ -50,7 +50,13 @@ public:
     /// label pair the first time a name is seen and updating it thereafter.
     void setStatusField(const std::string &name, const std::string &value);
 
+    /// I18N-02: re-apply all translated texts (also called by the constructor).
+    void retranslate();
+
 private:
+    void applyStateText(EngineController::EngineState state);
+    EngineController::EngineState state_ = EngineController::EngineState::NotStarted;
+
     Gtk::Label labelState_;
     Gtk::Button btnStart_;
     Gtk::Button btnStop_;

@@ -1,6 +1,7 @@
 #include "board_view_model.h"
 #include "game_state.h"
 #include "renju_rule.h"
+#include "i18n/i18n.h"
 #include <cmath>
 #include <algorithm>
 #include <cstdlib>
@@ -54,16 +55,16 @@ std::string BoardViewModel::tooltipFor(Coord c) const
     for (const auto &m : searchOverlay) {
         if (m.pos != c) continue;
         if (m.kind == SearchOverlayMark::Kind::Tag) {
-            std::string line = "Engine: " + m.label;
+            std::string line = i18n::format(i18n::tr("Engine: %s"), m.label);
             const auto &cells = state_.analysisOverlay().cells;
             auto it = cells.find(c);
             if (it != cells.end() && it->second.tagDepth > 0)
-                line += " (depth " + std::to_string(it->second.tagDepth) + ")";
+                line += " " + i18n::format(i18n::tr("(depth %d)"), it->second.tagDepth);
             addLine(line);
         } else if (m.kind == SearchOverlayMark::Kind::Lost) {
-            addLine("Losing move");
+            addLine(i18n::tr("Losing move"));
         }
-        if (m.isBest) addLine("Best move");
+        if (m.isBest) addLine(i18n::tr("Best move"));
         break;
     }
 
@@ -74,28 +75,30 @@ std::string BoardViewModel::tooltipFor(Coord c) const
         auto it = db.find(c);
         if (it == db.end()) break;
         const DatabaseEntry &e = it->second;
-        const char *bound = e.bound == 0 ? "Exact" : e.bound == 1 ? "Alpha" : e.bound == 2 ? "Beta" : "Unknown";
-        std::string head = "Database";
+        const std::string bound = e.bound == 0 ? i18n::tr("Exact")
+                                  : e.bound == 1 ? i18n::tr("Alpha")
+                                  : e.bound == 2 ? i18n::tr("Beta")
+                                                 : i18n::tr("Unknown");
         const std::string &text = e.boardText.empty() ? e.label : e.boardText;
-        if (!text.empty()) head += ": " + text;
-        addLine(head);
-        addLine("Value " + std::to_string(e.value) + ", depth " + std::to_string(e.depth) +
-                ", bound " + bound);
-        if (m.isBest) addLine("Best database move");
-        if (e.hasComment) addLine("Has comment");
+        addLine(text.empty() ? i18n::tr("Database") : i18n::format(i18n::tr("Database: %s"), text));
+        addLine(i18n::format(i18n::tr("Value %d, depth %d, bound %s"), static_cast<int>(e.value),
+                             static_cast<int>(e.depth), bound));
+        if (m.isBest) addLine(i18n::tr("Best database move"));
+        if (e.hasComment) addLine(i18n::tr("Has comment"));
         break;
     }
 
     // Variant marker.
     for (const auto &m : variantMarkers) {
         if (m.pos != c) continue;
-        addLine(std::to_string(m.branchCount) + (m.branchCount == 1 ? " variation" : " variations"));
+        addLine(m.branchCount == 1 ? i18n::format(i18n::tr("%d variation"), m.branchCount)
+                                   : i18n::format(i18n::tr("%d variations"), m.branchCount));
         break;
     }
 
     // Renju forbidden point -- indication only (UI-03), still playable.
     if (std::find(forbiddenPoints.begin(), forbiddenPoints.end(), c) != forbiddenPoints.end())
-        addLine("Forbidden for Black (still playable)");
+        addLine(i18n::tr("Forbidden for Black (still playable)"));
 
     return out;
 }

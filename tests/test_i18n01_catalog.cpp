@@ -180,17 +180,30 @@ TEST_CASE("I18N-01 lint negative fixtures: orphan key, missing placeholder, alte
     CHECK(anyContains(gomoku, "'Gomoku'"));
 }
 
-TEST_CASE("I18N-01 lint: bundled vi.tsv against tr() literals in src/ (+ seed fixture)")
+TEST_CASE("I18N-02 lint coverage: every reference key needs a non-empty translation (negative fixture)")
+{
+    std::set<std::string> ref = {"Save", "Move %d", "Not yet translated"};
+    auto cat = i18n::Catalog::parse("Save\tLuu\nNot yet translated\t\n");  // Move %d absent, last one empty
+    auto problems = i18n::lint::checkCoverage(cat, ref);
+    CHECK(anyContains(problems, "missing translation: Move %d"));
+    CHECK(anyContains(problems, "missing translation: Not yet translated"));
+    CHECK_FALSE(anyContains(problems, "missing translation: Save"));
+    CHECK(problems.size() == 2);
+
+    auto full = i18n::Catalog::parse("Save\tLuu\nMove %d\tNuoc %d\nNot yet translated\tChua dich\n");
+    CHECK(i18n::lint::checkCoverage(full, ref).empty());
+}
+
+TEST_CASE("I18N-01/02 lint: bundled vi.tsv against the tr() literals in src/ (orphans, placeholders, terms, coverage)")
 {
     auto ref = scanKeys(I18N_SRC_DIR);
-    // Until I18N-02 wraps real UI strings, the seed fixture stands in for them.
-    for (const auto &k : scanKeys(I18N_FIXTURE_DIR))
-        ref.insert(k);
     CHECK_FALSE(ref.empty());
 
     auto vi = i18n::Catalog::parse(slurp(I18N_VI_PATH));
     CHECK_FALSE(vi.empty());
     auto problems = i18n::lint::check(vi, ref);
+    for (const auto &p : i18n::lint::checkCoverage(vi, ref))
+        problems.push_back(p);
     for (const auto &p : problems)
         MESSAGE(p);
     CHECK(problems.empty());

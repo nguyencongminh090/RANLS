@@ -1,10 +1,208 @@
-# Vietnamese UI catalog (I18N-01). `English key<TAB>translation`; \n \t \\ are escapes.
+# Vietnamese UI catalog. `English key<TAB>translation`; \n \t \\ are escapes.
 # Placeholders (%s, %d, {n}) must match the key; do-not-translate terms (Renju,
 # Gomoku, PV, Rapfi, Yixin, .rdb, rule names) must stay verbatim. Empty = untranslated.
-# Seed entries only; the real strings arrive with I18N-02.
-Open...	Mở...
+# One key per tr("...") literal in src/ (ctest lint: no orphans, full coverage).
+# Drafted for review in I18N-02; terminology choices are listed in README.md.
+
+# Menus
+Game	Ván
+Players	Người chơi
+Engine plays	Engine chơi
+View	Xem
+Help	Trợ giúp
+New	Mới
+Load	Mở
 Save	Lưu
-Move %d of %d	Nước %d trên %d
-Open a .rdb file	Mở tệp .rdb
-Free Renju	Free Renju
-Analysis stopped after {n} moves	Đã dừng phân tích sau {n} nước
+Rule	Luật chơi
+Board Size	Kích thước bàn cờ
+Quit	Thoát
+Settings…	Cài đặt…
+Black	Đen
+White	Trắng
+Off	Tắt
+Analyze Mode	Chế độ phân tích
+Search Overlay	Lớp phủ tìm kiếm
+Search Winrate Tags	Nhãn tỉ lệ thắng
+Command Palette…	Bảng lệnh…
+About	Giới thiệu
+
+# Header / toolbar
+Main menu	Menu chính
+New game	Ván mới
+Load game	Mở ván
+Save game	Lưu ván
+Analyze	Phân tích
+Stop	Dừng
+Start analysis	Bắt đầu phân tích
+Stop analysis	Dừng phân tích
+Jump to first move	Về nước đầu tiên
+Undo move	Hoàn tác nước đi
+Redo move	Làm lại nước đi
+Jump to last move	Đến nước cuối cùng
+Rule: %s	Luật: %s
+
+# Game dialogs
+%s will discard the current game (board, move history, and variation tree). Continue?	%s sẽ xóa ván hiện tại (bàn cờ, lịch sử nước đi và cây biến). Tiếp tục?
+This cannot be undone.	Không thể hoàn tác thao tác này.
+Starting a new game	Bắt đầu ván mới
+Loading a game	Mở một ván cờ
+Changing the board size	Đổi kích thước bàn cờ
+Load Game	Mở ván cờ
+Save Game	Lưu ván cờ
+RANLS game (*.rdb)	Ván RANLS (*.rdb)
+Legacy game (*.yxgame)	Ván định dạng cũ (*.yxgame)
+All files	Tất cả tệp
+Could not load game	Không mở được ván cờ
+Could not save game	Không lưu được ván cờ
+RANLS only saves games in the .rdb format.	RANLS chỉ lưu ván ở định dạng .rdb.
+Board Size (5–22):	Kích thước bàn (5–22):
+Apply	Áp dụng
+
+# Settings dialog
+Settings	Cài đặt
+Engine	Engine
+Time	Thời gian
+Search	Tìm kiếm
+UI	Giao diện
+Hotkeys	Phím tắt
+Browse…	Duyệt…
+Clear	Xóa
+Cancel	Hủy
+Engine Path	Đường dẫn engine
+Protocol Extension (.ptc)	Mở rộng giao thức (.ptc)
+Threads	Số luồng
+Hash Size (MB)	Dung lượng hash (MB)
+Timeout / Turn (ms)	Thời gian mỗi nước (ms)
+Timeout / Match (ms)	Tổng thời gian ván (ms)
+Increment (ms)	Cộng thêm giờ (ms)
+Max Depth	Độ sâu tối đa
+Max Nodes	Số nút tối đa
+Multi PV	Multi PV (nhiều biến)
+Analysis Detail	Mức chi tiết phân tích
+Theme	Chủ đề
+WinGraph Mode	Chế độ biểu đồ thắng
+Show Move Numbers	Hiện số thứ tự nước
+Show Coordinates	Hiện tọa độ
+Undo	Hoàn tác
+Redo	Làm lại
+New Game	Ván mới
+System	Hệ thống
+Light	Sáng
+Dark	Tối
+Single line (Black's perspective)	Một đường (theo góc nhìn quân Đen)
+Two lines (Black & White)	Hai đường (Đen & Trắng)
+Path to the Gomocup/Yixin-protocol engine executable.	Đường dẫn tới tệp chạy của engine theo giao thức Gomocup/Yixin.
+Optional TOML file declaring extra console commands for this engine (PROTO-03). Takes effect on engine start / Reload.	Tệp TOML tùy chọn khai báo thêm lệnh console cho engine này (PROTO-03). Có hiệu lực khi khởi động / nạp lại engine.
+Number of search threads the engine may use.	Số luồng tìm kiếm mà engine được dùng.
+Transposition-table size in megabytes.	Dung lượng bảng chuyển vị, tính bằng megabyte.
+Milliseconds allowed per move. 0 = unlimited.	Số mili giây cho mỗi nước đi. 0 = không giới hạn.
+Total milliseconds for the whole game. 0 = unlimited.	Tổng số mili giây cho cả ván. 0 = không giới hạn.
+Time added back to the clock after each move.	Thời gian được cộng lại vào đồng hồ sau mỗi nước.
+Maximum search depth in plies.	Độ sâu tìm kiếm tối đa, tính theo nước.
+Node budget per search. 0 = unlimited.	Số nút tối đa cho mỗi lần tìm kiếm. 0 = không giới hạn.
+Number of principal variations the engine reports.	Số biến chính mà engine báo cáo.
+How much incremental search output the engine streams (INFO SHOW_DETAIL). 0 = final result only; 2 = per-depth PV blocks; 3 = also the live move feed. Default 3. A SHOW_DETAIL set via the console still overrides this.	Lượng kết quả tìm kiếm tăng dần mà engine gửi liên tục (INFO SHOW_DETAIL). 0 = chỉ kết quả cuối; 2 = khối PV theo từng độ sâu; 3 = thêm luồng nước đi trực tiếp. Mặc định 3. SHOW_DETAIL đặt qua console vẫn được ưu tiên.
+System follows your desktop setting; Light / Dark force it.	Hệ thống theo cài đặt máy; Sáng / Tối sẽ ép dùng giao diện đó.
+Single line: one win-rate curve, always from Black's perspective. Two lines: Black and White win-rate each in its own perspective.	Một đường: một đường tỉ lệ thắng, luôn theo góc nhìn quân Đen. Hai đường: tỉ lệ thắng của Đen và Trắng, mỗi bên theo góc nhìn riêng.
+Draw the move ordinal on each stone.	Hiện số thứ tự nước trên mỗi quân.
+Draw A–O column and 1–N row labels around the board.	Hiện nhãn cột A–O và hàng 1–N quanh bàn cờ.
+e.g. F5 or Ctrl+A	ví dụ F5 hoặc Ctrl+A
+e.g. Escape	ví dụ Escape
+e.g. Ctrl+Z	ví dụ Ctrl+Z
+e.g. Ctrl+Y	ví dụ Ctrl+Y
+e.g. Ctrl+N	ví dụ Ctrl+N
+✓ Executable found	✓ Đã tìm thấy tệp chạy được
+✗ %s	✗ %s
+Path is empty	Chưa nhập đường dẫn
+Path does not exist	Đường dẫn không tồn tại
+Not a regular file	Không phải tệp thông thường
+Not an executable (.exe / .bat / .cmd / .com)	Không phải tệp thực thi (.exe / .bat / .cmd / .com)
+Not executable	Không có quyền thực thi
+Select Engine Executable	Chọn tệp chạy engine
+Select Protocol Extension (.ptc)	Chọn phần mở rộng giao thức (.ptc)
+Protocol extension (*.ptc)	Phần mở rộng giao thức (*.ptc)
+
+# About
+About RANLS	Giới thiệu RANLS
+Version %s	Phiên bản %s
+Professional Gomoku / Renju analysis tool	Công cụ phân tích Gomoku / Renju chuyên nghiệp
+Developer: %s	Phát triển: %s
+Developer	Nhà phát triển
+Tech / build info	Thông tin kỹ thuật / bản dựng
+Build date	Ngày build
+Commit	Commit
+License	Giấy phép
+BSD-style — see LICENSE.md	Kiểu BSD — xem LICENSE.md
+Links & protocol	Liên kết & giao thức
+Repository: %s	Kho mã nguồn: %s
+Engine protocol: %s	Giao thức engine: %s
+Supported engines: Rapfi, Yixin, and any Gomocup / Yixin-protocol-compatible engine	Engine được hỗ trợ: Rapfi, Yixin và mọi engine tương thích giao thức Gomocup / Yixin
+Close	Đóng
+
+# Analysis / panels
+Dismiss	Bỏ qua
+Visual (All Branches)	Sơ đồ (mọi nhánh)
+Table (Current Line)	Bảng (nhánh hiện tại)
+Shows the full variation tree, including all explored branches.	Hiện toàn bộ cây biến, gồm mọi nhánh đã khám phá.
+Shows only the current line: moves from the game start to the current position.	Chỉ hiện nhánh hiện tại: các nước từ đầu ván tới thế cờ hiện tại.
+Engine crashed: %s	Engine bị lỗi: %s
+(no engine path configured)	(chưa cấu hình đường dẫn engine)
+No.	STT
+Move	Nước
+Eval	Đánh giá
+Nodes	Nút
+Depth	Độ sâu
+PV #%d	PV #%d
+Move %d	Nước %d
+(no eval)	(chưa có đánh giá)
+Move Log	Nhật ký nước đi
+Engine Log	Nhật ký engine
+Type command…	Nhập lệnh…
+
+# Engine status
+● OFF	● TẮT
+● STARTING	● ĐANG KHỞI ĐỘNG
+● ON	● BẬT
+● THINKING	● ĐANG NGHĨ
+● STOPPING	● ĐANG DỪNG
+● CRASHED	● BỊ LỖI
+D:	Sâu:
+N:	Nút:
+NPS:	NPS:
+T:	TG:
+Eval:	Đ.giá:
+Best:	Tốt nhất:
+Start Engine	Khởi động engine
+Stop Engine	Dừng engine
+Reload Engine	Nạp lại engine
+Analyze Mode: continuously analyse every position	Chế độ phân tích: liên tục phân tích mọi thế cờ
+
+# Board tooltip
+Engine: %s	Engine: %s
+(depth %d)	(độ sâu %d)
+Losing move	Nước thua
+Best move	Nước tốt nhất
+Exact	Chính xác
+Alpha	Alpha
+Beta	Beta
+Unknown	Không rõ
+Database	Cơ sở dữ liệu
+Database: %s	Cơ sở dữ liệu: %s
+Value %d, depth %d, bound %s	Giá trị %d, độ sâu %d, cận %s
+Best database move	Nước tốt nhất trong cơ sở dữ liệu
+Has comment	Có chú thích
+%d variation	%d biến
+%d variations	%d biến
+Forbidden for Black (still playable)	Cấm với quân Đen (vẫn đi được)
+
+# Command palette chrome (titles/search data are I18N-04)
+Commands	Lệnh
+Actions	Thao tác
+Actions + settings	Thao tác + cài đặt
+!  commands     >  actions     @  settings	!  lệnh     >  thao tác     @  cài đặt
+Search…   ! commands · > actions · @ settings	Tìm…   ! lệnh · > thao tác · @ cài đặt
+Type to search — try "settings" or "cài đặt"	Gõ để tìm — thử "settings" hoặc "cài đặt"
+No matching actions or settings.\nTry ! to search console commands.	Không có thao tác hay cài đặt phù hợp.\nGõ ! để tìm lệnh console.
+No matching commands.	Không có lệnh phù hợp.
+No matching actions.	Không có thao tác phù hợp.
+No matching settings.	Không có cài đặt phù hợp.

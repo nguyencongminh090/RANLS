@@ -1,6 +1,7 @@
 #include "ui/command_palette.h"
 
 #include "command/palette_recent.h"
+#include "i18n/i18n.h"
 
 #include <algorithm>
 
@@ -8,15 +9,15 @@ namespace {
 constexpr int kMaxRows = 8;
 
 // PAL-04: one line documenting the scope prefixes (placeholder + empty state).
-constexpr const char *kPrefixHelp = "!  commands     >  actions     @  settings";
+std::string prefixHelp() { return i18n::tr("!  commands     >  actions     @  settings"); }
 
 std::string scopeName(const palette_search::Scope &s)
 {
     switch (s.prefix) {
-    case '!': return "Commands";
-    case '>': return "Actions";
-    case '@': return "Settings";
-    default: return "Actions + settings";
+    case '!': return i18n::tr("Commands");
+    case '>': return i18n::tr("Actions");
+    case '@': return i18n::tr("Settings");
+    default: return i18n::tr("Actions + settings");
     }
 }
 }  // namespace
@@ -30,7 +31,7 @@ CommandPalette::CommandPalette(Gtk::Widget &anchor, const std::string &lexiconTs
     popover_.set_position(Gtk::PositionType::BOTTOM);
     popover_.add_css_class("palette-popover");
 
-    entry_.set_placeholder_text("Search…   ! commands · > actions · @ settings");
+    entry_.set_placeholder_text(i18n::tr("Search…   ! commands · > actions · @ settings"));
     entry_.set_hexpand(true);
     scopeChip_.add_css_class("chip");
     scopeChip_.add_css_class("palette-scope");
@@ -139,6 +140,14 @@ void CommandPalette::setQuery(const std::string &text)
         refresh();
 }
 
+// I18N-02: placeholder + scope chip follow the UI language. The result list is
+// rebuilt on every open()/query, so it picks the new language by itself.
+void CommandPalette::retranslate()
+{
+    entry_.set_placeholder_text(i18n::tr("Search…   ! commands · > actions · @ settings"));
+    scopeChip_.set_text(scopeText());
+}
+
 std::string CommandPalette::scopeText() const
 {
     return scopeName(palette_search::parseScope(entry_.get_text()));
@@ -148,11 +157,13 @@ std::string CommandPalette::emptyStateText() const
 {
     const auto scope = palette_search::parseScope(entry_.get_text());
     if (scope.rest.empty() && !scope.prefix)
-        return std::string("Type to search — try \"settings\" or \"cài đặt\"\n") + kPrefixHelp;
+        return i18n::tr("Type to search — try \"settings\" or \"cài đặt\"") + "\n" + prefixHelp();
     if (!scope.prefix)
-        return std::string("No matching actions or settings.\nTry ! to search console commands.\n") + kPrefixHelp;
-    return "No matching " + std::string(scope.prefix == '!' ? "commands" : scope.prefix == '>' ? "actions" : "settings") +
-           ".\n" + kPrefixHelp;
+        return i18n::tr("No matching actions or settings.\nTry ! to search console commands.") + "\n" + prefixHelp();
+    return (scope.prefix == '!'   ? i18n::tr("No matching commands.")
+            : scope.prefix == '>' ? i18n::tr("No matching actions.")
+                                  : i18n::tr("No matching settings.")) +
+           "\n" + prefixHelp();
 }
 
 std::vector<std::string> CommandPalette::resultIds() const

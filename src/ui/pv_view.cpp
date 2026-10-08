@@ -1,5 +1,7 @@
 #include "pv_view.h"
 
+#include "i18n/i18n.h"
+
 #include <iomanip>
 #include <sstream>
 
@@ -138,7 +140,7 @@ void PVView::update(const std::vector<PVLine> &pvLinesIn, int boardSize)
         auto &rw = rows_[i];
 
         int displayPvIndex = pv.pvIndex > 0 ? pv.pvIndex : static_cast<int>(i + 1);
-        rw.idxLabel->set_text("PV #" + std::to_string(displayPvIndex));
+        rw.idxLabel->set_text(i18n::format(i18n::tr("PV #%d"), displayPvIndex));
         rw.scoreLabel->set_text(evalText(pv));
 
         std::string depthText = "d" + std::to_string(pv.depth);

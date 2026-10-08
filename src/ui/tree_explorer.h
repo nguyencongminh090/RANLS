@@ -14,6 +14,9 @@ public:
     /// Rebuild the view from the given move history and variation tree.
     void update(const class MoveHistory &history, const class VariationTree &tree, int boardSize);
 
+    /// I18N-02: re-apply the column titles after a language change.
+    void retranslate();
+
     /// Signal emitted when the user selects a row (sends the path to that node).
     sigc::signal<void(std::vector<Coord>)> signal_node_selected;
 
@@ -47,6 +50,7 @@ private:
     };
 
     Gtk::ColumnView                           columnView_;
+    std::vector<Glib::RefPtr<Gtk::ColumnViewColumn>> columns_;  // I18N-02
     Glib::RefPtr<Gio::ListStore<RowData>>     store_;
     Glib::RefPtr<Gtk::SingleSelection>        selection_;
 

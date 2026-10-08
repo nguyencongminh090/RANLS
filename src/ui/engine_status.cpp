@@ -1,5 +1,7 @@
 #include "engine_status.h"
 
+#include "i18n/i18n.h"
+
 #include <iomanip>
 #include <sstream>
 
@@ -55,26 +57,20 @@ EngineStatusView::EngineStatusView()
     auto *stateBox = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 4);
     stateBox->add_css_class("linked");
 
-    labelState_.set_text("● OFF");
-    labelState_.add_css_class("engine-off");
     labelState_.set_margin_end(4);
 
     btnStart_.set_icon_name("ranls-play-symbolic");
-    btnStart_.set_tooltip_text("Start Engine");
     btnStart_.signal_clicked().connect([this]() { signal_start.emit(); });
 
     btnStop_.set_icon_name("ranls-stop-symbolic");
-    btnStop_.set_tooltip_text("Stop Engine");
     btnStop_.signal_clicked().connect([this]() { signal_stop.emit(); });
 
     btnReload_.set_icon_name("ranls-reload-symbolic");
-    btnReload_.set_tooltip_text("Reload Engine");
     btnReload_.signal_clicked().connect([this]() { signal_reload.emit(); });
 
     // ANLZ-01: continuous "Analyze Mode" toggle. When active, MainWindow
     // re-analyses the current position after every position change.
     btnAnalyzeMode_.set_icon_name("ranls-loop-symbolic");
-    btnAnalyzeMode_.set_tooltip_text("Analyze Mode: continuously analyse every position");
     btnAnalyzeMode_.signal_toggled().connect([this]() {
         if (suppressAnalyzeModeSignal_) return;
         signal_analyze_mode_toggled.emit(btnAnalyzeMode_.get_active());
@@ -94,8 +90,7 @@ EngineStatusView::EngineStatusView()
     append(*sep);
 
     // ── Stats ────────────────────────────────────────────────────────────────
-    auto addPair = [this](Gtk::Label &key, Gtk::Label &val, const char *name) {
-        key.set_text(name);
+    auto addPair = [this](Gtk::Label &key, Gtk::Label &val) {
         key.add_css_class("label-key");
         val.add_css_class("label-value");
         val.set_text("-");
@@ -106,16 +101,34 @@ EngineStatusView::EngineStatusView()
         append(*box);
     };
 
-    addPair(labelDepth_, valueDepth_, "D:");
-    addPair(labelNodes_, valueNodes_, "N:");
-    addPair(labelNPS_,   valueNPS_,   "NPS:");
-    addPair(labelTime_,  valueTime_,  "T:");
-    addPair(labelEval_,  valueEval_,  "Eval:");
-    addPair(labelBest_,  valueBest_,  "Best:");
+    addPair(labelDepth_, valueDepth_);
+    addPair(labelNodes_, valueNodes_);
+    addPair(labelNPS_,   valueNPS_);
+    addPair(labelTime_,  valueTime_);
+    addPair(labelEval_,  valueEval_);
+    addPair(labelBest_,  valueBest_);
 
     // PROTO-03: container for dynamic set_status_field() rows (starts empty).
     dynFieldsBox_.add_css_class("engine-status-dynamic");
     append(dynFieldsBox_);
+
+    retranslate();
+}
+
+// I18N-02: all fixed texts of the view; also re-run on a language change.
+void EngineStatusView::retranslate()
+{
+    labelDepth_.set_text(i18n::tr("D:"));
+    labelNodes_.set_text(i18n::tr("N:"));
+    labelNPS_.set_text(i18n::tr("NPS:"));
+    labelTime_.set_text(i18n::tr("T:"));
+    labelEval_.set_text(i18n::tr("Eval:"));
+    labelBest_.set_text(i18n::tr("Best:"));
+    btnAnalyzeMode_.set_tooltip_text(i18n::tr("Analyze Mode: continuously analyse every position"));
+    btnStart_.set_tooltip_text(i18n::tr("Start Engine"));
+    btnStop_.set_tooltip_text(i18n::tr("Stop Engine"));
+    btnReload_.set_tooltip_text(i18n::tr("Reload Engine"));
+    applyStateText(state_);
 }
 
 void EngineStatusView::setStatusField(const std::string &name, const std::string &value)
@@ -167,6 +180,14 @@ void EngineStatusView::update(const EngineStatus &s, const std::vector<PVLine> &
 
 void EngineStatusView::setEngineState(EngineController::EngineState state)
 {
+    state_ = state;
+    applyStateText(state);
+    if (state == EngineController::EngineState::Crashed)
+        signal_crashed.emit();
+}
+
+void EngineStatusView::applyStateText(EngineController::EngineState state)
+{
     static const char *kAllClasses[] = {
         "engine-off", "engine-starting", "engine-on", "engine-thinking",
         "engine-stopping", "engine-crashed",
@@ -175,29 +196,28 @@ void EngineStatusView::setEngineState(EngineController::EngineState state)
 
     switch (state) {
         case EngineController::EngineState::NotStarted:
-            labelState_.set_text("● OFF");
+            labelState_.set_text(i18n::tr("● OFF"));
             labelState_.add_css_class("engine-off");
             break;
         case EngineController::EngineState::Starting:
-            labelState_.set_text("● STARTING");
+            labelState_.set_text(i18n::tr("● STARTING"));
             labelState_.add_css_class("engine-starting");
             break;
         case EngineController::EngineState::Idle:
-            labelState_.set_text("● ON");
+            labelState_.set_text(i18n::tr("● ON"));
             labelState_.add_css_class("engine-on");
             break;
         case EngineController::EngineState::Analyzing:
-            labelState_.set_text("● THINKING");
+            labelState_.set_text(i18n::tr("● THINKING"));
             labelState_.add_css_class("engine-thinking");
             break;
         case EngineController::EngineState::Stopping:
-            labelState_.set_text("● STOPPING");
+            labelState_.set_text(i18n::tr("● STOPPING"));
             labelState_.add_css_class("engine-stopping");
             break;
         case EngineController::EngineState::Crashed:
-            labelState_.set_text("● CRASHED");
+            labelState_.set_text(i18n::tr("● CRASHED"));
             labelState_.add_css_class("engine-crashed");
-            signal_crashed.emit();
             break;
     }
 }

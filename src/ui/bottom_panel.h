@@ -42,6 +42,9 @@ public:
     /// Clear only the engine log (gutter + content), keeping move log intact.
     void clearEngineLog();
 
+    /// I18N-02: re-apply tab titles / placeholder after a language change.
+    void retranslate();
+
     /// PAL-02: switch to the Engine Log tab (so command output is visible).
     void showEngineLog();
     /// PAL-02: show the Engine Log tab, put `text` in the command entry (caret at

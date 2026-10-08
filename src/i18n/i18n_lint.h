@@ -30,4 +30,8 @@ std::vector<std::string> placeholders(std::string_view s);
 ///  - a do-not-translate term in the key is missing from the translation
 std::vector<std::string> check(const Catalog &catalog, const std::set<std::string> &referenceKeys);
 
+/// I18N-02 coverage: one "missing translation: <key>" per reference key that
+/// has no entry, or only an empty one (= untranslated), in `catalog`.
+std::vector<std::string> checkCoverage(const Catalog &catalog, const std::set<std::string> &referenceKeys);
+
 }  // namespace i18n::lint

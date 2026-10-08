@@ -1,4 +1,6 @@
 #include "tree_explorer.h"
+
+#include "i18n/i18n.h"
 #include "model/move_history.h"
 #include "model/tree_row_highlight.h"
 
@@ -58,13 +60,15 @@ TreeExplorer::TreeExplorer()
         auto col = Gtk::ColumnViewColumn::create(title, factory);
         col->set_resizable(true);
         columnView_.append_column(col);
+        columns_.push_back(col);
     };
 
-    makeColumn("No.",   [](const Glib::RefPtr<RowData> &r) { return r->noStr; });
-    makeColumn("Move",  [](const Glib::RefPtr<RowData> &r) { return r->moveStr; });
-    makeColumn("Eval",  [](const Glib::RefPtr<RowData> &r) { return r->evalStr; });
-    makeColumn("Nodes", [](const Glib::RefPtr<RowData> &r) { return r->nodesStr; });
-    makeColumn("Depth", [](const Glib::RefPtr<RowData> &r) { return r->depthStr; });
+    makeColumn("", [](const Glib::RefPtr<RowData> &r) { return r->noStr; });
+    makeColumn("", [](const Glib::RefPtr<RowData> &r) { return r->moveStr; });
+    makeColumn("", [](const Glib::RefPtr<RowData> &r) { return r->evalStr; });
+    makeColumn("", [](const Glib::RefPtr<RowData> &r) { return r->nodesStr; });
+    makeColumn("", [](const Glib::RefPtr<RowData> &r) { return r->depthStr; });
+    retranslate();
 
     // Selecting a row (click or keyboard) jumps to that position — same target
     // semantics as TreeNodeView::signal_node_clicked (UI-02).
@@ -79,6 +83,15 @@ TreeExplorer::TreeExplorer()
     overlay_.setContent(columnView_);
     overlay_.setEmpty(true);  // No rows yet at construction.
     set_child(overlay_);
+}
+
+// I18N-02: column titles follow the UI language.
+void TreeExplorer::retranslate()
+{
+    const std::string titles[] = {i18n::tr("No."), i18n::tr("Move"), i18n::tr("Eval"), i18n::tr("Nodes"),
+                                  i18n::tr("Depth")};
+    for (size_t i = 0; i < columns_.size() && i < 5; ++i)
+        columns_[i]->set_title(titles[i]);
 }
 
 void TreeExplorer::update(const MoveHistory &history, const VariationTree &tree, int boardSize)

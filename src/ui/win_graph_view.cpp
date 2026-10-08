@@ -2,6 +2,8 @@
 
 #include "win_graph_bridge.h"
 
+#include "i18n/i18n.h"
+
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
@@ -261,11 +263,11 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
 
         // Tooltip box.
         std::ostringstream tip;
-        tip << "Move " << (hoverIndex_ + 1) << "  ";
+        tip << i18n::format(i18n::tr("Move %d"), hoverIndex_ + 1) << "  ";
         if (hasEval)
             tip << std::fixed << std::setprecision(1) << (blackData_[hoverIndex_] * 100.0) << "%";
         else
-            tip << "(no eval)";
+            tip << i18n::tr("(no eval)");
         std::string text = tip.str();
 
         cr->set_font_size(10.0);
