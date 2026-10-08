@@ -1,6 +1,6 @@
 # I18N-01 — UI language: GTK-free catalog loader (`i18n::tr`) + lint tests
 
-**Status:** 🔲 OPEN (Active — Sprint 24)
+**Status:** ✅ DONE (2026-10-08, branch `i18n-01/catalog-loader-and-lint`) — `src/i18n/` (`i18n.{h,cpp}`: `Catalog::parse`, `tr`/`trc`, registry `en`/`vi`, `setLanguage`/`currentLanguage`/`setCatalogLoader`, pure `resolveSystem`; `i18n_lint.{h,cpp}`: tr()-literal scanner, placeholder multisets, do-not-translate check; `i18n_resource.{h,cpp}`: GResource loader `/org/ranls/lang/<code>.tsv`, wired by I18N-03). Seed `src/resources/lang/vi.tsv` bundled in `ranls.gresource.xml`. Tests: `tests/test_i18n01_catalog.cpp` (10 cases: parse/escapes, fallback, ctx, registry, `resolveSystem`, 3 negative lint fixtures, bundled vi.tsv vs a scan of `src/` + `tests/data/i18n/seed_reference.cpp`). Verification: `RUN_TESTS=1 ./build.sh` — ctest 5/5 (incl. `arch01`, `ranls-gui-ui-tests` 122 cases). Left out: no UI edit, no setting, no plurals; `setCatalogLoader(loadBundledCatalogText)` is not called yet (I18N-03); the seed fixture `tests/data/i18n/seed_reference.cpp` should be dropped once I18N-02 puts real `tr()` calls in `src/`.
 **Area:** new `src/i18n/` (no gtk, no engine), `src/resources/lang/{en,vi}.tsv` + `ranls.gresource.xml`, `tests/`
 **Priority:** P2
 **Source:** user request 2026-10-08 (UI Language setting); design resolved in `features/ui-language/planning.md` "Resolution"

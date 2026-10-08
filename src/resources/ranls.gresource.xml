@@ -3,6 +3,7 @@
   <gresource prefix="/org/ranls/">
     <file>style.css</file>
     <file>palette_lexicon.tsv</file>
+    <file>lang/vi.tsv</file>
     <file>icons/scalable/actions/ranls-new-symbolic.svg</file>
     <file>icons/scalable/actions/ranls-open-symbolic.svg</file>
     <file>icons/scalable/actions/ranls-save-symbolic.svg</file>

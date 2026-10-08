@@ -62,8 +62,11 @@ add_executable(ranls-gui-tests
     test_rdb01_game_graph.cpp
     test_rdb02_archive.cpp
     test_rdb03_node_analysis.cpp
+    test_i18n01_catalog.cpp
 
     # Sources under test (model/engine only — no UI, no gtkmm).
+    ${CMAKE_SOURCE_DIR}/src/i18n/i18n.cpp
+    ${CMAKE_SOURCE_DIR}/src/i18n/i18n_lint.cpp
     ${CMAKE_SOURCE_DIR}/src/command/palette_search.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/palette_catalog.cpp
     ${CMAKE_SOURCE_DIR}/src/model/move_history.cpp
@@ -105,6 +108,9 @@ target_compile_definitions(ranls-gui-tests PRIVATE
     MOCK_ENGINE_QUIT_PATH="$<TARGET_FILE:mock_engine_quit>"
     PALETTE_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data/palette"
     PALETTE_LEXICON_PATH="${CMAKE_SOURCE_DIR}/src/resources/palette_lexicon.tsv"
+    I18N_SRC_DIR="${CMAKE_SOURCE_DIR}/src"
+    I18N_VI_PATH="${CMAKE_SOURCE_DIR}/src/resources/lang/vi.tsv"
+    I18N_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data/i18n"
 )
 
 # PAL-01: dev-only benchmark driver for the palette search engine (Model A);

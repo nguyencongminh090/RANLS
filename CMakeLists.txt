@@ -69,6 +69,7 @@ add_custom_command(
     DEPENDS ${RANLS_GRESOURCE_XML}
             ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/style.css
             ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/palette_lexicon.tsv
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/resources/lang/vi.tsv
             ${RANLS_ICON_SVGS}
     COMMENT "Compiling GResource bundle (style.css + icons)"
     VERBATIM
@@ -80,6 +81,10 @@ set(GUI_SOURCES
     src/main.cpp
     src/application.cpp
     src/main_window.cpp
+
+    # I18N-01: UI-language catalog (std-only core + GIO resource loader)
+    src/i18n/i18n.cpp
+    src/i18n/i18n_resource.cpp
 
     # Data model
     src/model/board_state.cpp
