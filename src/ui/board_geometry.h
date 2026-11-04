@@ -8,4 +8,7 @@
 // unification this may eventually be folded into.
 
 /// Pixel margin reserved around the board for coordinate labels.
-static constexpr double kCoordMargin = 24.0;
+/// UI-22: raised from 24 so the column labels no longer hug the header bar.
+static constexpr double kCoordMargin = 38.0;
+/// Gap between the wood edge and the coordinate labels.
+static constexpr double kLabelGap = 10.0;

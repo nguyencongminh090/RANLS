@@ -1,7 +1,7 @@
 // Regression test: move numbers on stones were positioned from the text
 // advance box without x/y_bearing, so the ink was visibly off-centre.
 // Renders a numbered white stone into a Cairo image surface (no display) and
-// checks the centroid of the dark number pixels is at the stone centre.
+// checks the ink-bbox midpoint of the dark number pixels is at the stone centre.
 
 #include "vendor/doctest.h"
 
@@ -9,6 +9,7 @@
 #include "model/game_state.h"
 #include "ui/board_renderer.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 
@@ -31,18 +32,25 @@ void centroidOffset(int moves, double &dx, double &dy, double &cell) {
     // Move #2 is White at (1,0): dark digit on a light stone.
     const double cx = g.marginLeft + g.cellSize * 1.5;
     const double cy = g.marginTop + g.cellSize * 0.5;
-    double sx = 0, sy = 0, n = 0;
+    double minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9, n = 0;
     const int rad = static_cast<int>(g.cellSize * 0.4);
     for (int y = int(cy) - rad; y <= int(cy) + rad; ++y)
         for (int x = int(cx) - rad; x <= int(cx) + rad; ++x) {
             const auto *row = reinterpret_cast<const uint32_t *>(surf->get_data() + y * surf->get_stride());
             uint32_t p = row[x];
             int lum = (((p >> 16) & 0xFF) + ((p >> 8) & 0xFF) + (p & 0xFF)) / 3;
-            if (lum < 110) { sx += x; sy += y; n += 1; }
+            // Ink bounding box (pixel (x,y) spans [x,x+1)). The renderer centres the
+            // glyph's ink bbox, so the bbox midpoint is the right quantity; a
+            // centroid is biased by glyph shape (e.g. the heavy base of a "2").
+            if (lum < 110) {
+                minX = std::min<double>(minX, x); maxX = std::max<double>(maxX, x + 1);
+                minY = std::min<double>(minY, y); maxY = std::max<double>(maxY, y + 1);
+                n += 1;
+            }
         }
     REQUIRE(n > 0);
-    dx = sx / n - cx;
-    dy = sy / n - cy;
+    dx = (minX + maxX) / 2 - cx;
+    dy = (minY + maxY) / 2 - cy;
 }
 } // namespace
 
