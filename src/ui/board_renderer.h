@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "model/board_view_model.h"
 
 #include <cairomm/cairomm.h>
@@ -46,6 +48,14 @@ public:
         coordB_ = b;
     }
 
+    /// UI-23: font family for the coordinate labels. BoardView passes the
+    /// widget's own (desktop UI) family so the margin labels match the rest
+    /// of the interface instead of fontconfig's generic "sans-serif".
+    void setLabelFontFamily(std::string family)
+    {
+        if (!family.empty()) labelFamily_ = std::move(family);
+    }
+
 private:
     // ── Layer methods (called in order) ─────────────────────────────────────
     void drawGrid(const Cairo::RefPtr<Cairo::Context> &cr);
@@ -84,6 +94,7 @@ private:
     // UX-06: coordinate-label colour, updated per-frame by BoardView from the
     // widget's themed foreground. Defaults to the old wood-tuned dark brown.
     double coordR_ = 0.20, coordG_ = 0.14, coordB_ = 0.08;
+    std::string labelFamily_ = "sans-serif";
 
     // Computed during draw():
     double cellSize_   = 0.0;

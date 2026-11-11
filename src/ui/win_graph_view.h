@@ -23,6 +23,7 @@ public:
 
 private:
     void onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int height);
+    Glib::RefPtr<Pango::Layout> captionLayout(const Glib::ustring &text);
 
     std::vector<double> blackData_;
     std::vector<double> whiteData_;

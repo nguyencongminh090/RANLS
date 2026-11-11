@@ -10,6 +10,8 @@ BoardView::BoardView(BoardViewModel &viewModel)
 {
     set_hexpand(true);
     set_vexpand(true);
+    // UI-23: the board can never be squeezed to nothing (see kBoardMinPx).
+    set_size_request(kBoardMinPx, kBoardMinPx);
 
     // Drawing callback.
     set_draw_func(sigc::mem_fun(*this, &BoardView::onDraw));
@@ -73,6 +75,8 @@ void BoardView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int h
     // board) stay legible in both light and dark themes.
     Gdk::RGBA fg = get_color();
     renderer_.setCoordinateColor(fg.get_red(), fg.get_green(), fg.get_blue());
+    // UI-23: coordinate labels in the same family as the rest of the UI.
+    renderer_.setLabelFontFamily(get_pango_context()->get_font_description().get_family());
 
     renderer_.draw(cr, width, height);
 }

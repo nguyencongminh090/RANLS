@@ -49,7 +49,7 @@ static std::string evalSummary(double winrate, int mateStep, const std::string &
 
 // ═════════════════════════════════════════════════════════════════════════════
 EngineStatusView::EngineStatusView()
-    : Gtk::Box(Gtk::Orientation::HORIZONTAL, 8)
+    : Gtk::Box(Gtk::Orientation::VERTICAL, 6)
 {
     add_css_class("engine-status");
 
@@ -81,15 +81,26 @@ EngineStatusView::EngineStatusView()
     stateBox->append(btnStop_);
     stateBox->append(btnReload_);
     stateBox->append(btnAnalyzeMode_);
+    // UI-23: two rows -- engine state + controls on top, the stats FlowBox
+    // underneath. The FlowBox is height-for-width; nested inside a
+    // HORIZONTAL box (the old single-row layout) GTK's width/height
+    // negotiation disagreed by 1px and logged "Trying to measure ... for
+    // width of N, but it needs at least N+1" on every frame.
     append(*stateBox);
 
-    // ── Separator ────────────────────────────────────────────────────────────
-    auto *sep = Gtk::make_managed<Gtk::Separator>(Gtk::Orientation::VERTICAL);
-    sep->set_margin_start(4);
-    sep->set_margin_end(4);
-    append(*sep);
-
     // ── Stats ────────────────────────────────────────────────────────────────
+    // UI-23: wrapping container (see statsFlow_ in the header).
+    statsFlow_.add_css_class("engine-stats");
+    statsFlow_.set_selection_mode(Gtk::SelectionMode::NONE);
+    statsFlow_.set_homogeneous(false);
+    statsFlow_.set_column_spacing(12);
+    statsFlow_.set_row_spacing(2);
+    statsFlow_.set_min_children_per_line(1);
+    statsFlow_.set_max_children_per_line(16);
+    statsFlow_.set_hexpand(true);
+    statsFlow_.set_can_focus(false);
+    append(statsFlow_);
+
     auto addPair = [this](Gtk::Label &key, Gtk::Label &val) {
         key.add_css_class("label-key");
         val.add_css_class("label-value");
@@ -98,7 +109,9 @@ EngineStatusView::EngineStatusView()
         auto *box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 4);
         box->append(key);
         box->append(val);
-        append(*box);
+        statsFlow_.append(*box);
+        // Read-only readouts: keep the FlowBoxChild wrappers out of Tab order.
+        if (auto *child = box->get_parent()) child->set_focusable(false);
     };
 
     addPair(labelDepth_, valueDepth_);
@@ -110,7 +123,8 @@ EngineStatusView::EngineStatusView()
 
     // PROTO-03: container for dynamic set_status_field() rows (starts empty).
     dynFieldsBox_.add_css_class("engine-status-dynamic");
-    append(dynFieldsBox_);
+    statsFlow_.append(dynFieldsBox_);
+    if (auto *child = dynFieldsBox_.get_parent()) child->set_focusable(false);
 
     retranslate();
 }

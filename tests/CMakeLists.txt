@@ -191,6 +191,7 @@ add_executable(ranls-gui-ui-tests
     test_ui19_best_ring_clears_tag_text.cpp
     test_ui20_stone_number_centered.cpp
     test_ui22_board_padding.cpp
+    test_ui23_paned_min_measure.cpp
     test_ux07_board_mark_model.cpp
     test_fix_database_marker_winrate.cpp
     test_ux07_board_marks_render.cpp

@@ -18,6 +18,13 @@ BottomPanel::BottomPanel()
     // ── Move Log tab ────────────────────────────────────────────────────────
     moveLogView_.set_editable(false);
     moveLogView_.set_wrap_mode(Gtk::WrapMode::WORD_CHAR);
+    // UI-23: text no longer touches the panel edge. (Not applied to the
+    // Engine Log: its gutter is painted against the buffer line positions.)
+    moveLogView_.add_css_class("move-log");
+    moveLogView_.set_left_margin(12);
+    moveLogView_.set_right_margin(12);
+    moveLogView_.set_top_margin(8);
+    moveLogView_.set_bottom_margin(8);
     scrolledMoveLog_.set_policy(Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
     // UI-12: the TextView is the ScrolledWindow's DIRECT child (it implements
     // `Gtk::Scrollable`). Wrapping it in `EmptyStateOverlay` (a plain

@@ -11,9 +11,28 @@
  * Theme-neutral: every surface/line/hover is a translucent tint of the
  * foreground, so it reads correctly on both light and dark GTK themes without
  * a per-theme override. Spacing scale: 4 / 8 / 12 / 16 px. Radius: 6 / 10 px.
- * Type scale: 11 (caption) / 13 (body) / 15 (title). Accent: #3584e4. */
+ * Accent: #3584e4.
+ *
+ * Typography (UI-23, decision in docs/audit/2026-11-11-ui23-typography.md):
+ *  - UI text keeps the desktop font (gtk-font-name); no global family override,
+ *    so the user's font choice, text scaling and Vietnamese coverage are kept.
+ *  - Sizes are relative (em), never px, so they follow desktop text scaling:
+ *    caption 0.85em / body 1em / title 1.15em. Weights: 400 body, 600 values
+ *    and emphasis, 700 only for state badges.
+ *  - Numeric readouts use the UI font with tabular figures ("tnum") instead
+ *    of monospace: digits keep a fixed width (no jitter on every engine INFO
+ *    line) without the wide, noisy look of a code font.
+ *  - Monospace is reserved for raw text: logs and console rows. Stack below
+ *    names common coding fonts on Linux/Windows before the generic fallback. */
 @define-color ranls_accent #3584e4;
 @define-color ranls_line   alpha(currentColor, 0.14);
+
+/* ── Type roles ─────────────────────────────────────────────────────────── */
+.monospace,
+textview {
+    font-family:      "JetBrains Mono", "Cascadia Mono", "Hack", "Fira Mono",
+                      "DejaVu Sans Mono", "Consolas", monospace;
+}
 
 /* ── Panels ─────────────────────────────────────────────────────────────── */
 .panel {
@@ -62,7 +81,7 @@ headerbar button.suggested-action {
     padding:          2px 10px;
     margin:           0 8px;
     border-radius:    999px;
-    font-size:        11px;
+    font-size:        0.85em;
     font-weight:      600;
     background-color: alpha(@ranls_accent, 0.16);
     color:            @ranls_accent;
@@ -75,16 +94,32 @@ headerbar button.suggested-action {
 }
 
 .engine-status label {
-    font-family:      monospace;
-    font-size:        12px;
+    font-feature-settings: "tnum" 1;
 }
 
+/* Key = quiet caption, value = the figure the eye looks for. Opacity 0.7 on
+ * the theme foreground keeps keys above 4.5:1 on both Adwaita surfaces. */
 .engine-status .label-key {
-    opacity:          0.6;
+    font-size:        0.85em;
+    opacity:          0.7;
 }
 
 .engine-status .label-value {
-    font-weight:      bold;
+    font-weight:      600;
+}
+
+.engine-stats,
+.engine-stats > flowboxchild {
+    padding:          0;
+    background:       none;
+    min-height:       0;
+}
+
+/* State badge (OFF / THINKING / ...): small caps-like caption. */
+.engine-on, .engine-off, .engine-starting, .engine-thinking,
+.engine-stopping, .engine-crashed {
+    font-size:        0.85em;
+    letter-spacing:   0.04em;
 }
 
 .engine-on {
@@ -161,36 +196,38 @@ headerbar button.suggested-action {
 
 .pv-view .pv-index {
     color:            #3584e4;
-    font-weight:      bold;
+    font-weight:      700;
     min-width:        36px;
 }
 
 .pv-view .pv-score {
-    opacity:          0.8;
-    font-family:      monospace;
+    font-feature-settings: "tnum" 1;
+    font-weight:      600;
     min-width:        60px;
 }
 
 .pv-view .pv-strategy {
     color:            #a3be5c;
-    font-family:      monospace;
-    font-weight:      bold;
+    font-feature-settings: "tnum" 1;
+    font-weight:      700;
     min-width:        128px;
 }
 
 .pv-view .pv-moves {
-    opacity:          0.9;
+    font-feature-settings: "tnum" 1;
+    opacity:          0.85;
 }
 
 /* ── Tree explorer ──────────────────────────────────────────────────────── */
 
 columnview header {
     font-weight:      600;
-    font-size:        11px;
+    font-size:        0.85em;
     padding:          6px 10px;
 }
 
 columnview row {
+    font-feature-settings: "tnum" 1;
     padding:          3px 10px;
     transition:       background-color 150ms ease-out;
 }
@@ -237,9 +274,12 @@ tooltip {
 }
 
 /* ── Text views (engine log, move log) ──────────────────────────────────── */
+/* Family comes from the "Type roles" block. 0.92em of the UI size keeps a
+ * monospace face optically level with the proportional UI text. No
+ * line-height here: the Engine Log gutter measures the font, not the line
+ * spacing, and would drift out of alignment. */
 textview {
-    font-family:      monospace;
-    font-size:        11px;
+    font-size:        0.92em;
 }
 
 /* ── Engine log gutter (direction labels) ──────────────────────────────────── */

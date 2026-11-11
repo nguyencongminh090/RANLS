@@ -15,6 +15,7 @@
 #include "i18n/i18n.h"
 #include "ui/about_dialog.h"
 #include "version.h"
+#include "gtk_log_capture.h"
 
 #include <fstream>
 #include <sstream>
@@ -111,42 +112,6 @@ TEST_CASE("UI-11: AboutDialog builds under both the light and dark GTK theme")
 // '&' was parsed as an entity start. Every section heading must keep its
 // visible text, in en and vi, with no markup-parse warning.
 namespace {
-
-// Captures GLib log output (GTK4 logs through the structured-logging writer,
-// which g_log_set_default_handler does not see). The writer can be installed
-// only once per process, so it stays installed and records while `active`.
-struct WarningCounter {
-    static inline std::vector<std::string> messages;
-    static inline bool active = false;
-    static inline bool installed = false;
-    WarningCounter()
-    {
-        if (!installed) {
-            installed = true;
-            g_log_set_writer_func(
-                [](GLogLevelFlags level, const GLogField *fields, gsize n, gpointer) {
-                    if (active)
-                        for (gsize i = 0; i < n; ++i)
-                            if (std::string(fields[i].key) == "MESSAGE" && fields[i].value)
-                                messages.emplace_back(static_cast<const char *>(fields[i].value));
-                    return g_log_writer_default(level, fields, n, nullptr);
-                },
-                nullptr, nullptr);
-        }
-        messages.clear();
-        active = true;
-    }
-    ~WarningCounter() { active = false; }
-    // Only Pango/GTK markup problems are in scope; unrelated host noise
-    // (gvfs, EGL) is ignored.
-    static std::vector<std::string> markupErrors()
-    {
-        std::vector<std::string> out;
-        for (const auto &m : messages)
-            if (m.find("markup") != std::string::npos) out.push_back(m);
-        return out;
-    }
-};
 
 struct UiLanguageGuard {
     ~UiLanguageGuard()
