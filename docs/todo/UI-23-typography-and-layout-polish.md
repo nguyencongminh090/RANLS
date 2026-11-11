@@ -19,7 +19,10 @@ Decision record: [audit 2026-11-11 — UI-23 typography](../audit/2026-11-11-ui2
   squeezed the board (worst in Vietnamese).
 - **Win-rate graph** axis labels and hover tooltip are drawn with Pango in the widget font (caption
   scale, tabular figures, right-aligned, centred on gridlines) instead of Cairo toy text at 9/10px.
-  Faint 0%/100% bounds added.
+  Faint 0%/100% bounds added. The left pad grows with the measured "100%" width (floor 40px), so the
+  label never clips at larger desktop font sizes; hit-testing uses the same pad.
+- **PROTO-03 dynamic status fields** are each their own FlowBox child, so they wrap too. One shared
+  row grew the minimum width from 201 to 875px with 6 fields.
 - **Board coordinate labels** use the UI font family (passed from `BoardView`) instead of fontconfig's
   generic `sans-serif`. Sizes and positions are unchanged; stone numbers are not touched.
 - **Move log** gets 12/8px text margins (the engine log is unchanged because its gutter is aligned to buffer lines).
@@ -28,6 +31,9 @@ Decision record: [audit 2026-11-11 — UI-23 typography](../audit/2026-11-11-ui2
 
 ## Verification
 
-- Release build; `ctest` 5/5 under Xvfb (UI tests ran, not skipped). New `tests/test_ui23_paned_min_measure.cpp` (2 cases; failed before the fix).
-- Screenshots read: light/en analysing, dark/vi analysing, 22×22, 5×5. No GTK warnings in any run.
+- Release build; `ctest` 5/5 under Xvfb (UI tests ran, not skipped). New `tests/test_ui23_paned_min_measure.cpp`
+  (3 cases, each failed before its fix: board min size, paned measure warning, dynamic fields wrap).
+- Screenshots read: light/en analysing, dark/vi analysing, 22×22, 5×5, 14pt desktop font (scratch
+  `gtk-4.0/settings.ini`; font change visible), Engine Log under traffic vs baseline. No GTK warnings in any run.
+- Found pre-existing, filed separately: UI-24 (Engine Log gutter tag clipped/crowded).
 - Not verified: Windows/MSYS2 font fallback, HiDPI, a desktop with text scaling ≠ 1.

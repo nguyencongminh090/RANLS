@@ -21,6 +21,9 @@
 #include "ui/analysis_panel.h"
 #include "ui/board_geometry.h"
 #include "ui/board_view.h"
+#include "ui/engine_status.h"
+
+#include <string>
 
 namespace {
 bool gtkReady() { return gtk_init_check(); }
@@ -70,4 +73,24 @@ TEST_CASE("UI-23: board|analysis paned measured at its minimum width logs no siz
     const auto bad = WarningCounter::containing("Trying to measure");
     for (const auto &m : bad) MESSAGE("warning: " << m);
     CHECK(bad.empty());
+}
+
+// UI-23: PROTO-03 dynamic status fields (set_status_field from a .ptc
+// extension) must wrap like the fixed stats. If they share one non-wrapping
+// row, a few fields bring back the wide-minimum problem that squeezed the board.
+TEST_CASE("UI-23: dynamic status fields wrap instead of widening the minimum")
+{
+    if (!gtkReady()) return;
+    EngineStatusView view;
+    int min0 = 0, nat = 0, b1 = 0, b2 = 0;
+    view.measure(Gtk::Orientation::HORIZONTAL, -1, min0, nat, b1, b2);
+
+    for (int i = 0; i < 6; ++i)
+        view.setStatusField("ext_field_" + std::to_string(i), "value " + std::to_string(i * 1000));
+
+    int min1 = 0;
+    view.measure(Gtk::Orientation::HORIZONTAL, -1, min1, nat, b1, b2);
+    MESSAGE("min width before " << min0 << ", after 6 fields " << min1);
+    // One extra pair may become the widest child; six side by side must not.
+    CHECK(min1 < min0 + 200);
 }

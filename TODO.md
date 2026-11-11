@@ -54,6 +54,8 @@ Sprint 27 (opened 2026-10-08, goal "Fix remaining vi UI gaps") — pulled from B
 
 ## Backlog
 
+- 🔲 **UI-24.** Engine Log gutter clips/crowds the "MESSAGE" tag (pre-existing; found in UI-23 verification). [Model: Sonnet] — [detail](docs/todo/UI-24-engine-log-gutter-tag-clipped.md)
+
 
 Filed 2026-10-08 from the I18N-06 visual pass (`docs/audit/2026-10-log.md` (2026-10-08 "Vietnamese UI visual verification")): I18N-07, UX-09 — **pulled into Sprint 27 Active 2026-10-08** (see docs/sprint/current.md).
 

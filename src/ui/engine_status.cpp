@@ -121,10 +121,6 @@ EngineStatusView::EngineStatusView()
     addPair(labelEval_,  valueEval_);
     addPair(labelBest_,  valueBest_);
 
-    // PROTO-03: container for dynamic set_status_field() rows (starts empty).
-    dynFieldsBox_.add_css_class("engine-status-dynamic");
-    statsFlow_.append(dynFieldsBox_);
-    if (auto *child = dynFieldsBox_.get_parent()) child->set_focusable(false);
 
     retranslate();
 }
@@ -158,10 +154,14 @@ void EngineStatusView::setStatusField(const std::string &name, const std::string
     auto *val = Gtk::make_managed<Gtk::Label>(value);
     val->add_css_class("label-value");
 
+    // UI-23: each dynamic pair is its own FlowBox child so it wraps like the
+    // fixed stats (one shared row would widen the panel's minimum again).
     auto *box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 4);
+    box->add_css_class("engine-status-dynamic");
     box->append(*key);
     box->append(*val);
-    dynFieldsBox_.append(*box);
+    statsFlow_.append(*box);
+    if (auto *child = box->get_parent()) child->set_focusable(false);
 
     dynValues_.emplace(name, val);
 }

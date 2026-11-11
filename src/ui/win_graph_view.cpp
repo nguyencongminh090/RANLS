@@ -9,7 +9,9 @@
 #include <iomanip>
 #include <sstream>
 
-static constexpr double kPadL = 40.0, kPadR = 10.0, kPadT = 10.0, kPadB = 20.0;
+// UI-23: kPadLMin is a floor; the real left pad (padL_) grows with the
+// measured width of the "100%" axis label, which follows the desktop font.
+static constexpr double kPadLMin = 40.0, kPadR = 10.0, kPadT = 10.0, kPadB = 20.0;
 
 // UI-09 colour/accessibility pass. The panel background follows the GTK theme
 // (Adwaita light #fafafb / Adwaita-dark #242424 — no libadwaita, see UX-06).
@@ -47,10 +49,10 @@ WinGraphView::WinGraphView()
         [this](int, double x, double) {
             if (blackData_.empty()) return;
             int w = get_width();
-            double graphW = w - kPadL - kPadR;
+            double graphW = w - padL_ - kPadR;
             if (graphW <= 0) return;
             double step = graphW / std::max(1, static_cast<int>(blackData_.size()) - 1);
-            int idx = std::clamp(static_cast<int>((x - kPadL) / step + 0.5),
+            int idx = std::clamp(static_cast<int>((x - padL_) / step + 0.5),
                                  0, static_cast<int>(blackData_.size()) - 1);
             signal_move_jumped.emit(idx);
         });
@@ -62,10 +64,10 @@ WinGraphView::WinGraphView()
         [this](double x, double) {
             if (blackData_.empty()) { hoverIndex_ = -1; queue_draw(); return; }
             int w = get_width();
-            double graphW = w - kPadL - kPadR;
+            double graphW = w - padL_ - kPadR;
             if (graphW <= 0) return;
             double step = graphW / std::max(1, static_cast<int>(blackData_.size()) - 1);
-            hoverIndex_ = std::clamp(static_cast<int>((x - kPadL) / step + 0.5),
+            hoverIndex_ = std::clamp(static_cast<int>((x - padL_) / step + 0.5),
                                      0, static_cast<int>(blackData_.size()) - 1);
             queue_draw();
         });
@@ -104,7 +106,15 @@ Glib::RefPtr<Pango::Layout> WinGraphView::captionLayout(const Glib::ustring &tex
 
 void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int height)
 {
-    double graphW = width  - kPadL - kPadR;
+    // UI-23: reserve room for the widest axis label at the current font size
+    // (6px gap to the plot + 4px from the widget edge). Hit-testing reads the
+    // same padL_, so clicks map to what was last drawn.
+    {
+        int lw = 0, lh = 0;
+        captionLayout("100%")->get_pixel_size(lw, lh);
+        padL_ = std::max(kPadLMin, lw + 10.0);
+    }
+    double graphW = width  - padL_ - kPadR;
     double graphH = height - kPadT - kPadB;
 
     // Background is now handled by GTK+ CSS / Native theme.
@@ -114,8 +124,8 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
     // 50% center line.
     cr->set_source_rgba(0.4, 0.4, 0.4, 0.5);
     cr->set_line_width(1.0);
-    cr->move_to(kPadL, kPadT + graphH * 0.5);
-    cr->line_to(kPadL + graphW, kPadT + graphH * 0.5);
+    cr->move_to(padL_, kPadT + graphH * 0.5);
+    cr->line_to(padL_ + graphW, kPadT + graphH * 0.5);
     cr->stroke();
 
     // Y-axis labels (0%, 50%, 100%). UX-03: a fixed mid-gray (0.5,0.5,0.5)
@@ -130,8 +140,8 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
     Gdk::RGBA fg = get_color();
     // UI-23: faint 0% / 100% bounds so the plot area reads as a chart frame.
     cr->set_source_rgba(fg.get_red(), fg.get_green(), fg.get_blue(), 0.12);
-    cr->move_to(kPadL, kPadT + 0.5);          cr->line_to(kPadL + graphW, kPadT + 0.5);
-    cr->move_to(kPadL, kPadT + graphH - 0.5); cr->line_to(kPadL + graphW, kPadT + graphH - 0.5);
+    cr->move_to(padL_, kPadT + 0.5);          cr->line_to(padL_ + graphW, kPadT + 0.5);
+    cr->move_to(padL_, kPadT + graphH - 0.5); cr->line_to(padL_ + graphW, kPadT + graphH - 0.5);
     cr->stroke();
 
     // UI-23: axis labels go through Pango in the widget's own (desktop) font
@@ -143,7 +153,7 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
         auto layout = captionLayout(text);
         int lw = 0, lh = 0;
         layout->get_pixel_size(lw, lh);
-        cr->move_to(kPadL - 6.0 - lw, lineY - lh / 2.0);
+        cr->move_to(padL_ - 6.0 - lw, lineY - lh / 2.0);
         layout->show_in_cairo_context(cr);
     };
     axisLabel("100%", kPadT);
@@ -185,9 +195,9 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
             cr->set_line_width(kSeriesW * 0.6);
             cr->set_dash(std::vector<double>{4.0, 3.0}, 0.0);
             for (const auto &b : bridges) {
-                double xa = kPadL + b.first * step;
+                double xa = padL_ + b.first * step;
                 double ya = kPadT + graphH * (1.0 - std::clamp(blackData_[b.first], 0.0, 1.0));
-                double xb = kPadL + b.second * step;
+                double xb = padL_ + b.second * step;
                 double yb = kPadT + graphH * (1.0 - std::clamp(blackData_[b.second], 0.0, 1.0));
                 cr->move_to(xa, ya);
                 cr->line_to(xb, yb);
@@ -205,7 +215,7 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
         bool penDown = false;
         for (int i = 0; i < n; ++i) {
             if (std::isnan(blackData_[i])) { penDown = false; continue; }
-            double x = kPadL + i * step;
+            double x = padL_ + i * step;
             double y = kPadT + graphH * (1.0 - std::clamp(blackData_[i], 0.0, 1.0));
             if (!penDown) { cr->move_to(x, y); penDown = true; }
             else          cr->line_to(x, y);
@@ -232,9 +242,9 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
                 cr->set_line_width(kSeriesWWhite * 0.6);
                 cr->set_dash(std::vector<double>{4.0, 3.0}, 0.0);
                 for (const auto &b : bridges) {
-                    double xa = kPadL + b.first * step;
+                    double xa = padL_ + b.first * step;
                     double ya = kPadT + graphH * (1.0 - std::clamp(whiteData_[b.first], 0.0, 1.0));
-                    double xb = kPadL + b.second * step;
+                    double xb = padL_ + b.second * step;
                     double yb = kPadT + graphH * (1.0 - std::clamp(whiteData_[b.second], 0.0, 1.0));
                     cr->move_to(xa, ya);
                     cr->line_to(xb, yb);
@@ -250,7 +260,7 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
         bool penDown = false;
         for (int i = 0; i < n; ++i) {
             if (std::isnan(whiteData_[i])) { penDown = false; continue; }
-            double x = kPadL + i * step;
+            double x = padL_ + i * step;
             double y = kPadT + graphH * (1.0 - std::clamp(whiteData_[i], 0.0, 1.0));
             if (!penDown) { cr->move_to(x, y); penDown = true; }
             else          cr->line_to(x, y);
@@ -261,7 +271,7 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
 
     // Current move highlight.
     if (currentIndex_ >= 0 && currentIndex_ < n) {
-        double x = kPadL + currentIndex_ * step;
+        double x = padL_ + currentIndex_ * step;
         // Vertical line.
         cr->set_source_rgba(kHighR, kHighG, kHighB, 0.6);
         cr->set_line_width(1.5);
@@ -281,7 +291,7 @@ void WinGraphView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, in
 
     // Hover tooltip.
     if (hoverIndex_ >= 0 && hoverIndex_ < n) {
-        double x = kPadL + hoverIndex_ * step;
+        double x = padL_ + hoverIndex_ * step;
         bool hasEval = !std::isnan(blackData_[hoverIndex_]);
         double y = hasEval
                         ? kPadT + graphH * (1.0 - std::clamp(blackData_[hoverIndex_], 0.0, 1.0))

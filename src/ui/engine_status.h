@@ -77,12 +77,11 @@ private:
     Gtk::Label valueEval_;
     Gtk::Label valueBest_;
 
-    // PROTO-03: dynamic set_status_field rows.
-    /// UI-23: the stat pairs live in a FlowBox so they wrap onto a second
-    /// line when the analysis panel is narrow, instead of the one-line row's
-    /// width becoming the panel's minimum width (which squeezed the board,
-    /// worst with the longer Vietnamese labels).
+    /// UI-23: the stat pairs (fixed and PROTO-03 dynamic) live in a FlowBox
+    /// so they wrap onto further lines when the analysis panel is narrow,
+    /// instead of a one-line row's width becoming the panel's minimum width
+    /// (which squeezed the board, worst with the longer Vietnamese labels).
     Gtk::FlowBox                          statsFlow_;
-    Gtk::Box                              dynFieldsBox_{Gtk::Orientation::HORIZONTAL, 8};
+    // PROTO-03: name -> value label of each dynamic set_status_field pair.
     std::map<std::string, Gtk::Label *>   dynValues_;
 };
