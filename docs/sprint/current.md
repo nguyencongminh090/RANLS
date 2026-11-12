@@ -14,7 +14,7 @@
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
 | I18N-07 | Confirm dialogs show English Yes/No under `vi` | — | — | ✅ Done (PR #70) |
-| UX-09 | Settings Apply disabled on every tab while the engine path is invalid | — (option a, 2026-11-12) | — | 🔲 Not started |
+| UX-09 | Settings Apply disabled on every tab while the engine path is invalid | — (option a, 2026-11-12) | — | ✅ Done (PR #71) |
 | UI-23 | Typography and layout polish (added mid-sprint 2026-11-11, user request) | — | — | ✅ Done |
 | UI-24 | Engine Log gutter clipped the "MESSAGE" tag (added mid-sprint 2026-11-12, user request) | — | — | ✅ Done |
 | PROTO-09 | Stable realtime winrate on the board, all Rapfi message modes (added mid-sprint 2026-11-12, user request) | — | — | ✅ Done |
