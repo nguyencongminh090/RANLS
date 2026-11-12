@@ -117,6 +117,7 @@ e.g. Ctrl+Y	ví dụ Ctrl+Y
 e.g. Ctrl+N	ví dụ Ctrl+N
 ✓ Executable found	✓ Đã tìm thấy tệp chạy được
 ✗ %s	✗ %s
+The engine path is invalid and will not be saved. Other settings will be applied.	Đường dẫn engine không hợp lệ và sẽ không được lưu. Các cài đặt khác vẫn được áp dụng.
 Path is empty	Chưa nhập đường dẫn
 Path does not exist	Đường dẫn không tồn tại
 Not a regular file	Không phải tệp thông thường

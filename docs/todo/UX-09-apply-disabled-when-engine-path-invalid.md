@@ -1,6 +1,6 @@
 # UX-09 — Settings "Apply" is disabled on every tab while the engine path is invalid
 
-**Status:** 🔲 OPEN (Active — Sprint 27)
+**Status:** ✅ FIXED (Active — Sprint 27) — Apply always enabled; invalid engine path is not stored (saved path kept), tooltip explains; vi string added. Verified: new UI test failed pre-fix, ctest 5/5 (ranls-gui-tests 310, ranls-gui-ui-tests 142, 0 skipped), live Xvfb vi switch with engine_path=/nonexistent kept. Fix-log: docs/fix-log/2026-11-12-ux09-apply-invalid-engine-path.md
 **Area:** `src/ui/settings_dialog.cpp` (`btnApply_` sensitivity = `enginePathValid_`), tests
 **Priority:** P3
 **Source:** I18N-06 visual pass, `docs/audit/2026-10-log.md` (2026-10-08 "Vietnamese UI visual verification") — 2026-10-08

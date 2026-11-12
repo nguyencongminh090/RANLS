@@ -365,18 +365,20 @@ std::vector<std::string> SettingsDialog::languageChoices()
 
 void SettingsDialog::updateApplySensitivity()
 {
-    if (btnApply_)
-        btnApply_->set_sensitive(enginePathValid_);
+    // UX-09: Apply is always available; while the engine path is invalid it
+    // applies every other setting and keeps the previously saved path.
+    if (!btnApply_)
+        return;
+    btnApply_->set_sensitive(true);
+    if (enginePathValid_)
+        btnApply_->set_tooltip_text(Glib::ustring());
+    else
+        btnApply_->set_tooltip_text(i18n::tr(
+            "The engine path is invalid and will not be saved. Other settings will be applied."));
 }
 
 void SettingsDialog::onApply()
 {
-    // Defense in depth: btnApply_ is desensitized while the engine path is
-    // invalid, but guard here too in case Apply is ever reachable another
-    // way (e.g. a future default-activation binding on the entry).
-    if (!enginePathValid_)
-        return;
-
     // Start from the config the dialog was opened with (not a fresh
     // default-constructed struct) so any field the dialog doesn't expose a
     // control for — multiPV set via console command, customParams, and
@@ -384,7 +386,9 @@ void SettingsDialog::onApply()
     // its struct default (STATE-02). Only the fields the controls below own
     // are overwritten.
     EngineConfig eConfig = baseEngineConfig_;
-    eConfig.enginePath   = entryEnginePath_.get_text();
+    // UX-09: an invalid entry is never stored; keep the previously saved path.
+    if (enginePathValid_)
+        eConfig.enginePath = entryEnginePath_.get_text();
     eConfig.timeoutTurn  = static_cast<int64_t>(spinTimeoutTurn_.get_value());
     eConfig.timeoutMatch = static_cast<int64_t>(spinTimeoutMatch_.get_value());
     eConfig.increment    = static_cast<int>(spinIncrement_.get_value());
