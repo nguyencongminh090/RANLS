@@ -178,9 +178,9 @@ headerbar button.suggested-action {
     -gtk-icon-size:   14px;
 }
 
-.monospace {
-    font-family:      monospace;
-}
+/* (UI-23 follow-up: the old `.monospace { font-family: monospace; }` rule
+ * that stood here overrode the monospace stack in "Type roles" -- same
+ * specificity, later in the file. The class is styled only there now.) */
 
 /* ── PV view ────────────────────────────────────────────────────────────── */
 

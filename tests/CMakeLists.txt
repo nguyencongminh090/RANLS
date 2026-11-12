@@ -192,6 +192,7 @@ add_executable(ranls-gui-ui-tests
     test_ui20_stone_number_centered.cpp
     test_ui22_board_padding.cpp
     test_ui23_paned_min_measure.cpp
+    test_ui23_monospace_stack.cpp
     test_ux07_board_mark_model.cpp
     test_fix_database_marker_winrate.cpp
     test_ux07_board_marks_render.cpp
@@ -273,6 +274,7 @@ target_compile_features(ranls-gui-ui-tests PRIVATE cxx_std_20)
 target_compile_definitions(ranls-gui-ui-tests PRIVATE
     PALETTE_LEXICON_PATH="${CMAKE_SOURCE_DIR}/src/resources/palette_lexicon.tsv"
     I18N_VI_PATH="${CMAKE_SOURCE_DIR}/src/resources/lang/vi.tsv"
+    STYLE_CSS_PATH="${CMAKE_SOURCE_DIR}/src/resources/style.css"
     MOCK_ENGINE_PATH="$<TARGET_FILE:mock_engine>"
     MOCK_ENGINE_QUIT_PATH="$<TARGET_FILE:mock_engine_quit>"
 )
