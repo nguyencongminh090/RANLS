@@ -213,11 +213,13 @@ add_executable(ranls-gui-ui-tests
     test_i18n02_live_refresh.cpp
     test_i18n03_ui.cpp
     test_i18n04_ui.cpp
+    test_i18n07_confirm_buttons.cpp
 
     # UI sources under test.
     ${CMAKE_SOURCE_DIR}/src/i18n/i18n.cpp
     ${CMAKE_SOURCE_DIR}/src/main_window.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/about_dialog.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/confirm_dialog.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/bottom_panel.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/pv_view.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/analysis_panel.cpp
