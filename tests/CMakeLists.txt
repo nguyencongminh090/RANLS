@@ -193,6 +193,7 @@ add_executable(ranls-gui-ui-tests
     test_ui22_board_padding.cpp
     test_ui23_paned_min_measure.cpp
     test_ui23_monospace_stack.cpp
+    test_ui24_gutter_tag_fits.cpp
     test_ux07_board_mark_model.cpp
     test_fix_database_marker_winrate.cpp
     test_ux07_board_marks_render.cpp

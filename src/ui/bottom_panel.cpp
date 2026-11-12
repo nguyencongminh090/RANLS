@@ -510,7 +510,10 @@ void BottomPanel::drawGutter(const Cairo::RefPtr<Cairo::Context> &cr, int width,
         int w = 0, h = 0;
         probe->get_pixel_size(w, h);
         gutterWidth_ = w + 12;
-        gutterArea_.set_size_request(gutterWidth_, -1);
+        // UI-24: set the CONTENT width. set_size_request() includes the
+        // `.engine-gutter` CSS padding + border (9px), so the draw area was
+        // narrower than the tag drawn at x = 6 and its last letter was clipped.
+        gutterArea_.set_content_width(gutterWidth_);
         return;  // a repaint follows the resize
     }
 
