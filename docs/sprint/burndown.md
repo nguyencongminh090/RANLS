@@ -170,6 +170,8 @@ points at sprint start to 0 at the end date.
 | 2026-10-08 | 0 / 2 items | — | I18N-06 done (verification only; note `docs/notes/2026-10-08-vi-ui-visual-verification.md`) — 2 defects filed to Backlog: I18N-07, UX-09. All Sprint 26 items landed |
 | 2026-10-08 | 0 / 2 items | — | Sprint 26 closed — I18N-05, I18N-06 landed on `main`; archived to `docs/sprint/archive/sprint-26.md`, nothing rolled over (I18N-07, UX-09 filed to Backlog). Release `v0.11.2` cut (About link-label hardening). Table reset below for Sprint 27 |
 | 2026-10-08 | 2 / 2 items | — | Sprint 27 opened (goal "Fix remaining vi UI gaps"): I18N-07, UX-09 pulled from Backlog into Active — see docs/sprint/current.md. Backlog now empty |
+| 2026-11-12 | 3 / 4 items | — | UI-23 added mid-sprint (user request) and done (PR #67, squash `76bb3ab`) — typography/layout polish; untracked board-padding/collapsible-panels work landed first as PR #66 (`d951543`, note `docs/notes/2026-11-04-ui22-board-padding-collapsible-panels.md`, no CODE) |
+| 2026-11-12 | 2 / 4 items | — | UI-24 added mid-sprint (user request) and done (PR #68, squash `0bb5cbb`) — Engine Log gutter tag no longer clipped. I18N-07, UX-09 remain |
 
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).
