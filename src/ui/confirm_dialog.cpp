@@ -10,8 +10,11 @@ Gtk::MessageDialog *makeDiscardConfirmDialog(Gtk::Window &parent, const Glib::us
                      action.c_str()),
         /*use_markup=*/false,
         Gtk::MessageType::WARNING,
-        Gtk::ButtonsType::YES_NO,
+        Gtk::ButtonsType::NONE,
         /*modal=*/true);
+    // No left of Yes, matching GTK's own YES_NO order. Deliberately no default response.
+    dialog->add_button(i18n::tr("No"), Gtk::ResponseType::NO);
+    dialog->add_button(i18n::tr("Yes"), Gtk::ResponseType::YES);
     dialog->set_secondary_text(i18n::tr("This cannot be undone."));
     return dialog;
 }

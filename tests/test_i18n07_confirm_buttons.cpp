@@ -9,6 +9,7 @@
 #include "i18n/i18n.h"
 #include "ui/confirm_dialog.h"
 
+#include <algorithm>
 #include <fstream>
 #include <memory>
 #include <sstream>
@@ -29,7 +30,10 @@ std::string labelOf(Gtk::MessageDialog &d, Gtk::ResponseType r)
 {
     auto *btn = dynamic_cast<Gtk::Button *>(d.get_widget_for_response(static_cast<int>(r)));
     REQUIRE(btn != nullptr);
-    return btn->get_label();
+    // GTK stock labels carry a mnemonic underscore ("_Yes"); ignore it.
+    std::string t = btn->get_label();
+    t.erase(std::remove(t.begin(), t.end(), '_'), t.end());
+    return t;
 }
 
 struct Lang {
