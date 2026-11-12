@@ -4,7 +4,7 @@
 **Area:** `src/ui/settings_dialog.cpp` (`btnApply_` sensitivity = `enginePathValid_`), tests
 **Priority:** P3
 **Source:** I18N-06 visual pass, `docs/audit/2026-10-log.md` (2026-10-08 "Vietnamese UI visual verification") — 2026-10-08
-**Design:** none — scoped directly (design call below needs the user)
+**Design:** none — scoped directly; design call resolved 2026-11-12: **option (a)** (see Decision)
 **Depends on / relates to:** I18N-03
 
 ## Problem
@@ -18,6 +18,14 @@ configured therefore cannot switch language from the dialog. Not Vietnamese-spec
 1. Decide with the user: (a) apply non-engine settings while the path is invalid, only blocking the engine-path field; or
    (b) keep blocking but surface the reason on every tab (e.g. tooltip/inline hint on Apply).
 2. Implement the chosen option with a regression test.
+
+## Decision (2026-11-12, user)
+
+Option **(a)**: Apply is always available. While the engine path is invalid, Apply saves every other
+setting but **keeps the previously saved engine path** (the invalid text is not stored and the engine is
+not reloaded). The Apply button's tooltip says so while the path is invalid. Option (b) (keep blocking,
+explain on every tab) rejected: still leaves a first-run user unable to change language/theme.
+Audit: `docs/audit/2026-11-log.md` (2026-11-12 "UX-09").
 
 ## Scope boundary
 

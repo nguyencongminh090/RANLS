@@ -369,3 +369,9 @@ ui-layer only: replace `ButtonsType::YES_NO` in `confirmDiscardGame` with `add_b
 via a testable helper; same response semantics, no default response; add `Yes`/`No` to `vi.tsv`.
 `showErrorDialog`'s `OK` is a listed follow-up, not fixed here.
 [detail](docs/instruction/I18N-07-confirm-dialog-yes-no-buttons-not-translated.md)
+
+## UX-09 — apply-disabled-when-engine-path-invalid
+
+Option (a): `settings_dialog` only — Apply always sensitive; with an invalid path, apply everything else
+and keep the base `enginePath`; tooltip explains. No `main_window`, `model/` or engine-guard changes.
+[detail](docs/instruction/UX-09-apply-disabled-when-engine-path-invalid.md)
