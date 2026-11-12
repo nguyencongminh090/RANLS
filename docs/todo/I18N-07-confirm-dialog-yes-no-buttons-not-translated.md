@@ -1,6 +1,6 @@
 # I18N-07 — Confirm dialogs show English "Yes" / "No" under the Vietnamese UI
 
-**Status:** 🔲 OPEN (Active — Sprint 27)
+**Status:** ✅ FIXED (Sprint 27) — see [fix-log](../fix-log/2026-11-12-i18n07-confirm-yes-no-buttons.md)
 **Area:** `src/main_window.cpp` (`Gtk::MessageDialog` with `ButtonsType::YES_NO` ~line 849), `src/resources/lang/vi.tsv`, tests
 **Priority:** P3
 **Source:** I18N-06 visual pass, `docs/audit/2026-10-log.md` (2026-10-08 "Vietnamese UI visual verification") — 2026-10-08
@@ -36,3 +36,8 @@ Routing the labels through `i18n::tr` is the repo's mechanism (I18N-01); setting
 
 - Under `vi` both confirmations show Vietnamese button labels; under `en` unchanged.
 - Regression test fails before / passes after; ctest green; live screenshot under Xvfb recorded in the fix-log.
+
+## Resolution (2026-11-12)
+
+Dialog construction extracted to `makeDiscardConfirmDialog` (`src/ui/confirm_dialog.{h,cpp}`); it now uses `ButtonsType::NONE` + `add_button(i18n::tr("No"), NO)` then `add_button(i18n::tr("Yes"), YES)`. Response ids unchanged, no default response. `vi.tsv` gained `Yes` -> `Có`, `No` -> `Không` (draft wording, for user review). Regression test `tests/test_i18n07_confirm_buttons.cpp` failed before, passes after.
+Verification: ranls-gui-tests 310/310, ranls-gui-ui-tests 139/139 (none skipped, Xvfb), catalog lint green; live screenshots `/tmp/claude-1000/-run-media-ngmint-Data-Programming-Programming-C---ModifyCode-Rapfi-modif-June4-YixinBoard/54bd63ae-cdf5-4e5c-9f47-10a8cb3c44dd/scratchpad/shot-vi.png` and `/tmp/claude-1000/-run-media-ngmint-Data-Programming-Programming-C---ModifyCode-Rapfi-modif-June4-YixinBoard/54bd63ae-cdf5-4e5c-9f47-10a8cb3c44dd/scratchpad/shot-en.png`. Same-class follow-up (not fixed): `MainWindow::showErrorDialog` `ButtonsType::OK`.
