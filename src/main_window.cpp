@@ -6,6 +6,7 @@
 #include "model/game_file_service.h"
 #include "model/settings_storage.h"
 #include "ui/about_dialog.h"
+#include "ui/confirm_dialog.h"
 #include "ui/language_setting.h"
 #include "ui/settings_dialog.h"
 
@@ -869,15 +870,7 @@ void MainWindow::confirmDiscardGame(const Glib::ustring &action, std::function<v
         return;
     }
 
-    auto *dialog = new Gtk::MessageDialog(
-        *this,
-        i18n::format(i18n::tr("%s will discard the current game (board, move history, and variation tree). Continue?"),
-                     action.c_str()),
-        /*use_markup=*/false,
-        Gtk::MessageType::WARNING,
-        Gtk::ButtonsType::YES_NO,
-        /*modal=*/true);
-    dialog->set_secondary_text(i18n::tr("This cannot be undone."));
+    auto *dialog = makeDiscardConfirmDialog(*this, action);
     dialog->signal_response().connect([dialog, onConfirmed](int response) {
         if (response == static_cast<int>(Gtk::ResponseType::YES)) {
             onConfirmed();

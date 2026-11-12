@@ -133,6 +133,7 @@ set(GUI_SOURCES
     src/ui/palette_catalog.cpp
     src/command/palette_search.cpp
     src/ui/about_dialog.cpp
+    src/ui/confirm_dialog.cpp
 )
 
 # ── Generated version header (single source of truth: project(VERSION) above) ─
