@@ -13,6 +13,25 @@ internal tracking files for traceability.
 
 _Nothing yet._
 
+## [0.12.0] - 2026-11-12
+
+Sprint 27 — collapsible panels, a steadier live analysis display, typography polish and the last Vietnamese UI gaps.
+
+### Added
+
+- **Hide the analysis panel or the log panel.** View ▸ "Analysis Panel" and "Move/Engine Log Panel" show or hide each panel, giving the board more room; the divider position is kept for when the panel comes back. Visibility is not remembered across launches.
+
+### Changed
+
+- **Steadier live winrate on the board.** While the engine searches, the winrate tags on the board and the PV list no longer flicker or collapse between lines, in every Rapfi output mode (including MCTS and message-only output); tags fade in and out smoothly and stale ones are cleared each round (PROTO-09).
+- **Typography and layout polish.** A consistent type scale, tabular numbers for engine stats, monospace only in the logs, engine stats that wrap instead of clipping, and crisper win-graph labels (UI-23). The board also has a roomier coordinate margin and is drawn as a rounded wood panel.
+- **Settings: Apply works even when the engine path is invalid.** You can now change Language, Theme and every other setting without a working engine; the invalid engine path is simply not saved (a tooltip on Apply says so) and the previous path is kept (UX-09).
+
+### Fixed
+
+- Vietnamese interface: the "discard the current game?" confirmation now shows **Không / Có** instead of English No / Yes (I18N-07).
+- Engine Log: the "MESSAGE" direction tag is no longer cut off in the left gutter (UI-24).
+
 ## [0.11.2] - 2026-10-08
 
 Sprint 26 — About dialog robustness; Vietnamese UI verified.
@@ -386,7 +405,8 @@ the engine pipeline, state lifetime, board rendering, and the analysis/settings 
 - "UI Profile" setting removed from Settings — it was undefined and had no effect (UX-06).
 - Instructional placeholder text in empty panels removed in favour of a plain empty state (UI-08).
 
-[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.11.2...HEAD
+[Unreleased]: https://github.com/nguyencongminh090/RANLS/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.11.2...v0.12.0
 [0.11.2]: https://github.com/nguyencongminh090/RANLS/compare/v0.11.1...v0.11.2
 [0.11.1]: https://github.com/nguyencongminh090/RANLS/compare/v0.11.0...v0.11.1
 [0.11.0]: https://github.com/nguyencongminh090/RANLS/compare/v0.10.0...v0.11.0
