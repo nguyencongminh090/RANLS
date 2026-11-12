@@ -290,6 +290,9 @@ void MainWindow::buildMenuBar()
     };
     searchOverlayAction_ = makeViewToggle("show-search-overlay", &MainWindow::onToggleSearchOverlay);
     searchWinrateAction_ = makeViewToggle("show-search-winrate", &MainWindow::onToggleSearchWinrate);
+    // UI-22: collapsible side/bottom panels (session-only; both start shown).
+    makeViewToggle("show-analysis-panel", &MainWindow::onToggleAnalysisPanel);
+    makeViewToggle("show-bottom-panel",   &MainWindow::onToggleBottomPanel);
 
     // UI-21: the former menu-bar row is now a hamburger menu in the header bar
     // (same Gio::Menu model, so every "win.*" action and shortcut is unchanged).
@@ -342,6 +345,8 @@ Glib::RefPtr<Gio::Menu> MainWindow::buildMenuModel()
     auto viewMenu = Gio::Menu::create();
     viewMenu->append(i18n::tr("Search Overlay"),       "win.show-search-overlay");
     viewMenu->append(i18n::tr("Search Winrate Tags"),  "win.show-search-winrate");
+    viewMenu->append(i18n::tr("Analysis Panel"),       "win.show-analysis-panel");
+    viewMenu->append(i18n::tr("Move/Engine Log Panel"), "win.show-bottom-panel");
     viewMenu->append(i18n::tr("Command Palette…"),     "win.command-palette");
 
     // Help menu.
@@ -518,10 +523,28 @@ void MainWindow::buildLayout()
         [this]() { trackPanedFraction(mainVPaned_, vPanedFraction_, vPanedLastExtent_, true); });
 }
 
+// ── UI-22: collapsible panels ────────────────────────────────────────────────
+void MainWindow::onToggleAnalysisPanel(bool show)
+{
+    analysisPanel_.set_visible(show);
+    if (show) reapplyPanedFractions();
+    boardView_.queueRedraw();
+}
+
+void MainWindow::onToggleBottomPanel(bool show)
+{
+    bottomPanel_.set_visible(show);
+    if (show) reapplyPanedFractions();
+    boardView_.queueRedraw();
+}
+
 void MainWindow::trackPanedFraction(Gtk::Paned &paned, double &fraction, int &lastExtent, bool vertical)
 {
     const int extent = vertical ? paned.get_height() : paned.get_width();
-    if (extent > 0 && extent == lastExtent) {
+    // UI-22: a collapsed (hidden) end child makes GTK report a degenerate
+    // divider position; never record that as the user's preferred fraction.
+    const bool endShown = paned.get_end_child() && paned.get_end_child()->get_visible();
+    if (endShown && extent > 0 && extent == lastExtent) {
         // Extent hasn't moved since we last looked -- this position change
         // is a genuine user drag (or our own reapplyPanedFractions() call,
         // which recomputes the same fraction back out, so it's idempotent),
@@ -534,11 +557,11 @@ void MainWindow::trackPanedFraction(Gtk::Paned &paned, double &fraction, int &la
 void MainWindow::reapplyPanedFractions()
 {
     const int hExtent = mainHPaned_.get_width();
-    if (hExtent > 0) {
+    if (hExtent > 0 && analysisPanel_.get_visible()) {
         mainHPaned_.set_position(static_cast<int>(hPanedFraction_ * hExtent));
     }
     const int vExtent = mainVPaned_.get_height();
-    if (vExtent > 0) {
+    if (vExtent > 0 && bottomPanel_.get_visible()) {
         mainVPaned_.set_position(static_cast<int>(vPanedFraction_ * vExtent));
     }
 }

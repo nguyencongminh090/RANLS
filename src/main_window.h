@@ -164,6 +164,9 @@ private:
     /// into ViewConfig, persist all four config blocks (STATE-02), sync the
     /// menu, refresh the board.
     void onToggleSearchOverlay(bool active);
+    /// UI-22: show/hide the right analysis panel / bottom log panel.
+    void onToggleAnalysisPanel(bool show);
+    void onToggleBottomPanel(bool show);
     void onToggleSearchWinrate(bool active);
     /// Mirror ViewConfig::showSearchOverlay / showSearchWinrate onto the two
     /// menu checkbox actions. State-only (no re-entrant persist).

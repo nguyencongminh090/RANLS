@@ -136,9 +136,32 @@ void BoardRenderer::drawGrid(const Cairo::RefPtr<Cairo::Context> &cr)
     int bs = vm_.boardSize;
 
     // Board background (wood color).
-    cr->set_source_rgb(kBoardR, kBoardG, kBoardB);
-    cr->rectangle(marginLeft_, marginTop_, boardPx_, boardPx_);
-    cr->fill();
+    // UI-22: soft drop shadow, rounded wood panel with a subtle vertical
+    // gradient and a thin darker border. Purely cosmetic; geometry unchanged.
+    const double radius = std::min(8.0, cellSize_ * 0.25);
+    auto roundRect = [&](double x, double y, double w, double h) {
+        cr->begin_new_path();
+        cr->arc(x + w - radius, y + radius,     radius, -M_PI / 2, 0);
+        cr->arc(x + w - radius, y + h - radius, radius, 0, M_PI / 2);
+        cr->arc(x + radius,     y + h - radius, radius, M_PI / 2, M_PI);
+        cr->arc(x + radius,     y + radius,     radius, M_PI, 3 * M_PI / 2);
+        cr->close_path();
+    };
+    const double bx = marginLeft_, by = marginTop_, bpx = boardPx_;
+    for (int i = 3; i >= 1; --i) {
+        roundRect(bx - i + 2, by - i + 4, bpx + 2 * i, bpx + 2 * i);
+        cr->set_source_rgba(0, 0, 0, 0.07);
+        cr->fill();
+    }
+    roundRect(bx, by, bpx, bpx);
+    auto grad = Cairo::LinearGradient::create(bx, by, bx, by + bpx);
+    grad->add_color_stop_rgb(0.0, kBoardR + 0.04, kBoardG + 0.04, kBoardB + 0.04);
+    grad->add_color_stop_rgb(1.0, kBoardR - 0.04, kBoardG - 0.04, kBoardB - 0.05);
+    cr->set_source(grad);
+    cr->fill_preserve();
+    cr->set_source_rgba(0.35, 0.22, 0.08, 0.55);
+    cr->set_line_width(1.0);
+    cr->stroke();
 
     // Grid lines.
     cr->set_source_rgb(kGridR, kGridG, kGridB);
@@ -217,14 +240,14 @@ void BoardRenderer::drawGrid(const Cairo::RefPtr<Cairo::Context> &cr)
             std::string label(1, col);
             setLabelStyle(hot && hov.x == i);
             cr->get_text_extents(label, ext);
-            cr->move_to(cellCenterX(i) - ext.width / 2.0, marginTop_ - 6.0);
+            cr->move_to(cellCenterX(i) - ext.width / 2.0, marginTop_ - kLabelGap);
             cr->show_text(label);
 
             // Row labels (15..1 top to bottom) at left.
             std::string row = std::to_string(bs - i);
             setLabelStyle(hot && hov.y == i);
             cr->get_text_extents(row, ext);
-            cr->move_to(marginLeft_ - ext.width - 6.0, cellCenterY(i) + ext.height / 2.0);
+            cr->move_to(marginLeft_ - ext.width - kLabelGap, cellCenterY(i) + ext.height / 2.0);
             cr->show_text(row);
         }
     }
