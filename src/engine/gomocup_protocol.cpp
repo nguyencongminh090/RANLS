@@ -8,8 +8,12 @@
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-static double cpToWinrate(double cp) {
-    return 1.0 / (1.0 + std::exp(-cp / 200.0));
+/// Rapfi's default `ScalingFactor` (eval/scoretables.h valueToWinRate); only a
+/// guess for any other engine/config until learnCpScale() sees a real pair.
+static constexpr double kDefaultCpScale = 200.0;
+
+static double cpToWinrate(double cp, double scale = kDefaultCpScale) {
+    return 1.0 / (1.0 + std::exp(-cp / scale));
 }
 
 static int64_t parseNodeCount(const std::string &s) {
@@ -124,7 +128,8 @@ static std::string evalDisplayText(const EngineStatus &status) {
 static bool parseEvalToken(const std::string &eval,
                            double            &winrate,
                            int               &mateStep,
-                           std::string       &evalText) {
+                           std::string       &evalText,
+                           double             cpScale = kDefaultCpScale) {
     if (eval.empty()) return false;
 
     evalText = eval;
@@ -150,7 +155,7 @@ static bool parseEvalToken(const std::string &eval,
 
     try {
         double cp = std::stod(eval);
-        winrate = cpToWinrate(cp);
+        winrate = cpToWinrate(cp, cpScale);
         return true;
     } catch (...) {
         return false;
@@ -305,6 +310,14 @@ void GomocupProtocol::clearAnalysisState() {
     currentNumPV_    = 0;
     currentBestLine_.clear();
     infoWinrates_.clear();
+    roundId_     = 0;
+    rankedRound_ = 0;
+    infoNumPV_   = 0;
+    pvRound_.clear();
+    pvInfoRound_.clear();
+    reportRound_[0].clear();
+    reportRound_[1].clear();
+    tagRound_.clear();
     // PROTO-06: the live per-cell overlay is per-think too — drop it here so a
     // stale REALTIME/tag cell can't survive a position change or a fresh
     // analyze. GameState clears its own copy + repaints (resetAnalysisState).
@@ -536,7 +549,7 @@ void GomocupProtocol::resetCurrentPVState() {
 /// scores and cp values with no matching INFO record fall back to parseEvalToken.
 bool GomocupProtocol::parseMessageEval(int pvIdx, const std::string &eval, double &winrate,
                                        int &mateStep, std::string &evalText) const {
-    if (!parseEvalToken(eval, winrate, mateStep, evalText)) return false;
+    if (!parseEvalToken(eval, winrate, mateStep, evalText, cpScale_)) return false;
     if (mateStep == 0 && pvIdx >= 0 && pvIdx < static_cast<int>(infoWinrates_.size())) {
         const InfoWinrate &known = infoWinrates_[pvIdx];
         if (known.valid && known.evalText == evalText) winrate = known.winrate;
@@ -562,7 +575,7 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
         } else if (sub.rfind("VAL ", 0) == 0) {
             try {
                 double cp = std::stod(sub.substr(4));
-                currentStatus_.winrate = cpToWinrate(cp);
+                currentStatus_.winrate = cpToWinrate(cp, cpScale_);
                 currentStatus_.mateStep = 0;
                 currentStatus_.evalText.clear();
             } catch (...) {}
@@ -601,49 +614,6 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
         return;
     }
 
-    auto commitPV = [this](int idx, PVLine pv, bool roundStart = true) {
-        if (idx < 0 || idx >= kMaxPVCount) {
-            signal_log.emit(EngineMessageType::Error,
-                             "GomocupProtocol: rejected out-of-range PV index " + std::to_string(idx));
-            return;
-        }
-        // STATE-03: a fresh primary-line (index 0) report marks the start of
-        // a new multi-PV round in the ranked MESSAGE-stream format
-        // (NORMAL "(n)|..." and UCILIKE "multipv ..."), which carries no
-        // explicit NUMPV/count signal the way the INFO/Detail stream does.
-        // Without this, a round that reports fewer PVs than the previous one
-        // (e.g. multiPV lowered mid-search) leaves the old round's surplus
-        // higher-index entries in currentPVs_ forever, since resize() below
-        // only ever grows. Truncate to just the new index 0 here so stale
-        // entries drop immediately; the round's remaining indices regrow the
-        // vector back out as they arrive right after. This relies on the
-        // engine reporting pvIdx 0..multiPv-1 in strictly increasing order
-        // per round (true for Rapfi: search/ab/search.cpp's multiPV loop is
-        // single-threaded and never skips/reorders indices), so an index-0
-        // report is unambiguously "a new round started."
-        //
-        // PROTO-05: the per-depth "Depth ..." and end-of-search "Bestline ..."
-        // summary lines ALSO commit index 0, but they are NOT round markers --
-        // they carry only PV #1 and are interleaved with (or follow) the
-        // ranked "(n)" list. Truncating on them would wipe PVs #2..#N that the
-        // "(n)" stream legitimately reported for the same round. Those callers
-        // pass roundStart = false.
-        if (roundStart && idx == 0 && currentPVs_.size() > 1) {
-            currentPVs_.resize(1);
-            currentNumPV_ = 1;
-        }
-        if (idx >= static_cast<int>(currentPVs_.size())) {
-            currentPVs_.resize(idx + 1);
-        }
-
-        pv.pvIndex = idx + 1;
-        currentPVs_[idx] = std::move(pv);
-        if (!currentPVs_[idx].moves.empty() && idx == 0) {
-            currentStatus_.bestMove = currentPVs_[idx].moves.front();
-        }
-        signal_analysis.emit(currentPVs_, currentStatus_);
-    };
-
     if (msg.rfind("Bestline ", 0) == 0) {
         auto moves = parseMoveTokens(msg.substr(9), boardSize_);
         if (!moves.empty()) {
@@ -655,7 +625,7 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
             pv.mateStep = currentStatus_.mateStep;
             pv.evalText = currentStatus_.evalText;
             pv.moves = std::move(moves);
-            commitPV(0, std::move(pv), /*roundStart=*/false);
+            commitMessagePV(0, std::move(pv), MsgKind::Bestline);
         }
         return;
     }
@@ -685,15 +655,25 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
                 // parts[1] is "D-SD" in the first form (parseDepthPair fills both)
                 // and "V <nodes>" in the second (parseDepthPair is a no-op on it).
                 parseDepthPair(parts[1], pv.depth, pv.selDepth);
+                pv.nodes = currentStatus_.nodes;
                 for (size_t pi = 1; pi + 1 < parts.size(); ++pi) {
                     if (parts[pi].rfind("SD ", 0) == 0)
                         pv.selDepth = parseIntToken(trimCopy(parts[pi].substr(3)), pv.selDepth);
+                    else if (parts[pi].rfind("V ", 0) == 0)
+                        pv.nodes = parseNodeCount(trimCopy(parts[pi].substr(2)));   // this move's visits
                 }
-                pv.nodes = currentStatus_.nodes;
                 pv.score = currentStatus_.winrate;
                 pv.mateStep = currentStatus_.mateStep;
                 pv.evalText = currentStatus_.evalText;
                 if (parseMessageEval(pvIndex, eval, pv.score, pv.mateStep, pv.evalText)) {
+                    // PROTO-09: the MCTS form carries the engine's own win
+                    // rate ("(W 32.62, ...") — use it instead of sigmoid(cp).
+                    auto w = parts[0].find("(W ", close + 1);
+                    if (w != std::string::npos && pv.mateStep == 0) {
+                        try {
+                            pv.score = std::clamp(std::stod(parts[0].substr(w + 3)) / 100.0, 0.0, 1.0);
+                        } catch (...) {}
+                    }
                     if (pvIndex == 0) {
                         currentStatus_.winrate = pv.score;
                         currentStatus_.mateStep = pv.mateStep;
@@ -707,7 +687,7 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
                 if (currentNumPV_ <= pvIndex) currentNumPV_ = pvIndex + 1;
                 currentStatus_.depth = std::max(currentStatus_.depth, pv.depth);
                 currentStatus_.selDepth = std::max(currentStatus_.selDepth, pv.selDepth);
-                commitPV(pvIndex, std::move(pv));
+                commitMessagePV(pvIndex, std::move(pv), MsgKind::Ranked);
                 return;
             }
         }
@@ -726,8 +706,10 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
         for (const auto &part : parts) {
             if (part.rfind("Depth ", 0) == 0) {
                 parseDepthPair(trimCopy(part.substr(6)), pv.depth, pv.selDepth);
-                currentStatus_.depth = pv.depth;
-                currentStatus_.selDepth = pv.selDepth;
+                // PROTO-09: never step back — INFO SELDEPTH already keeps the
+                // max over every PV, this line carries PV #1's only.
+                currentStatus_.depth = std::max(currentStatus_.depth, pv.depth);
+                currentStatus_.selDepth = std::max(currentStatus_.selDepth, pv.selDepth);
             } else if (part.rfind("Eval ", 0) == 0) {
                 parseMessageEval(0, trimCopy(part.substr(5)), pv.score, pv.mateStep, pv.evalText);
                 currentStatus_.winrate = pv.score;
@@ -741,7 +723,7 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
             }
         }
 
-        commitPV(0, std::move(pv), /*roundStart=*/false);
+        commitMessagePV(0, std::move(pv), MsgKind::DepthSummary);
         return;
     }
 
@@ -758,7 +740,10 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
                 currentStatus_.nps = parseNodeCount(trimCopy(part.substr(6)));
                 updated = true;
             } else if (part.rfind("Depth ", 0) == 0) {
-                parseDepthPair(trimCopy(part.substr(6)), currentStatus_.depth, currentStatus_.selDepth);
+                int d = currentStatus_.depth, sd = currentStatus_.selDepth;
+                parseDepthPair(trimCopy(part.substr(6)), d, sd);
+                currentStatus_.depth = std::max(currentStatus_.depth, d);
+                currentStatus_.selDepth = std::max(currentStatus_.selDepth, sd);
                 updated = true;
             } else if (part.rfind("Eval ", 0) == 0) {
                 parseMessageEval(0, trimCopy(part.substr(5)), currentStatus_.winrate,
@@ -789,6 +774,8 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
     double parsedWinrate = currentStatus_.winrate;
     int parsedMateStep = currentStatus_.mateStep;
     std::string parsedEvalText = currentStatus_.evalText;
+    int64_t parsedPvNodes = -1;   // "v": this move's visits (MCTS)
+    bool    sawWinrate    = false;
 
     while (ss >> token) {
         if (inPV) {
@@ -796,14 +783,43 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
             continue;
         }
 
+        // PROTO-09: Rapfi's MCTS line is "... ev E w W d D stdev S v V seldepth
+        // SD ..." where `d` is the DRAW rate in percent, not a depth. Only a
+        // bare `d` with a plain depth value ("12" / "12-20") before any `w`
+        // still means depth (other engines' short form).
         if (token == "depth" || token == "d") {
             std::string val;
+            if (!(ss >> val)) continue;
+            // A draw rate ("d 8.53", or any `d` after `w`) is not displayed.
+            if (token == "d" && (sawWinrate || val.find('.') != std::string::npos)) continue;
+            parseDepthPair(val, parsedDepth, parsedSelDepth);
+            currentStatus_.depth = std::max(currentStatus_.depth, parsedDepth);
+            currentStatus_.selDepth = std::max(currentStatus_.selDepth, parsedSelDepth);
+            updatedAny = true;
+        } else if (token == "seldepth") {
+            std::string val;
             if (ss >> val) {
-                parseDepthPair(val, parsedDepth, parsedSelDepth);
-                currentStatus_.depth = parsedDepth;
-                currentStatus_.selDepth = parsedSelDepth;
+                parsedSelDepth = parseIntToken(val, parsedSelDepth);
+                currentStatus_.selDepth = std::max(currentStatus_.selDepth, parsedSelDepth);
                 updatedAny = true;
             }
+        } else if (token == "w") {
+            // Engine-reported win rate in percent — wins over sigmoid(cp).
+            double pct = 0;
+            if (ss >> pct) {
+                sawWinrate = true;
+                if (parsedMateStep == 0) {
+                    parsedWinrate = std::clamp(pct / 100.0, 0.0, 1.0);
+                    if (parsedPVIndex == 0) currentStatus_.winrate = parsedWinrate;
+                }
+                updatedAny = true;
+            }
+        } else if (token == "v") {
+            std::string val;
+            if (ss >> val) parsedPvNodes = parseNodeCount(val);
+        } else if (token == "stdev" || token == "prior") {
+            std::string val;
+            ss >> val;   // utility stdev / policy prior: not displayed
         } else if (token == "multipv") {
             std::string val;
             if (ss >> val) {
@@ -861,7 +877,7 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
         PVLine pv;
         pv.depth = parsedDepth;
         pv.selDepth = parsedSelDepth;
-        pv.nodes = parsedNodes;
+        pv.nodes = parsedPvNodes >= 0 ? parsedPvNodes : parsedNodes;
         pv.score = parsedWinrate;
         pv.mateStep = parsedMateStep;
         pv.evalText = parsedEvalText;
@@ -876,7 +892,7 @@ void GomocupProtocol::parseMessage(const std::string &msg) {
             if (idx == 0) {
                 currentStatus_.bestMove = pv.moves.front();
             }
-            commitPV(idx, std::move(pv));
+            commitMessagePV(idx, std::move(pv), MsgKind::Ranked);
             updatedAny = false;
         }
     }
@@ -930,7 +946,16 @@ void GomocupProtocol::parseInfo(const std::string &info) {
                                  " exceeds max " + std::to_string(kMaxPVCount) + "; clamped");
             }
             currentNumPV_ = clamped;
-            currentPVs_.resize(clamped);
+            infoNumPV_    = clamped;
+            // PROTO-09: an explicit count may only SHRINK the list (the engine
+            // says the higher rows are gone). Growing it here materialised
+            // empty placeholder rows that sat in the PV list until each PV's
+            // own block arrived; onPVDone() grows the list row by row instead.
+            if (static_cast<int>(currentPVs_.size()) > clamped) {
+                currentPVs_.resize(clamped);
+                pvRound_.resize(std::min<size_t>(pvRound_.size(), clamped));
+                pvInfoRound_.resize(std::min<size_t>(pvInfoRound_.size(), clamped));
+            }
         }
     } else if (key == "DEPTH") {
         if (ss >> currentPvDepth_) {
@@ -949,7 +974,7 @@ void GomocupProtocol::parseInfo(const std::string &info) {
         ss >> eval;
         const double engineWinrate = currentPvWinrate_;
         const bool   parsed =
-            parseEvalToken(eval, currentPvWinrate_, currentPvMateStep_, currentPvEvalText_);
+            parseEvalToken(eval, currentPvWinrate_, currentPvMateStep_, currentPvEvalText_, cpScale_);
         // cp is only a fallback: INFO WINRATE (engine scale) wins whatever the order.
         if (parsed && currentPvHasInfoWinrate_ && currentPvMateStep_ == 0)
             currentPvWinrate_ = engineWinrate;
@@ -1008,9 +1033,8 @@ void GomocupProtocol::onPVDone() {
         return;
     }
 
-    if (idx >= static_cast<int>(currentPVs_.size())) {
-        currentPVs_.resize(idx + 1);
-    }
+    beginReport(PvSource::Info, idx);
+    ensureRow(idx);
 
     PVLine &pv = currentPVs_[idx];
     pv.pvIndex  = idx + 1;
@@ -1020,10 +1044,13 @@ void GomocupProtocol::onPVDone() {
     pv.score    = currentPvWinrate_;
     pv.mateStep = currentPvMateStep_;
     pv.evalText = currentPvEvalText_;
+    pvRound_[idx]     = roundId_;
+    pvInfoRound_[idx] = roundId_;
 
     if (currentPvHasInfoWinrate_) {
         if (idx >= static_cast<int>(infoWinrates_.size())) infoWinrates_.resize(idx + 1);
         infoWinrates_[idx] = {true, currentPvWinrate_, currentPvEvalText_};
+        if (currentPvMateStep_ == 0) learnCpScale(currentPvEvalText_, currentPvWinrate_);
     }
 
     if (!currentBestLine_.empty()) {
@@ -1033,31 +1060,129 @@ void GomocupProtocol::onPVDone() {
         currentStatus_.bestMove = pv.moves.front();
     }
 
-    signal_analysis.emit(currentPVs_, currentStatus_);
+    // PROTO-06: stamp this PV's first move with a winrate/mate tag
+    // (Yixin-Board main.c:6544).
+    stampTag(pv);
+    // PROTO-09: last PV of the round (INFO NUMPV known) — everything this
+    // round did not refresh is no longer a top-N candidate (main.c:6549).
+    // Keyed on the round, not on INFO DEPTH: MCTS reports no depth at all, so
+    // the old `tagDepth < depth` test never fired there and tags piled up.
+    if (infoNumPV_ > 0 && idx + 1 >= infoNumPV_) pruneStale(roundId_);
 
-    // PROTO-06: stamp this PV's first move with a winrate/mate tag + the root
-    // depth it was written at (Yixin-Board main.c:6544). The MESSAGE "(n)" path
-    // still feeds pvLines_/PVView unchanged — only the *board* overlay is fed
-    // from here.
-    if (!pv.moves.empty() && pv.moves.front().isValid(boardSize_)) {
-        AnalysisOverlayCell &cell = overlay_.cells[pv.moves.front()];
-        cell.tag        = overlayTagText(pv);
-        cell.tagDepth   = currentStatus_.depth;
-        cell.tagWinrate = pv.mateStep > 0 ? 1.0 : (pv.mateStep < 0 ? 0.0 : pv.score);
+    signal_analysis.emit(currentPVs_, currentStatus_);
+    emitOverlay();
+}
+
+// PROTO-09: a MESSAGE eval that has no matching INFO record (the end-of-search
+// summary of another thread, a line printed between two INFO blocks) used to be
+// converted with a hardcoded /200 — on an engine whose scale is ≈116 that made
+// the status winrate jump by several points for one line and back. Every INFO
+// (EVAL cp, WINRATE w) pair gives the engine's real sigmoid scale exactly:
+//   w = 1 / (1 + exp(-cp / k))  =>  k = cp / ln(w / (1 - w)).
+void GomocupProtocol::learnCpScale(const std::string &evalText, double winrate) {
+    double cp = 0;
+    try { cp = std::stod(evalText); } catch (...) { return; }
+    // Near cp 0 / w 0.5 (and at the saturated ends) the quotient is noise.
+    if (std::fabs(cp) < 20.0 || winrate < 0.02 || winrate > 0.98) return;
+    const double logit = std::log(winrate / (1.0 - winrate));
+    if (std::fabs(logit) < 0.05) return;
+    const double k = cp / logit;
+    if (k >= 20.0 && k <= 2000.0) cpScale_ = k;
+}
+
+// ── PROTO-09: round bookkeeping ─────────────────────────────────────────────
+void GomocupProtocol::beginReport(PvSource src, int idx) {
+    auto &seen = reportRound_[static_cast<int>(src)];
+    if (idx >= static_cast<int>(seen.size())) seen.resize(idx + 1, 0);
+    if (roundId_ == 0 || seen[idx] == roundId_) {
+        // The round that just ended is now known in full: drop what it did
+        // not refresh (rows/tags left over from the round before it).
+        if (roundId_ > 0) pruneStale(roundId_);
+        ++roundId_;
     }
-    // On the last PV of this depth round, drop tags that were written at an
-    // earlier depth — those cells are no longer top-N candidates (main.c:6549).
-    // currentStatus_.depth stays the right round depth even on the YXNBEST
-    // (printRootMoves) path, which omits INFO DEPTH: it is maintained from the
-    // MESSAGE "(n)" SD field / other INFO lines.
-    if (currentNumPV_ > 0 && currentPVIndex_ + 1 == currentNumPV_) {
-        for (auto &kv : overlay_.cells) {
-            if (!kv.second.tag.empty() && kv.second.tagDepth < currentStatus_.depth) {
-                kv.second.tag.clear();
-                kv.second.tagDepth = 0;
-            }
+    seen[idx] = roundId_;
+}
+
+void GomocupProtocol::ensureRow(int idx) {
+    if (idx >= static_cast<int>(currentPVs_.size())) currentPVs_.resize(idx + 1);
+    if (pvRound_.size() < currentPVs_.size()) pvRound_.resize(currentPVs_.size(), 0);
+    if (pvInfoRound_.size() < currentPVs_.size()) pvInfoRound_.resize(currentPVs_.size(), 0);
+}
+
+void GomocupProtocol::pruneStale(int minRound) {
+    size_t keep = currentPVs_.size();
+    while (keep > 0 && (keep - 1 >= pvRound_.size() || pvRound_[keep - 1] < minRound)) --keep;
+    if (keep < currentPVs_.size()) {
+        currentPVs_.resize(keep);
+        pvRound_.resize(std::min(pvRound_.size(), keep));
+        pvInfoRound_.resize(std::min(pvInfoRound_.size(), keep));
+        if (currentNumPV_ > static_cast<int>(keep)) currentNumPV_ = static_cast<int>(keep);
+    }
+    for (auto &kv : overlay_.cells) {
+        if (kv.second.tag.empty()) continue;
+        auto it = tagRound_.find(kv.first);
+        if (it == tagRound_.end() || it->second < minRound) {
+            kv.second.tag.clear();
+            kv.second.tagDepth = 0;
         }
     }
+}
+
+void GomocupProtocol::stampTag(const PVLine &pv) {
+    if (pv.moves.empty() || !pv.moves.front().isValid(boardSize_)) return;
+    AnalysisOverlayCell &cell = overlay_.cells[pv.moves.front()];
+    cell.tag        = overlayTagText(pv);
+    cell.tagDepth   = currentStatus_.depth;
+    cell.tagWinrate = pv.mateStep > 0 ? 1.0 : (pv.mateStep < 0 ? 0.0 : pv.score);
+    tagRound_[pv.moves.front()] = roundId_;
+}
+
+void GomocupProtocol::commitMessagePV(int idx, PVLine pv, MsgKind kind) {
+    if (idx < 0 || idx >= kMaxPVCount) {
+        signal_log.emit(EngineMessageType::Error,
+                         "GomocupProtocol: rejected out-of-range PV index " + std::to_string(idx));
+        return;
+    }
+
+    // Which lines open a round (STATE-03 — the list must still shrink when a
+    // later round reports fewer PVs):
+    //  - a ranked line ("(n) ..." / "multipv n ...") is a real per-PV report;
+    //  - the per-depth "Depth ..." summary repeats PV #1 AFTER the ranked list
+    //    in multi-PV NORMAL mode, but is the ONLY per-depth line in single-PV
+    //    mode — so it counts as a report only when no ranked line already
+    //    reported PV #1 in this round;
+    //  - the end-of-search "Bestline ..." never opens a round.
+    if (kind == MsgKind::Ranked) {
+        beginReport(PvSource::Message, idx);
+        if (idx == 0) rankedRound_ = roundId_;
+    } else if (kind == MsgKind::DepthSummary) {
+        if (roundId_ == 0 || rankedRound_ != roundId_) beginReport(PvSource::Message, 0);
+    } else if (roundId_ == 0) {
+        beginReport(PvSource::Message, 0);
+    }
+
+    ensureRow(idx);
+    PVLine &row = currentPVs_[idx];
+    if (pvInfoRound_[idx] == roundId_) {
+        // The INFO stream already wrote this row for this round and is the
+        // better source (engine winrate, per-move nodes). Re-writing it from
+        // the MESSAGE text made the row's numbers alternate between the two
+        // every round. Only the final Bestline may replace the move list (the
+        // engine deliberately prints a longer line there).
+        if (kind == MsgKind::Bestline || row.moves.empty()) row.moves = std::move(pv.moves);
+    } else {
+        pv.pvIndex = idx + 1;
+        row = std::move(pv);
+    }
+    pvRound_[idx] = roundId_;
+
+    if (idx == 0 && !row.moves.empty()) currentStatus_.bestMove = row.moves.front();
+
+    // "All message modes": with INFO off (SHOW_DETAIL 0/1) or an engine that
+    // has no INFO stream, the MESSAGE lines are the only source of board tags.
+    stampTag(row);
+
+    signal_analysis.emit(currentPVs_, currentStatus_);
     emitOverlay();
 }
 
