@@ -12,3 +12,9 @@
 static constexpr double kCoordMargin = 38.0;
 /// Gap between the wood edge and the coordinate labels.
 static constexpr double kLabelGap = 10.0;
+
+/// UI-23: minimum BoardView size (both axes): the coordinate margins plus a
+/// still-usable 15x15 grid (~11px cells). Also load-bearing for layout: with a
+/// 0px start child, GtkPaned (GTK 4.22) under-measures a height-for-width end
+/// child (the analysis panel) by 1px and logs a "Trying to measure" warning.
+static constexpr int kBoardMinPx = 240;

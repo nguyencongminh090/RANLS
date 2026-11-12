@@ -23,10 +23,12 @@ public:
 
 private:
     void onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int height);
+    Glib::RefPtr<Pango::Layout> captionLayout(const Glib::ustring &text);
 
     std::vector<double> blackData_;
     std::vector<double> whiteData_;
     int                 currentIndex_ = -1;
     int                 hoverIndex_   = -1;
+    double              padL_         = 40.0;  ///< UI-23: left pad, sized to the axis labels each draw.
     WinGraphMode        mode_         = WinGraphMode::BothSide;
 };

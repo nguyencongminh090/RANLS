@@ -50,8 +50,11 @@ Sprint 27 (opened 2026-10-08, goal "Fix remaining vi UI gaps") — pulled from B
 
 - 🔲 **I18N-07.** Confirm dialogs show English Yes/No under `vi` (`YES_NO` stock labels). [Model: Sonnet] — [detail](docs/todo/I18N-07-confirm-dialog-yes-no-buttons-not-translated.md)
 - 🔲 **UX-09.** Settings Apply is disabled on every tab while the engine path is invalid (blocks Language/Theme; design call with user). [Model: Sonnet] — [detail](docs/todo/UX-09-apply-disabled-when-engine-path-invalid.md)
+- ✅ **UI-23.** Typography and layout polish: CSS type roles, tabular numerals, wrapping engine stats, Pango graph labels, BoardView min size (fixes a GtkPaned measure warning). Added 2026-11-11 on user request. [Model: Opus] — [detail](docs/todo/UI-23-typography-and-layout-polish.md) · [instruction](docs/instruction/UI-23-typography-and-layout-polish.md)
 
 ## Backlog
+
+- 🔲 **UI-24.** Engine Log gutter clips/crowds the "MESSAGE" tag (pre-existing; found in UI-23 verification). [Model: Sonnet] — [detail](docs/todo/UI-24-engine-log-gutter-tag-clipped.md)
 
 
 Filed 2026-10-08 from the I18N-06 visual pass (`docs/audit/2026-10-log.md` (2026-10-08 "Vietnamese UI visual verification")): I18N-07, UX-09 — **pulled into Sprint 27 Active 2026-10-08** (see docs/sprint/current.md).

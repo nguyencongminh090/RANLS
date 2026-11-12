@@ -355,3 +355,10 @@ Icon header bar, hamburger menu and CSS tokens per `features/modern-ui/planning.
 _Items without an entry here (RT-02/03/04, STATE-02/03, PROTO-02, NAV-01, UI-01/02/03, UX-01…04,
 CLEAN-01) are self-contained enough that their `docs/todo/` detail file's "Scope boundary" section
 is sufficient guidance. Add an entry here if one turns out to need it._
+
+## UI-23 — typography-and-layout-polish
+
+ui-layer only: CSS type roles (em sizes, tabular figures, mono only for logs), wrapping engine stats,
+Pango text in the win graph, UI font for board coordinates, BoardView min size. No bundled fonts, no
+textview line-height, stone numbers untouched.
+[detail](docs/instruction/UI-23-typography-and-layout-polish.md)

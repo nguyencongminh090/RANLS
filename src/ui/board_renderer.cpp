@@ -207,7 +207,7 @@ void BoardRenderer::drawGrid(const Cairo::RefPtr<Cairo::Context> &cr)
     // Coordinate labels.
     if (vm_.viewConfig.showCoordinates) {
         cr->set_source_rgb(coordR_, coordG_, coordB_);
-        cr->select_font_face("sans-serif", Cairo::ToyFontFace::Slant::NORMAL,
+        cr->select_font_face(labelFamily_, Cairo::ToyFontFace::Slant::NORMAL,
                              Cairo::ToyFontFace::Weight::NORMAL);
         // UX-04 (confirmed defect): with only a floor and no ceiling, this
         // scaled unboundedly with cellSize_ -- on a 5x5 board (large cells)
@@ -224,11 +224,11 @@ void BoardRenderer::drawGrid(const Cairo::RefPtr<Cairo::Context> &cr)
         auto setLabelStyle = [&](bool emphasised) {
             if (emphasised) {
                 cr->set_source_rgb(kLabelHotR, kLabelHotG, kLabelHotB);
-                cr->select_font_face("sans-serif", Cairo::ToyFontFace::Slant::NORMAL,
+                cr->select_font_face(labelFamily_, Cairo::ToyFontFace::Slant::NORMAL,
                                      Cairo::ToyFontFace::Weight::BOLD);
             } else {
                 cr->set_source_rgb(coordR_, coordG_, coordB_);
-                cr->select_font_face("sans-serif", Cairo::ToyFontFace::Slant::NORMAL,
+                cr->select_font_face(labelFamily_, Cairo::ToyFontFace::Slant::NORMAL,
                                      Cairo::ToyFontFace::Weight::NORMAL);
             }
         };
