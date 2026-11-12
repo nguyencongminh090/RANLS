@@ -175,6 +175,7 @@ points at sprint start to 0 at the end date.
 | 2026-11-12 | 2 / 5 items | — | PROTO-09 added mid-sprint (user request) and done (PR #69, squash `7a1f06e`) — stable realtime winrate on the board in every Rapfi message mode. I18N-07, UX-09 remain |
 | 2026-11-12 | 1 / 5 items | — | I18N-07 done (PR #70, squash `f400aa0`) — confirm-dialog Yes/No buttons now translated under `vi`. UX-09 remains (needs user design call a/b) |
 | 2026-11-12 | 0 / 5 items | — | UX-09 done (PR #71, squash `eb5c42e`) — Settings Apply stays available with an invalid engine path (option a). All Sprint 27 items done |
+| 2026-11-12 | 0 / 5 items | — | Sprint 27 closed — I18N-07, UX-09, UI-23, UI-24, PROTO-09 landed on `main`; archived to `docs/sprint/archive/sprint-27.md`, nothing rolled over (PROTO-08 stays in Backlog behind its design gate). Release `v0.12.0` cut (collapsible panels, stable realtime winrate, typography, vi fixes). Table reset below for Sprint 28 |
 
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).

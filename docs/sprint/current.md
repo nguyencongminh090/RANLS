@@ -1,27 +1,7 @@
 # Current sprint
 
-## Sprint 27
+## Sprint 28 — not yet opened
 
-**Goal:** Fix remaining vi UI gaps
+Sprint 27 closed 2026-11-12 (archived: `docs/sprint/archive/sprint-27.md`, release `v0.12.0`).
 
-**Dates:** 2026-10-08 to — (open — no fixed end date set yet)
-
-**Dependency graph:**
-
-- **I18N-07** — `ui` layer: `src/main_window.cpp` (the `Gtk::MessageDialog` with `ButtonsType::YES_NO`, ~line 849) + `src/resources/lang/vi.tsv` + a UI test. Must not touch the dialogs' message text or response semantics; other dialogs only if they use the same stock labels (list, don't expand). Failing-test-first. Vietnamese strings: Claude drafts, user reviews.
-- **UX-09** — `ui` layer: `src/ui/settings_dialog.cpp` (`btnApply_` sensitivity = `enginePathValid_`) + test. **Design call resolved 2026-11-12: option (a)** — apply non-engine settings while the path is invalid, keeping the saved path (`docs/audit/2026-11-log.md`). Must not weaken the guard for launching the engine or change the settings file format. Independent of I18N-07.
-
-| CODE | Summary | Depends on | Points | Status |
-|---|---|---|---|---|
-| I18N-07 | Confirm dialogs show English Yes/No under `vi` | — | — | ✅ Done (PR #70) |
-| UX-09 | Settings Apply disabled on every tab while the engine path is invalid | — (option a, 2026-11-12) | — | ✅ Done (PR #71) |
-| UI-23 | Typography and layout polish (added mid-sprint 2026-11-11, user request) | — | — | ✅ Done |
-| UI-24 | Engine Log gutter clipped the "MESSAGE" tag (added mid-sprint 2026-11-12, user request) | — | — | ✅ Done |
-| PROTO-09 | Stable realtime winrate on the board, all Rapfi message modes (added mid-sprint 2026-11-12, user request) | — | — | ✅ Done |
-
-Points not yet estimated (consistent with Sprints 3–26).
-
-**Lesson carried in from Sprint 26:** A visual pass is worth doing even when tests are green: it found a half-translated dialog (stock GTK buttons) and a settings-flow trap that no unit test pins. Run UI tests and live checks under `xvfb-run` with `GDK_BACKEND=x11` and `WAYLAND_DISPLAY` unset; re-run build and ctest on an agent's branch instead of trusting its report.
-
-See `docs/sprint/burndown.md` for the daily remaining-points table, and `docs/sprint/archive/` for
-closed sprints. Starting the next sprint = one edit per `.claude/rules/sprint-cadence.md`.
+Run `/sprint open 28 "<goal>" <CODE...>` to commit Backlog items and start it.

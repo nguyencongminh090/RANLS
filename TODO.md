@@ -23,36 +23,7 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 ## Active
 
-Sprint 23 (opened 2026-10-08, goal "Command palette (Ctrl+K): bilingual classical-NLP search over actions, settings and ! commands, benchmarked against a Whoosh baseline") — pulled from Backlog:
-
-- ✅ **PAL-01.** Pure en/vi search engine (BM25F) + shared dataset + Whoosh benchmark — [detail](docs/todo/PAL-01-palette-search-engine-and-benchmark.md) · [instruction](docs/instruction/PAL-01-palette-search-engine-and-benchmark.md)
-- ✅ **PAL-02.** Ctrl+K overlay + action/`!`-command registries — [detail](docs/todo/PAL-02-palette-overlay-ui-and-registries.md) · [instruction](docs/instruction/PAL-02-palette-overlay-ui-and-registries.md)
-- ✅ **PAL-03.** Declarative settings registry so settings are searchable — [detail](docs/todo/PAL-03-settings-registry-for-palette.md) · [instruction](docs/instruction/PAL-03-settings-registry-for-palette.md)
-
-Sprint 24 (opened 2026-10-08, goal "Palette scopes (`!` `>` `@`) and a switchable UI language (English / Tiếng Việt)") — pulled from Backlog:
-
-- ✅ **PAL-04.** Palette: UI items vs console commands + scope prefixes `!` / `>` / `@` — [detail](docs/todo/PAL-04-palette-scoped-search-syntax.md) · [instruction](docs/instruction/PAL-04-palette-scoped-search-syntax.md)
-- ✅ **I18N-01.** GTK-free TSV catalog loader `i18n::tr` + lint tests — [detail](docs/todo/I18N-01-catalog-loader-and-lint.md) · [instruction](docs/instruction/I18N-01-catalog-loader-and-lint.md)
-- ✅ **I18N-02.** Wrap UI strings in `tr()` + Vietnamese catalog + live refresh — [detail](docs/todo/I18N-02-wire-ui-strings.md) · [instruction](docs/instruction/I18N-02-wire-ui-strings.md)
-- ✅ **I18N-03.** Language setting (System/English/Tiếng Việt), persistence, system default — [detail](docs/todo/I18N-03-language-setting-and-persistence.md) · [instruction](docs/instruction/I18N-03-language-setting-and-persistence.md)
-
-Sprint 25 (opened 2026-10-08, goal "Palette titles follow the UI language, and the About dialog heading bug is fixed") — pulled from Backlog:
-
-- ✅ **UI-22.** About dialog: "Links & protocol" heading renders blank — [detail](docs/todo/UI-22-about-links-protocol-heading-blank.md) · [instruction](docs/instruction/UI-22-about-links-protocol-heading-blank.md)
-- ✅ **I18N-04.** UI language: palette titles from the catalog (display follows UI language; search stays bilingual) — [detail](docs/todo/I18N-04-palette-titles-from-catalog.md)
-
-Sprint 26 (opened 2026-10-08, goal "Harden the About dialog's markup against bad translations, and visually verify the Vietnamese UI") — pulled from Backlog:
-
-- ✅ **I18N-05.** Escape translated text before Pango markup in `makeValueLabel` (hardening; same class as UI-22). [Model: Sonnet] — [detail](docs/todo/I18N-05-escape-translated-text-in-value-label-markup.md)
-- ✅ **I18N-06.** Visual verification pass of the Vietnamese UI (palette live switch, `!` view, engine-on states, Settings row). Verification only; defects become new CODEs. [Model: Sonnet] — [detail](docs/todo/I18N-06-vietnamese-ui-visual-verification.md)
-
-Sprint 27 (opened 2026-10-08, goal "Fix remaining vi UI gaps") — pulled from Backlog:
-
-- ✅ **I18N-07.** Confirm dialogs show English Yes/No under `vi` (`YES_NO` stock labels). [Model: Sonnet] — [detail](docs/todo/I18N-07-confirm-dialog-yes-no-buttons-not-translated.md) · [instruction](docs/instruction/I18N-07-confirm-dialog-yes-no-buttons-not-translated.md)
-- ✅ **UX-09.** Settings Apply is disabled on every tab while the engine path is invalid (blocks Language/Theme; design resolved 2026-11-12: option (a)). [Model: Sonnet] — [detail](docs/todo/UX-09-apply-disabled-when-engine-path-invalid.md) · [instruction](docs/instruction/UX-09-apply-disabled-when-engine-path-invalid.md)
-- ✅ **UI-23.** Typography and layout polish: CSS type roles, tabular numerals, wrapping engine stats, Pango graph labels, BoardView min size (fixes a GtkPaned measure warning). Added 2026-11-11 on user request. [Model: Opus] — [detail](docs/todo/UI-23-typography-and-layout-polish.md) · [instruction](docs/instruction/UI-23-typography-and-layout-polish.md)
-- ✅ **UI-24.** Engine Log gutter clipped the "MESSAGE" tag: size request included CSS padding/border; now `set_content_width`. Pulled in 2026-11-12 on user request. [Model: Opus] — [detail](docs/todo/UI-24-engine-log-gutter-tag-clipped.md)
-- ✅ **PROTO-09.** Stable realtime winrate on the board in every Rapfi message mode: one PV-round model for INFO+MESSAGE (no PV-list collapse), MCTS ucilike/normal fields, round-based tag cleanup, eased board overlay. Pulled in 2026-11-12 on user request. [Model: Opus] — [detail](docs/todo/PROTO-09-stable-realtime-winrate.md)
+_No sprint open — Sprint 27 closed 2026-11-12 (see `docs/sprint/archive/sprint-27.md`). Run `/sprint open 28 …`._
 
 ## Backlog
 
@@ -184,3 +155,34 @@ Sprint 22:
 - ✅ **UX-07.** redesign board mark language (engine / database / variant / best) — size L, design gate `features/board-marks/` first — [detail](docs/todo/UX-07-board-mark-visual-language.md) (PR #49)
 - ✅ **UX-08.** board hover crosshair, margin highlight, mark tooltips (after UX-07) — [detail](docs/todo/UX-08-board-hover-crosshair-and-tooltips.md) (PR #50)
 - ✅ **UI-21.** modern chrome: icon header bar, hamburger menu, CSS tokens — size L, design gate `features/modern-ui/` — [detail](docs/todo/UI-21-modern-chrome-icons-css.md)
+
+Sprint 23:
+
+- ✅ **PAL-01.** Pure en/vi search engine (BM25F) + shared dataset + Whoosh benchmark — [detail](docs/todo/PAL-01-palette-search-engine-and-benchmark.md) · [instruction](docs/instruction/PAL-01-palette-search-engine-and-benchmark.md)
+- ✅ **PAL-02.** Ctrl+K overlay + action/`!`-command registries — [detail](docs/todo/PAL-02-palette-overlay-ui-and-registries.md) · [instruction](docs/instruction/PAL-02-palette-overlay-ui-and-registries.md)
+- ✅ **PAL-03.** Declarative settings registry so settings are searchable — [detail](docs/todo/PAL-03-settings-registry-for-palette.md) · [instruction](docs/instruction/PAL-03-settings-registry-for-palette.md)
+
+Sprint 24:
+
+- ✅ **PAL-04.** Palette: UI items vs console commands + scope prefixes `!` / `>` / `@` — [detail](docs/todo/PAL-04-palette-scoped-search-syntax.md) · [instruction](docs/instruction/PAL-04-palette-scoped-search-syntax.md)
+- ✅ **I18N-01.** GTK-free TSV catalog loader `i18n::tr` + lint tests — [detail](docs/todo/I18N-01-catalog-loader-and-lint.md) · [instruction](docs/instruction/I18N-01-catalog-loader-and-lint.md)
+- ✅ **I18N-02.** Wrap UI strings in `tr()` + Vietnamese catalog + live refresh — [detail](docs/todo/I18N-02-wire-ui-strings.md) · [instruction](docs/instruction/I18N-02-wire-ui-strings.md)
+- ✅ **I18N-03.** Language setting (System/English/Tiếng Việt), persistence, system default — [detail](docs/todo/I18N-03-language-setting-and-persistence.md) · [instruction](docs/instruction/I18N-03-language-setting-and-persistence.md)
+
+Sprint 25:
+
+- ✅ **UI-22.** About dialog: "Links & protocol" heading renders blank — [detail](docs/todo/UI-22-about-links-protocol-heading-blank.md) · [instruction](docs/instruction/UI-22-about-links-protocol-heading-blank.md)
+- ✅ **I18N-04.** UI language: palette titles from the catalog (display follows UI language; search stays bilingual) — [detail](docs/todo/I18N-04-palette-titles-from-catalog.md)
+
+Sprint 26:
+
+- ✅ **I18N-05.** Escape translated text before Pango markup in `makeValueLabel` (hardening; same class as UI-22). [Model: Sonnet] — [detail](docs/todo/I18N-05-escape-translated-text-in-value-label-markup.md)
+- ✅ **I18N-06.** Visual verification pass of the Vietnamese UI (palette live switch, `!` view, engine-on states, Settings row). Verification only; defects become new CODEs. [Model: Sonnet] — [detail](docs/todo/I18N-06-vietnamese-ui-visual-verification.md)
+
+Sprint 27:
+
+- ✅ **I18N-07.** Confirm dialogs show English Yes/No under `vi` (`YES_NO` stock labels). [Model: Sonnet] — [detail](docs/todo/I18N-07-confirm-dialog-yes-no-buttons-not-translated.md) · [instruction](docs/instruction/I18N-07-confirm-dialog-yes-no-buttons-not-translated.md)
+- ✅ **UX-09.** Settings Apply is disabled on every tab while the engine path is invalid (blocks Language/Theme; design resolved 2026-11-12: option (a)). [Model: Sonnet] — [detail](docs/todo/UX-09-apply-disabled-when-engine-path-invalid.md) · [instruction](docs/instruction/UX-09-apply-disabled-when-engine-path-invalid.md)
+- ✅ **UI-23.** Typography and layout polish: CSS type roles, tabular numerals, wrapping engine stats, Pango graph labels, BoardView min size (fixes a GtkPaned measure warning). Added 2026-11-11 on user request. [Model: Opus] — [detail](docs/todo/UI-23-typography-and-layout-polish.md) · [instruction](docs/instruction/UI-23-typography-and-layout-polish.md)
+- ✅ **UI-24.** Engine Log gutter clipped the "MESSAGE" tag: size request included CSS padding/border; now `set_content_width`. Pulled in 2026-11-12 on user request. [Model: Opus] — [detail](docs/todo/UI-24-engine-log-gutter-tag-clipped.md)
+- ✅ **PROTO-09.** Stable realtime winrate on the board in every Rapfi message mode: one PV-round model for INFO+MESSAGE (no PV-list collapse), MCTS ucilike/normal fields, round-based tag cleanup, eased board overlay. Pulled in 2026-11-12 on user request. [Model: Opus] — [detail](docs/todo/PROTO-09-stable-realtime-winrate.md)
