@@ -92,6 +92,7 @@ set(GUI_SOURCES
     src/model/move_history.cpp
     src/model/variation_tree.cpp
     src/model/board_view_model.cpp
+    src/model/search_overlay_animator.cpp
     src/model/renju_rule.cpp
     src/model/settings_storage.cpp
     src/model/game_io.cpp

@@ -85,6 +85,9 @@ public:
         std::string label;             ///< winrate/mate text — Tag only
         double      winrate = 0.5;     ///< backs the HSV heat colour — Tag only
         bool        isBest  = false;   ///< UI-18: this cell is the current best root move (orthogonal to kind)
+        /// PROTO-09: draw opacity. Always 1 in `searchOverlay` itself; only the
+        /// eased copy from SearchOverlayAnimator carries a fade in/out value.
+        double      alpha   = 1.0;
     };
     std::vector<SearchOverlayMark> searchOverlay;
 

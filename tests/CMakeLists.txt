@@ -25,6 +25,8 @@ add_executable(ranls-gui-tests
     test_main.cpp
     test_move_history.cpp
     test_gomocup_protocol.cpp
+    test_proto09_stable_rounds.cpp
+    test_proto09_overlay_animator.cpp
     test_proto03_protocol_extension.cpp
     test_game_state.cpp
     test_rt01_throttle.cpp
@@ -68,6 +70,7 @@ add_executable(ranls-gui-tests
     test_i18n04_palette_titles.cpp
 
     # Sources under test (model/engine only — no UI, no gtkmm).
+    ${CMAKE_SOURCE_DIR}/src/model/search_overlay_animator.cpp
     ${CMAKE_SOURCE_DIR}/src/i18n/i18n.cpp
     ${CMAKE_SOURCE_DIR}/src/i18n/i18n_lint.cpp
     ${CMAKE_SOURCE_DIR}/src/command/palette_search.cpp
@@ -241,6 +244,7 @@ add_executable(ranls-gui-ui-tests
     ${CMAKE_SOURCE_DIR}/src/model/variation_tree.cpp
     ${CMAKE_SOURCE_DIR}/src/model/renju_rule.cpp
     ${CMAKE_SOURCE_DIR}/src/model/board_view_model.cpp
+    ${CMAKE_SOURCE_DIR}/src/model/search_overlay_animator.cpp
     ${CMAKE_SOURCE_DIR}/src/model/settings_storage.cpp
     ${CMAKE_SOURCE_DIR}/src/model/game_io.cpp
     ${CMAKE_SOURCE_DIR}/src/model/game_file_service.cpp

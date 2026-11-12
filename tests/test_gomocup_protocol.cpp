@@ -459,8 +459,17 @@ TEST_CASE("GomocupProtocol: MESSAGE-stream commitPV drops stale high-index PVs w
     REQUIRE(rec.lastPVs.size() == 3);
 
     // Next round starts (multiPV lowered to 1): only index 0 is reported.
-    // The stale index-1/2 entries from the previous round must not survive.
+    // PROTO-09: this stream carries no PV count, so a round is only known to
+    // be over when the NEXT one opens. Truncating right here (the original
+    // STATE-03 fix) blanked rows 2..N for the whole of every depth round --
+    // the PV-list flicker PROTO-09 removes -- so the rows now stay until the
+    // round that failed to refresh them has ended.
     CHECK_NOTHROW(rec.proto.parseLine("MESSAGE (1) 60 | 11-9 | 7,6 8,6"));
+    REQUIRE(rec.lastPVs.size() == 3);
+
+    // The following round opens: the previous one reported PV #1 only, so the
+    // stale index-1/2 entries must not survive any longer (STATE-03 intent).
+    CHECK_NOTHROW(rec.proto.parseLine("MESSAGE (1) 61 | 12-9 | 7,6 8,6"));
     REQUIRE(rec.lastPVs.size() == 1);
     CHECK_FALSE(rec.lastPVs[0].moves.empty());
     // parseEngineCoord treats "row,col" as Coord{col, row}: "7,6" -> Coord{6, 7}.

@@ -537,7 +537,9 @@ void BoardRenderer::drawVariantMarkers(const Cairo::RefPtr<Cairo::Context> &cr)
 // glyphs so they read without relying on colour alone.
 void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
 {
-    if (vm_.searchOverlay.empty()) return;
+    // PROTO-09: the eased copy when BoardView animates, else the model's own.
+    const auto &marks = animatedOverlay_ ? *animatedOverlay_ : vm_.searchOverlay;
+    if (marks.empty()) return;
 
     using Kind = BoardViewModel::SearchOverlayMark::Kind;
     const double rMark = stoneRadius() * 0.42;
@@ -562,8 +564,8 @@ void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
         {0.349, 0.659, 0.059, 1.00, 1.00, 0.8},   // 9
     };
     double bestWinrate = 0.0;
-    for (const auto &m : vm_.searchOverlay)
-        if (m.kind == Kind::Tag) bestWinrate = std::max(bestWinrate, m.winrate);
+    for (const auto &m : marks)
+        if (m.kind == Kind::Tag && m.alpha > 0.0) bestWinrate = std::max(bestWinrate, m.winrate);
     // Steeper than Sabaki's ratio: one strength step per 4 winrate points below
     // the best tag (7 pts -> blue, 20 pts -> purple, 32+ pts -> red).
     constexpr double kPointsPerStep = 0.04;
@@ -589,11 +591,16 @@ void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
         cr->begin_new_path();
     };
 
-    for (const auto &m : vm_.searchOverlay) {
+    for (const auto &m : marks) {
         if (!m.pos.isValid(vm_.boardSize)) continue;
+        if (m.alpha <= 0.0) continue;
         cr->begin_new_path();   // see drawDatabaseMarkers (tag text -> next arc)
         double cx = cellCenterX(m.pos.x);
         double cy = cellCenterY(m.pos.y);
+        // PROTO-09: a mark that is fading in/out is drawn into a group and
+        // composited once, so its glow, glyph and text fade as one.
+        const bool fading = m.alpha < 1.0;
+        if (fading) cr->push_group();
 
         switch (m.kind) {
         case Kind::Tag: {
@@ -660,6 +667,11 @@ void BoardRenderer::drawSearchOverlay(const Cairo::RefPtr<Cairo::Context> &cr)
         // Kind::Best is its own cyan disc.
         if (m.isBest && m.kind != Kind::Best && m.kind != Kind::Tag)
             drawHeat(cx, cy, 9);
+
+        if (fading) {
+            cr->pop_group_to_source();
+            cr->paint_with_alpha(m.alpha);
+        }
     }
 }
 

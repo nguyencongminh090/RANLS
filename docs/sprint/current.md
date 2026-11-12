@@ -17,6 +17,7 @@
 | UX-09 | Settings Apply disabled on every tab while the engine path is invalid | — (user picks option a/b first) | — | 🔲 Not started |
 | UI-23 | Typography and layout polish (added mid-sprint 2026-11-11, user request) | — | — | ✅ Done |
 | UI-24 | Engine Log gutter clipped the "MESSAGE" tag (added mid-sprint 2026-11-12, user request) | — | — | ✅ Done |
+| PROTO-09 | Stable realtime winrate on the board, all Rapfi message modes (added mid-sprint 2026-11-12, user request) | — | — | ✅ Done |
 
 Points not yet estimated (consistent with Sprints 3–26).
 

@@ -13,6 +13,10 @@ BoardView::BoardView(BoardViewModel &viewModel)
     // UI-23: the board can never be squeezed to nothing (see kBoardMinPx).
     set_size_request(kBoardMinPx, kBoardMinPx);
 
+    // PROTO-09: draw the eased overlay, not the raw one.
+    renderer_.setAnimatedSearchOverlay(&overlayAnim_.shown());
+    signal_unmap().connect([this]() { stopAnimationTick(); overlayAnim_.snap(); });
+
     // Drawing callback.
     set_draw_func(sigc::mem_fun(*this, &BoardView::onDraw));
 
@@ -63,7 +67,50 @@ BoardView::BoardView(BoardViewModel &viewModel)
 
 void BoardView::queueRedraw()
 {
+    overlayAnim_.setTarget(vm_.searchOverlay);
+    // Nothing may linger over a stone that was just played on a tagged cell.
+    overlayAnim_.dropFading([this](Coord c) { return vm_.isOccupied(c); });
+
+    // Ease only on screen and only if the desktop allows animations (a11y
+    // "reduce motion"); otherwise show the new state at once.
+    bool animate = get_mapped();
+    if (animate) {
+        if (auto settings = get_settings())
+            animate = settings->property_gtk_enable_animations().get_value();
+    }
+    if (!animate) {
+        stopAnimationTick();
+        overlayAnim_.snap();
+    } else if (overlayAnim_.animating() && animTickId_ == 0) {
+        animLastFrame_ = 0;
+        animTickId_    = add_tick_callback(sigc::mem_fun(*this, &BoardView::onAnimationTick));
+    }
     queue_draw();
+}
+
+bool BoardView::onAnimationTick(const Glib::RefPtr<Gdk::FrameClock> &clock)
+{
+    const gint64 now = clock->get_frame_time();
+    // First tick has no previous frame; a long stall (window hidden, debugger)
+    // must not be replayed as one giant step either.
+    const double dt = animLastFrame_ == 0 ? 0.0 : std::min((now - animLastFrame_) / 1e6, 0.1);
+    animLastFrame_ = now;
+
+    const bool more = overlayAnim_.advance(dt);
+    queue_draw();
+    if (!more) {
+        animTickId_ = 0;
+        return false;   // G_SOURCE_REMOVE
+    }
+    return true;
+}
+
+void BoardView::stopAnimationTick()
+{
+    if (animTickId_ != 0) {
+        remove_tick_callback(animTickId_);
+        animTickId_ = 0;
+    }
 }
 
 void BoardView::onDraw(const Cairo::RefPtr<Cairo::Context> &cr, int width, int height)

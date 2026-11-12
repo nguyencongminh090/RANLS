@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "model/board_view_model.h"
 
@@ -56,6 +57,14 @@ public:
         if (!family.empty()) labelFamily_ = std::move(family);
     }
 
+    /// PROTO-09: draw this eased copy of the search overlay (owned by the
+    /// caller's SearchOverlayAnimator) instead of vm_.searchOverlay. nullptr
+    /// (the default) draws the view model's overlay as is.
+    void setAnimatedSearchOverlay(const std::vector<BoardViewModel::SearchOverlayMark> *marks)
+    {
+        animatedOverlay_ = marks;
+    }
+
 private:
     // ── Layer methods (called in order) ─────────────────────────────────────
     void drawGrid(const Cairo::RefPtr<Cairo::Context> &cr);
@@ -101,4 +110,6 @@ private:
     double marginLeft_ = 0.0;
     double marginTop_  = 0.0;
     int    boardPx_    = 0;
+
+    const std::vector<BoardViewModel::SearchOverlayMark> *animatedOverlay_ = nullptr;
 };
