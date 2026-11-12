@@ -48,13 +48,17 @@ Sprint 26 (opened 2026-10-08, goal "Harden the About dialog's markup against bad
 
 Sprint 27 (opened 2026-10-08, goal "Fix remaining vi UI gaps") — pulled from Backlog:
 
-- 🔲 **I18N-07.** Confirm dialogs show English Yes/No under `vi` (`YES_NO` stock labels). [Model: Sonnet] — [detail](docs/todo/I18N-07-confirm-dialog-yes-no-buttons-not-translated.md)
+- 🔲 **I18N-07.** Confirm dialogs show English Yes/No under `vi` (`YES_NO` stock labels). [Model: Sonnet] — [detail](docs/todo/I18N-07-confirm-dialog-yes-no-buttons-not-translated.md) · [instruction](docs/instruction/I18N-07-confirm-dialog-yes-no-buttons-not-translated.md)
 - 🔲 **UX-09.** Settings Apply is disabled on every tab while the engine path is invalid (blocks Language/Theme; design call with user). [Model: Sonnet] — [detail](docs/todo/UX-09-apply-disabled-when-engine-path-invalid.md)
 - ✅ **UI-23.** Typography and layout polish: CSS type roles, tabular numerals, wrapping engine stats, Pango graph labels, BoardView min size (fixes a GtkPaned measure warning). Added 2026-11-11 on user request. [Model: Opus] — [detail](docs/todo/UI-23-typography-and-layout-polish.md) · [instruction](docs/instruction/UI-23-typography-and-layout-polish.md)
 - ✅ **UI-24.** Engine Log gutter clipped the "MESSAGE" tag: size request included CSS padding/border; now `set_content_width`. Pulled in 2026-11-12 on user request. [Model: Opus] — [detail](docs/todo/UI-24-engine-log-gutter-tag-clipped.md)
 - ✅ **PROTO-09.** Stable realtime winrate on the board in every Rapfi message mode: one PV-round model for INFO+MESSAGE (no PV-list collapse), MCTS ucilike/normal fields, round-based tag cleanup, eased board overlay. Pulled in 2026-11-12 on user request. [Model: Opus] — [detail](docs/todo/PROTO-09-stable-realtime-winrate.md)
 
 ## Backlog
+
+- 🔲 **PROTO-08.** `.ptc` v2: basic functions for extension authors (pure functions, narrow arithmetic, board sinks; design gate — `features/protocol-extension-v2/` Q10–Q18 OPEN). [Model: Opus] — [detail](docs/todo/PROTO-08-ptc-v2-basic-functions.md)
+
+Filed 2026-11-04 from the PROTO-03 review (user question) — design not yet resolved; not pulled into a sprint.
 
 
 Filed 2026-10-08 from the I18N-06 visual pass (`docs/audit/2026-10-log.md` (2026-10-08 "Vietnamese UI visual verification")): I18N-07, UX-09 — **pulled into Sprint 27 Active 2026-10-08** (see docs/sprint/current.md).

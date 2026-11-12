@@ -362,3 +362,10 @@ ui-layer only: CSS type roles (em sizes, tabular figures, mono only for logs), w
 Pango text in the win graph, UI font for board coordinates, BoardView min size. No bundled fonts, no
 textview line-height, stone numbers untouched.
 [detail](docs/instruction/UI-23-typography-and-layout-polish.md)
+
+## I18N-07 — confirm-dialog-yes-no-buttons-not-translated
+
+ui-layer only: replace `ButtonsType::YES_NO` in `confirmDiscardGame` with `add_button(tr("No"/"Yes"))`
+via a testable helper; same response semantics, no default response; add `Yes`/`No` to `vi.tsv`.
+`showErrorDialog`'s `OK` is a listed follow-up, not fixed here.
+[detail](docs/instruction/I18N-07-confirm-dialog-yes-no-buttons-not-translated.md)
