@@ -214,6 +214,7 @@ add_executable(ranls-gui-ui-tests
     test_i18n03_ui.cpp
     test_i18n04_ui.cpp
     test_i18n07_confirm_buttons.cpp
+    test_ux09_apply_invalid_engine_path.cpp
 
     # UI sources under test.
     ${CMAKE_SOURCE_DIR}/src/i18n/i18n.cpp

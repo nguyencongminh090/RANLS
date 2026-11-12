@@ -40,6 +40,7 @@ private:
     /// I18N-03: language settings in dropdown order ("system", then i18n::languages()).
     static std::vector<std::string> languageChoices();
     friend struct RanlsI18n03Probe;  // tests only
+    friend struct RanlsUx09Probe;    // tests only (UX-09)
     void onApply();
     void onChooseEngine();
     void onChoosePtc();
