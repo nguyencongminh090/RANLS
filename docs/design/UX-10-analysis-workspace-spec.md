@@ -1,7 +1,7 @@
 # UX-10 — Analysis workspace: interaction spec
 
 Task: [UX-10](../todo/UX-10-analysis-workspace-design.md). Review date 2026-11-18, app v0.12.0 (main `375532a`), dark theme, English.
-This is a design only. Nothing here is implemented. Every item is tagged **Current** (observed in the built app or read from source) or **Proposal**.
+This is a design only. Nothing here is implemented. Every item is tagged **Current** (observed in the built app or read from source) or **Proposal**. The method is an expert heuristic walkthrough of the built app (visibility of system status, consistency, recognition over recall, error recovery, per [ux-research-usability](../knowledge/ux-research-usability.md)). It is not evidence from users.
 
 ## Deliverables
 
@@ -24,7 +24,7 @@ Method: the Release build of this worktree, run under Xvfb with an isolated sett
 | B1 | A blue **Analyze** header button and an unlabelled ▶ icon in the engine strip can both start the engine. Header **Stop** (stops analysis) and the strip's ■ icon (stops the engine process) look alike. Only tooltips tell them apart. | [01](baseline/01-new-game-engine-off.png), source `main_window.cpp` (`onStartAnalysis`, `signal_start`, `signal_stop`) |
 | B2 | While the engine thinks, **Analyze** keeps its solid blue look. File and navigation icons dim. | [02](baseline/02-live-analysis-thinking.png) |
 | B3 | The state chip reads OFF, ON, THINKING, CRASHED. The glyph is the same round dot, only its color changes. "ON" does not say idle. | [01](baseline/01-new-game-engine-off.png), [02](baseline/02-live-analysis-thinking.png), [03](baseline/03-after-stop-idle.png), [06](baseline/06-engine-crashed.png), `engine_status.cpp` |
-| B4 | The engine-off analysis area is not fully quiet. It shows `D: - N: - NPS: -` dashes and an empty 100/50/0% graph. | [01](baseline/01-new-game-engine-off.png) |
+| B4 | The engine-off analysis area shows `D: - N: - NPS: -` dashes and an empty 0/50/100% graph scaffold. There is no placeholder text. The scaffold was kept on purpose by [UI-08](../todo/UI-08-remove-empty-state-placeholder-text.md). | [01](baseline/01-new-game-engine-off.png) |
 | B5 | With a bad engine path, Analyze leaves the chip at OFF and shows `D: 0 N: 0 NPS: 0/s Eval: 50.0%`. The only message, `Failed to start engine`, is in the Engine Log tab, which is hidden behind the Move Log tab. | [07](baseline/07-bad-engine-path-stays-off.png), [08](baseline/08-bad-engine-path-engine-log.png) |
 | B6 | After a crash the chip says CRASHED and a red dismissible banner names the engine. The candidate rows and metrics from before the crash stay on screen, unmarked. | [06](baseline/06-engine-crashed.png) |
 | B7 | At 1280×800 the board is 462 px wide. The full-width log pane is 208 px high and mostly empty. | [01](baseline/01-new-game-engine-off.png) |
@@ -57,7 +57,7 @@ Differences from today (all **Proposal**): labelled engine strip, metrics with w
 |---|---|---|---|
 | Header primary | **Analyze** (F5) | Starts the engine if it is not running, then analyzes the selected position. Action `win.analyze`. | **Current** and unchanged. Proposal adds the F5 hint and the tooltip "Starts the engine, then analyzes this position". |
 | Header secondary | **Stop analysis** (Esc) | Stops the search only. The engine stays running. Action `win.stop`. | Today labelled "Stop". Proposal: rename. |
-| Strip | **Start engine** / **Stop engine** | Launch or terminate the engine process. Never starts a search. | Today unlabelled ▶ and ■ icons with tooltips. Proposal: text labels, and only one of the two is shown at a time. |
+| Strip | **Start engine** / **Stop engine** | Launch or terminate the engine process. Never starts a search. | Today unlabelled ▶ and ■ icons with tooltips. Proposal: text labels, and only one of the two is shown at a time. This reverses part of [UI-21](../todo/UI-21-modern-chrome-icons-css.md), which made the engine-status buttons icons. The header keeps its two text labels as UI-21 intended. |
 | Strip | **Restart** | Reloads the engine. | Today ↻ icon. |
 | Strip | **Analyze mode** | Continuously analyzes each position. | Today ∞ icon. |
 
@@ -79,16 +79,16 @@ Each state therefore has a word, a distinct shape and a different set of enabled
 
 ## Quiet engine-off panes (UI-08)
 
-**Proposal:** with the engine off the metrics row, graph contents, candidate lines and tree stay empty with no placeholder text. That means hiding the dash metrics and the empty axes from B4. The first action is carried by the controls only. A failure is not an empty state, so the Disconnected message is allowed.
+Current behavior already follows [UI-08](../todo/UI-08-remove-empty-state-placeholder-text.md): no placeholder text, and the 0/50/100% graph scaffold stays because UI-08 kept it. This spec keeps both. **Proposal:** the only change is to hide the dash-filled metrics row while the engine is off (B4). The first action is carried by the controls alone. The status line under the board says only the side to move and the rule, not a "No moves yet" hint. A failure is not an empty state, so the Disconnected message is allowed.
 
 ## Live analysis view
 
 Mockup 2 carries one position: 1 H8, 2 I9, 3 I7, then the selected branch 4 G7, 5 H6, with White to move. The other branch from 3. I7 is 4 G9, 5 H9, 6 J8.
 
-- **Candidates** show rank, first move, eval, win rate with a bar, depth and the full continuation as chips colored by the side that plays them. Board tags carry the same rank number inside a black dot, so a tag finds its row without relying on its hue. Row 1 is 71.1 percent, equal to White's point in the graph.
-- **Graph** (`WinGraphMode::BothSide`, the default): Black is the solid line with filled dots, White the dashed line with hollow dots. A red rule and a ringed dot mark move 5. The graph follows the current line, moves 1 to 5.
-- **Metrics** use words: Depth, Nodes, Speed, Time, Eval, Best.
-- Numbers are the ones the fixture produced in the live baseline ([02](baseline/02-live-analysis-thinking.png)) apart from the graph history and tree columns, which were invented to match.
+- **Candidates.** **Current:** each row is text with rank, eval, win rate, depth and the line as arrow-joined moves, and the board tags show the win rate on a colored blob. **Proposal:** a win-rate bar, the continuation as chips colored by the side that plays them, and a rank number inside a black dot on each board tag so a tag finds its row without relying on its hue. Row 1 is 71.1 percent, equal to White's point in the graph.
+- **Graph.** **Current:** `WinGraphMode::BothSide` is the default. Black is the solid blue line, White the dashed green line ([UX-03 and UI-09](../fix-log/2026-08-31-ui-09-wingraph-single-side-black-and-thicker-line.md) style cue), with a red rule and one dot at the selected move. It follows the current line. The mockup shows lines only, without per-point markers, as drawn today. **Assumption:** points for moves 1 to 4 exist because those positions were analyzed earlier. Unanalyzed moves leave gaps today.
+- **Metrics.** **Proposal:** words (Depth, Nodes, Speed, Time, Eval, Best) instead of D:, N:, NPS:, T:. They wrap in the same flow box ([UI-23](../todo/UI-23-typography-and-layout-polish.md)).
+- **Data.** Numbers for the candidates and metrics are the ones the fixture produced in the live baseline ([02](baseline/02-live-analysis-thinking.png)). The graph history and tree columns were invented to match.
 
 ## Visual and Table views
 
@@ -111,17 +111,26 @@ See [visual-and-table-views.svg](visual-and-table-views.svg).
 
 See [narrow-window-and-panels.svg](narrow-window-and-panels.svg).
 
-**Discovery (Current):** the toggles exist only under main menu → View, as one "Analysis Panel" entry and one "Move/Engine Log Panel" entry. There is no shortcut, no palette command and no on-screen cue once a panel is hidden (B11).
+**Discovery (Current):** the toggles exist only under main menu → View, as one "Analysis Panel" entry and one "Move/Engine Log Panel" entry. There is no shortcut, no palette command and no on-screen cue once a panel is hidden (B11). Session-only visibility was a deliberate choice to avoid a settings-schema change, and shortcuts and palette entries were recorded as unfiled ideas in the [2026-11-12 audit entry](../audit/2026-11-log.md). This spec does not change persistence.
 
 **Board space (Current, measured at 926×560):** default 290 px, logs hidden 382 px, both hidden 427 px. At the default size the numbers on the stones are about 8 px and the 4 candidate lines show 2.
 
 **Proposal:**
 
-1. Replace the full-width log pane with a 28 px **log bar** in the analysis column that shows the "Move Log" and "Engine Log" tabs. One click on either opens a drawer in that column on that tab. The board stays 382 px at 926×560.
+1. Replace the full-width log pane with a 32 px **log bar** in the analysis column that shows the "Move Log" and "Engine Log" tabs. One click on either opens a drawer in that column on that tab. The board stays 382 px at 926×560.
 2. The bar shows counts as text ("5 moves · 0 errors", "Engine Log · 1 error") so a failed start is not hidden (B5).
 3. Split the View entry into **Analysis Panel**, **Move Log** and **Engine Log**, and add the same commands to the Ctrl+K palette.
 4. A hidden Analysis panel leaves a 28 px rail labelled "Analysis". Clicking it restores the panel. Board about 395 px with the bar kept (an estimate, 427 px was measured with nothing below the board).
 5. Below about 1000 px wide or 700 px high, start with the bar folded. A manual choice wins for the session.
+
+## Earlier decisions this design touches
+
+| Decision | Effect |
+|---|---|
+| [UI-08](../todo/UI-08-remove-empty-state-placeholder-text.md) clean empty panes, graph axes kept | Kept. Only the dash metrics row is proposed to hide. |
+| [UI-21](../todo/UI-21-modern-chrome-icons-css.md) icon-first chrome | Partly reversed in the engine strip only (text labels). Header icons and the two labelled primary buttons stay. |
+| [UI-23](../todo/UI-23-typography-and-layout-polish.md) type scale, wrapping engine stats | Kept. Word labels must wrap in the flow box. |
+| Session-only panel visibility ([audit 2026-11-12](../audit/2026-11-log.md)) | Kept. Palette entries and shortcuts were already noted there as ideas. |
 
 ## Open questions
 

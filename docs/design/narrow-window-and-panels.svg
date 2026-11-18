@@ -145,20 +145,20 @@
 <rect x="479" y="294" width="439" height="26" rx="0" fill="#343434" />
 <rect x="487" y="300" width="40" height="8" rx="2" fill="#8a8a8a" />
 <rect x="533" y="300" width="369" height="8" rx="2" fill="#6a6a6a" />
-<rect x="479" y="328" width="439" height="194" rx="0" fill="#262626" stroke="#3c3c3c" stroke-width="1" />
-<rect x="479" y="526" width="439" height="28" rx="0" fill="#232323" stroke="#4a4a4a" stroke-width="1" />
-<rect x="487" y="533" width="56" height="14" rx="2" fill="#888" />
-<rect x="551" y="533" width="66" height="14" rx="2" fill="#bbb" />
+<rect x="479" y="328" width="439" height="190" rx="0" fill="#262626" stroke="#3c3c3c" stroke-width="1" />
+<rect x="479" y="522" width="439" height="32" rx="0" fill="#232323" stroke="#4a4a4a" stroke-width="1" />
+<rect x="487" y="529" width="56" height="14" rx="2" fill="#888" />
+<rect x="551" y="529" width="66" height="14" rx="2" fill="#bbb" />
 <rect x="160.0" y="117.0" width="142.0" height="24" rx="5" fill="#000000cc" />
 <text x="231.0" y="134.0" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="17" fill="#fff" font-weight="700" text-anchor="middle" >Board 382 px</text>
 <rect x="608.25" y="245" width="173.5" height="24" rx="5" fill="#000000cc" />
 <text x="695.0" y="262" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="17" fill="#fff" font-weight="700" text-anchor="middle" >4 lines visible</text>
-<rect x="618.75" y="513" width="152.5" height="24" rx="5" fill="#000000cc" />
-<text x="695.0" y="530" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="17" fill="#fff" font-weight="700" text-anchor="middle" >Log bar 28 px</text>
+<rect x="618.75" y="509" width="152.5" height="24" rx="5" fill="#000000cc" />
+<text x="695.0" y="526" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="17" fill="#fff" font-weight="700" text-anchor="middle" >Log bar 32 px</text>
 </g>
 <rect x="1516" y="129" width="70" height="15" rx="7.5" fill="#1a5fb4" />
 <text x="1551.0" y="140" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
-<text x="1516" y="166" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Logs fold into a 28 px bar inside the analysis</text>
+<text x="1516" y="166" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Logs fold into a 32 px bar inside the analysis</text>
 <text x="1516" y="182" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >column. Board is 382 px with cells about 26</text>
 <text x="1516" y="198" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >px, equal to the size measured when the logs</text>
 <text x="1516" y="214" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >were hidden. All 4 candidate lines and 4 tree</text>

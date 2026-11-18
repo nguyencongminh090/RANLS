@@ -174,32 +174,10 @@
 <text x="718" y="208.0" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11" fill="#a8a8a8" font-weight="400" text-anchor="end" >50%</text>
 <line x1="726" y1="248" x2="1238" y2="248" stroke="#4a4a4a" stroke-width="1" />
 <text x="718" y="252" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11" fill="#a8a8a8" font-weight="400" text-anchor="end" >0%</text>
-<line x1="1238.0" y1="156" x2="1238.0" y2="250" stroke="#e0554e" stroke-width="1.5" />
-<path d="M726.0,205.76 L854.0,198.72 L982.0,211.04 L1110.0,190.8 L1238.0,185.52" fill="none" stroke="#d8d8d8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 4"/>
-<path d="M726.0,202.24 L854.0,209.28 L982.0,196.96 L1110.0,217.2 L1238.0,222.48" fill="none" stroke="#5499de" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
-<circle cx="726.0" cy="205.76" r="3.6" fill="#2d2d2d" stroke="#d8d8d8" stroke-width="1.6" />
-<circle cx="854.0" cy="198.72" r="3.6" fill="#2d2d2d" stroke="#d8d8d8" stroke-width="1.6" />
-<circle cx="982.0" cy="211.04" r="3.6" fill="#2d2d2d" stroke="#d8d8d8" stroke-width="1.6" />
-<circle cx="1110.0" cy="190.8" r="3.6" fill="#2d2d2d" stroke="#d8d8d8" stroke-width="1.6" />
-<circle cx="1238.0" cy="185.52" r="3.6" fill="#2d2d2d" stroke="#d8d8d8" stroke-width="1.6" />
-<circle cx="726.0" cy="202.24" r="3.8" fill="#5499de" />
-<circle cx="854.0" cy="209.28" r="3.8" fill="#5499de" />
-<circle cx="982.0" cy="196.96" r="3.8" fill="#5499de" />
-<circle cx="1110.0" cy="217.2" r="3.8" fill="#5499de" />
-<circle cx="1238.0" cy="222.48" r="3.8" fill="#5499de" />
-<circle cx="1238.0" cy="222.48" r="6.5" fill="none" stroke="#fff" stroke-width="1.5" />
-<text x="1230.0" y="166" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11" fill="#ff8a80" font-weight="700" text-anchor="end" >move 5</text>
-<text x="726.0" y="262" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="10" fill="#a8a8a8" font-weight="400" text-anchor="middle" >1</text>
-<text x="854.0" y="262" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="10" fill="#a8a8a8" font-weight="400" text-anchor="middle" >2</text>
-<text x="982.0" y="262" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="10" fill="#a8a8a8" font-weight="400" text-anchor="middle" >3</text>
-<text x="1110.0" y="262" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="10" fill="#a8a8a8" font-weight="400" text-anchor="middle" >4</text>
-<text x="1238.0" y="262" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="10" fill="#a8a8a8" font-weight="400" text-anchor="middle" >5</text>
-<line x1="734" y1="154" x2="760" y2="154" stroke="#5499de" stroke-width="2.2" />
-<circle cx="747" cy="154" r="3.6" fill="#5499de" />
-<text x="766" y="158" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11" fill="#f2f2f2" font-weight="400" text-anchor="start" >Black</text>
-<line x1="818" y1="154" x2="844" y2="154" stroke="#d8d8d8" stroke-width="1.8" stroke-dasharray="6 4" />
-<circle cx="831" cy="154" r="3.4" fill="#2d2d2d" stroke="#d8d8d8" stroke-width="1.6" />
-<text x="850" y="158" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11" fill="#f2f2f2" font-weight="400" text-anchor="start" >White</text>
+<path d="M726.0,205.76 L854.0,198.72 L982.0,211.04 L1110.0,190.8 L1238.0,185.52" fill="none" stroke="#1e8e3e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 4"/>
+<path d="M726.0,202.24 L854.0,209.28 L982.0,196.96 L1110.0,217.2 L1238.0,222.48" fill="none" stroke="#1a73e8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="1238.0" y1="160" x2="1238.0" y2="248" stroke="#e0554e" stroke-width="1.5" opacity="0.7"/>
+<circle cx="1238.0" cy="222.48" r="4.5" fill="#1a73e8" />
 <text x="668" y="283" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#a8a8a8" font-weight="700" text-anchor="start" >Candidate lines</text>
 <text x="1258" y="283" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11" fill="#a8a8a8" font-weight="400" text-anchor="end" >MultiPV 4 · White to move</text>
 <rect x="658" y="292" width="608" height="44" rx="0" fill="#343434" />
@@ -383,55 +361,56 @@
 <text x="1397.0" y="276" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
 <text x="1438" y="276" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Search metrics, words not codes</text>
 <text x="1362" y="294" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Depth, Nodes, Speed, Time, Eval and Best replace D:,</text>
-<text x="1362" y="309" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >N:, NPS:, T:. Values are the ones the live baseline</text>
-<text x="1362" y="324" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >showed (20/26, 15.3M, 2.1M/s, 8.4s, +180 · 71.1%,</text>
-<text x="1362" y="339" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >H7).</text>
+<text x="1362" y="309" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >N:, NPS:, T:. They wrap like today's stats (UI-23).</text>
+<text x="1362" y="324" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Values are the ones the live baseline showed (20/26,</text>
+<text x="1362" y="339" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >15.3M, 2.1M/s, 8.4s, +180 · 71.1%, H7).</text>
 <circle cx="1343" cy="360" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
 <text x="1343" y="364.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >4</text>
 <rect x="1362" y="353" width="62" height="15" rx="7.5" fill="#d9d9d6" />
 <text x="1393.0" y="364" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#222" font-weight="700" text-anchor="middle" >CURRENT</text>
 <text x="1430" y="364" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Win-rate graph</text>
-<text x="1362" y="382" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Black is the solid line with filled dots, White the</text>
-<text x="1362" y="397" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >dashed line with hollow dots, so lines differ by</text>
-<text x="1362" y="412" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >style and not only color. The red rule and the</text>
-<text x="1362" y="427" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >ringed dot mark the selected move 5. Shows the</text>
-<text x="1362" y="442" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >current line, moves 1 to 5.</text>
-<circle cx="1343" cy="463" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
-<text x="1343" y="467.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >5</text>
-<rect x="1362" y="456" width="70" height="15" rx="7.5" fill="#1a5fb4" />
-<text x="1397.0" y="467" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
-<text x="1438" y="467" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Candidate lines with continuations</text>
-<text x="1362" y="485" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Each row has a rank, first move, eval, win rate with</text>
-<text x="1362" y="500" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >a bar, depth and the full continuation as</text>
-<text x="1362" y="515" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >stone-colored chips, alternating White then Black.</text>
-<text x="1362" y="530" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Top line has a blue edge bar. Row 1 is 71.1 percent,</text>
-<text x="1362" y="545" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >equal to White's value in the graph.</text>
-<circle cx="1343" cy="566" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
-<text x="1343" y="570.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >6</text>
-<rect x="1362" y="559" width="62" height="15" rx="7.5" fill="#d9d9d6" />
-<text x="1393.0" y="570" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#222" font-weight="700" text-anchor="middle" >CURRENT</text>
-<text x="1430" y="570" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Board tags carry the rank</text>
-<text x="1362" y="588" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Each candidate tag shows the rank number in a black</text>
-<text x="1362" y="603" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >dot plus the win rate, so a tag maps to its row</text>
-<text x="1362" y="618" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >without relying on its hue. Last move 5 is red.</text>
-<text x="1362" y="633" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Selected move is H6.</text>
-<circle cx="1343" cy="654" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
-<text x="1343" y="658.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >7</text>
-<rect x="1362" y="647" width="70" height="15" rx="7.5" fill="#1a5fb4" />
-<text x="1397.0" y="658" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
-<text x="1438" y="658" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Visual tree: branch and selection</text>
-<text x="1362" y="676" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Nodes carry labels (move number and point). The</text>
-<text x="1362" y="691" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >branch point I7 has a fork badge 'branch point · 2</text>
-<text x="1362" y="706" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >lines'. The selected node H6 has a double ring and a</text>
-<text x="1362" y="721" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >'selected' tag. Off-path nodes use dashed gray</text>
-<text x="1362" y="736" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >rings.</text>
-<circle cx="1343" cy="757" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
-<text x="1343" y="761.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >8</text>
-<rect x="1362" y="750" width="70" height="15" rx="7.5" fill="#1a5fb4" />
-<text x="1397.0" y="761" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
-<text x="1438" y="761" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Log bar with counts</text>
-<text x="1362" y="779" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Collapsed bar shows both log tabs and '5 moves · 0</text>
-<text x="1362" y="794" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >errors'. Errors turn the count into text such as '1</text>
-<text x="1362" y="809" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >error', visible without opening the Engine Log.</text>
+<text x="1362" y="382" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >As drawn today: Black is the solid blue line, White</text>
+<text x="1362" y="397" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >the dashed green line (UX-03, UI-09), so the lines</text>
+<text x="1362" y="412" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >differ by style and not only color. A red rule and</text>
+<text x="1362" y="427" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >one dot mark the selected move. Earlier points</text>
+<text x="1362" y="442" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >assume those positions were analyzed before. Today</text>
+<text x="1362" y="457" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >unanalyzed moves leave gaps.</text>
+<circle cx="1343" cy="478" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
+<text x="1343" y="482.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >5</text>
+<rect x="1362" y="471" width="70" height="15" rx="7.5" fill="#1a5fb4" />
+<text x="1397.0" y="482" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
+<text x="1438" y="482" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Candidate lines with continuations</text>
+<text x="1362" y="500" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Today a row is text: rank, eval, win rate, depth and</text>
+<text x="1362" y="515" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >the line as arrow-joined moves. The proposal adds a</text>
+<text x="1362" y="530" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >win-rate bar and the continuation as stone-colored</text>
+<text x="1362" y="545" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >chips, White then Black. Row 1 is 71.1 percent,</text>
+<text x="1362" y="560" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >equal to White's value in the graph.</text>
+<circle cx="1343" cy="581" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
+<text x="1343" y="585.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >6</text>
+<rect x="1362" y="574" width="70" height="15" rx="7.5" fill="#1a5fb4" />
+<text x="1397.0" y="585" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
+<text x="1438" y="585" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Board tags carry the rank</text>
+<text x="1362" y="603" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Today each tag shows only the win rate on a colored</text>
+<text x="1362" y="618" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >blob. A rank number in a black dot lets a tag map to</text>
+<text x="1362" y="633" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >its row without relying on its hue. Last move 5 is</text>
+<text x="1362" y="648" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >red as today and the selected move is H6.</text>
+<circle cx="1343" cy="669" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
+<text x="1343" y="673.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >7</text>
+<rect x="1362" y="662" width="70" height="15" rx="7.5" fill="#1a5fb4" />
+<text x="1397.0" y="673" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
+<text x="1438" y="673" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Visual tree: branch and selection</text>
+<text x="1362" y="691" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Nodes carry labels (move number and point). The</text>
+<text x="1362" y="706" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >branch point I7 has a fork badge 'branch point · 2</text>
+<text x="1362" y="721" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >lines'. The selected node H6 has a double ring and a</text>
+<text x="1362" y="736" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >'selected' tag. Off-path nodes use dashed gray</text>
+<text x="1362" y="751" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >rings.</text>
+<circle cx="1343" cy="772" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
+<text x="1343" y="776.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >8</text>
+<rect x="1362" y="765" width="70" height="15" rx="7.5" fill="#1a5fb4" />
+<text x="1397.0" y="776" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
+<text x="1438" y="776" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Log bar with counts</text>
+<text x="1362" y="794" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Collapsed bar shows both log tabs and '5 moves · 0</text>
+<text x="1362" y="809" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >errors'. Errors turn the count into text such as '1</text>
+<text x="1362" y="824" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >error', visible without opening the Engine Log.</text>
 <text x="20" y="922" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#555" font-weight="400" text-anchor="start" >Data source for live numbers: scripted fixture engine driving the real built app (not a real engine, values illustrative). Position: 1 H8, 2 I9, 3 I7, 4 G7, 5 H6 selected, main line G9 H9 J8 kept as the other branch.</text>
 </svg>

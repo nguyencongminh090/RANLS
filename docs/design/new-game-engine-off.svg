@@ -115,7 +115,7 @@
 <text x="579" y="97.4" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11" fill="#e8b64d" font-weight="400" text-anchor="middle" >O</text>
 <text x="35.1" y="123.85" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11" fill="#d8c94d" font-weight="400" text-anchor="middle" >15</text>
 <text x="61" y="704" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="14" fill="#f2f2f2" font-weight="700" text-anchor="start" >Black to move</text>
-<text x="175" y="704" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#a8a8a8" font-weight="400" text-anchor="start" >· no moves yet · Freestyle Gomoku</text>
+<text x="175" y="704" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#a8a8a8" font-weight="400" text-anchor="start" >· Freestyle Gomoku</text>
 <rect x="652" y="58" width="620" height="736" rx="0" fill="#2d2d2d" stroke="#3c3c3c" stroke-width="1" />
 <rect x="664" y="70" width="120" height="28" rx="14" fill="#3a3a3a" stroke="#9a9a9a" stroke-width="1.6" stroke-dasharray="4 3" />
 <circle cx="681" cy="84" r="7" fill="none" stroke="#d8d8d8" stroke-width="2" stroke-dasharray="3 2.5" />
@@ -129,6 +129,12 @@
 <path d="M1035,84 a3,3 0 1 1 0,0.1 M1045,84 a3,3 0 1 1 0,0.1" fill="none" stroke="#707070" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
 <text x="1056" y="89" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12.5" fill="#707070" font-weight="600" text-anchor="start" >Analyze mode</text>
 <rect x="658" y="146" width="608" height="118" rx="0" fill="#2d2d2d" stroke="#3c3c3c" stroke-width="1" />
+<line x1="726" y1="160" x2="1238" y2="160" stroke="#4a4a4a" stroke-width="1" />
+<text x="718" y="164" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11" fill="#a8a8a8" font-weight="400" text-anchor="end" >100%</text>
+<line x1="726" y1="204.0" x2="1238" y2="204.0" stroke="#4a4a4a" stroke-width="1" />
+<text x="718" y="208.0" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11" fill="#a8a8a8" font-weight="400" text-anchor="end" >50%</text>
+<line x1="726" y1="248" x2="1238" y2="248" stroke="#4a4a4a" stroke-width="1" />
+<text x="718" y="252" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11" fill="#a8a8a8" font-weight="400" text-anchor="end" >0%</text>
 <rect x="658" y="488" width="608" height="32" rx="0" fill="#282828" />
 <text x="756" y="509" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#f2f2f2" font-weight="700" text-anchor="middle" >Visual (All Branches)</text>
 <text x="950" y="509" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#a8a8a8" font-weight="400" text-anchor="middle" >Table (Current Line)</text>
@@ -171,49 +177,53 @@
 <text x="1362" y="206" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Engine strip shows a text chip 'Off' (dashed ring)</text>
 <text x="1362" y="221" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >and a labelled 'Start engine' button. It only</text>
 <text x="1362" y="236" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >launches the engine and never searches. Today it is</text>
-<text x="1362" y="251" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >an unlabelled play icon next to the red OFF.</text>
-<circle cx="1343" cy="272" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
-<text x="1343" y="276.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >3</text>
-<rect x="1362" y="265" width="70" height="15" rx="7.5" fill="#1a5fb4" />
-<text x="1397.0" y="276" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
-<text x="1438" y="276" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Stop analysis, disabled</text>
-<text x="1362" y="294" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Header Stop is relabelled 'Stop analysis' and dims.</text>
-<text x="1362" y="309" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >The strip's 'Stop engine' only appears while the</text>
-<text x="1362" y="324" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >engine runs, so the two square icons no longer share</text>
-<text x="1362" y="339" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >a meaning.</text>
-<circle cx="1343" cy="360" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
-<text x="1343" y="364.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >4</text>
-<rect x="1362" y="353" width="70" height="15" rx="7.5" fill="#1a5fb4" />
-<text x="1397.0" y="364" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
-<text x="1438" y="364" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Quiet panes (UI-08)</text>
-<text x="1362" y="382" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Metrics, graph, candidates and tree stay empty with</text>
-<text x="1362" y="397" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >no placeholder text. Today the metrics row shows 'D:</text>
-<text x="1362" y="412" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >- N: -' dashes and the graph draws empty axes, so</text>
-<text x="1362" y="427" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >this hides both until data arrives.</text>
-<circle cx="1343" cy="448" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
-<text x="1343" y="452.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >5</text>
-<rect x="1362" y="441" width="70" height="15" rx="7.5" fill="#1a5fb4" />
-<text x="1397.0" y="452" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
-<text x="1438" y="452" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Status line under the board</text>
-<text x="1362" y="470" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Side to move, move count and rule in plain text.</text>
-<text x="1362" y="485" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Replaces nothing, gives the board a caption that</text>
-<text x="1362" y="500" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >also names the selected move in game.</text>
-<circle cx="1343" cy="521" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
-<text x="1343" y="525.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >6</text>
-<rect x="1362" y="514" width="70" height="15" rx="7.5" fill="#1a5fb4" />
-<text x="1397.0" y="525" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
-<text x="1438" y="525" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Log bar instead of a 208 px pane</text>
-<text x="1362" y="543" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Today the Move Log and Engine Log occupy a</text>
-<text x="1362" y="558" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >full-width pane that is mostly empty. Collapsed to a</text>
-<text x="1362" y="573" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >32 px bar under the analysis column, both tabs stay</text>
-<text x="1362" y="588" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >visible, so one click restores a log.</text>
-<circle cx="1343" cy="609" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
-<text x="1343" y="613.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >7</text>
-<rect x="1362" y="602" width="62" height="15" rx="7.5" fill="#d9d9d6" />
-<text x="1393.0" y="613" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#222" font-weight="700" text-anchor="middle" >CURRENT</text>
-<text x="1430" y="613" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Tabs say what each view holds</text>
-<text x="1362" y="631" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Visual (All Branches) and Table (Current Line)</text>
-<text x="1362" y="646" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >labels are kept. The pane is empty until the first</text>
-<text x="1362" y="661" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >move.</text>
+<text x="1362" y="251" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >an unlabelled play icon next to the red OFF. This</text>
+<text x="1362" y="266" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >reverses part of UI-21, which turned the</text>
+<text x="1362" y="281" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >engine-status buttons into icons.</text>
+<circle cx="1343" cy="302" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
+<text x="1343" y="306.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >3</text>
+<rect x="1362" y="295" width="70" height="15" rx="7.5" fill="#1a5fb4" />
+<text x="1397.0" y="306" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
+<text x="1438" y="306" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Stop analysis, disabled</text>
+<text x="1362" y="324" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Header Stop is relabelled 'Stop analysis' and dims.</text>
+<text x="1362" y="339" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >The strip's 'Stop engine' only appears while the</text>
+<text x="1362" y="354" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >engine runs, so the two square icons no longer share</text>
+<text x="1362" y="369" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >a meaning.</text>
+<circle cx="1343" cy="390" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
+<text x="1343" y="394.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >4</text>
+<rect x="1362" y="383" width="70" height="15" rx="7.5" fill="#1a5fb4" />
+<text x="1397.0" y="394" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
+<text x="1438" y="394" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Quiet panes (UI-08)</text>
+<text x="1362" y="412" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Candidates and tree stay empty with no placeholder</text>
+<text x="1362" y="427" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >text, and the graph keeps its 0, 50 and 100 percent</text>
+<text x="1362" y="442" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >axes, which UI-08 kept on purpose. The one change is</text>
+<text x="1362" y="457" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >that the metrics row, which shows 'D: - N: -' dashes</text>
+<text x="1362" y="472" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >today, is hidden until the engine reports.</text>
+<circle cx="1343" cy="493" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
+<text x="1343" y="497.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >5</text>
+<rect x="1362" y="486" width="70" height="15" rx="7.5" fill="#1a5fb4" />
+<text x="1397.0" y="497" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
+<text x="1438" y="497" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Status line under the board</text>
+<text x="1362" y="515" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Side to move and rule in plain text, and in a game</text>
+<text x="1362" y="530" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >the selected move. It is a caption, not an</text>
+<text x="1362" y="545" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >empty-state hint, so it avoids the 'No moves yet'</text>
+<text x="1362" y="560" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >wording that UI-08 removed.</text>
+<circle cx="1343" cy="581" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
+<text x="1343" y="585.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >6</text>
+<rect x="1362" y="574" width="70" height="15" rx="7.5" fill="#1a5fb4" />
+<text x="1397.0" y="585" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
+<text x="1438" y="585" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Log bar instead of a 208 px pane</text>
+<text x="1362" y="603" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Today the Move Log and Engine Log occupy a</text>
+<text x="1362" y="618" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >full-width pane that is mostly empty. Collapsed to a</text>
+<text x="1362" y="633" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >32 px bar under the analysis column, both tabs stay</text>
+<text x="1362" y="648" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >visible, so one click restores a log.</text>
+<circle cx="1343" cy="669" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
+<text x="1343" y="673.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >7</text>
+<rect x="1362" y="662" width="62" height="15" rx="7.5" fill="#d9d9d6" />
+<text x="1393.0" y="673" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#222" font-weight="700" text-anchor="middle" >CURRENT</text>
+<text x="1430" y="673" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Tabs say what each view holds</text>
+<text x="1362" y="691" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Visual (All Branches) and Table (Current Line)</text>
+<text x="1362" y="706" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >labels are kept. The pane is empty until the first</text>
+<text x="1362" y="721" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >move.</text>
 <text x="20" y="922" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#555" font-weight="400" text-anchor="start" >New game on the default 15×15 Freestyle board. No engine process is running, so no engine data exists and none is drawn.</text>
 </svg>

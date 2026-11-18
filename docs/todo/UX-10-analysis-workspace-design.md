@@ -1,6 +1,6 @@
 # UX-10 — Design the analysis workspace for a new game and live analysis
 
-**Status:** ✅ DONE (Active — Sprint 28) — five annotated mockups and an interaction spec delivered under `docs/design/` (see Result). Verified by a live baseline review, a mockup walkthrough and ctest 5/5. Fix-log: docs/fix-log/2026-11-18-ux-10-analysis-workspace-design.md
+**Status:** ✅ DONE (Active — Sprint 28) — five annotated mockups and an interaction spec delivered under `docs/design/` (see Result). Verified by a live baseline review, a mockup walkthrough and ctest 5/5. Fix-log: [detail](../fix-log/2026-11-18-ux-10-analysis-workspace-design.md)
 **Area:** Main window layout, engine controls, analysis panel, move tree, and logs
 **Priority:** P3
 **Source:** User's main-window screenshot and UI design discussion, 2026-11-18
@@ -66,6 +66,8 @@ Deliverables, all under [docs/design/](../design/):
 
 Headline proposals: keep the blue **Analyze** as the first action and add a labelled secondary **Start engine**, rename Stop to **Stop analysis**, give each engine state a word plus a shape (Off, Idle, Analyzing, Disconnected), mark the selected node and fork points in Visual, mark the current row and forks in Table, and replace the full-width log pane with a log bar so the board keeps its space.
 
+Earlier decisions touched: UI-08 is kept (no placeholder text, graph axes stay, only the dash metrics row is proposed to hide), UI-21 is partly reversed for the engine-strip buttons (text labels) and the session-only panel visibility decision is kept. The spec lists them in a table.
+
 Findings worth a follow-up, none filed: a failed engine start stays at OFF with the error only in the Engine Log tab (B5), stale candidate rows stay after a crash (B6), and the panel toggles have no shortcut and are not in the command palette (B11).
 
 ## Verification record
@@ -73,6 +75,8 @@ Findings worth a follow-up, none filed: a failed engine start stays at OFF with 
 **Data source.** The Release build of this worktree (v0.12.0, main `375532a`) ran under `xvfb-run` with `GDK_BACKEND=x11` and `WAYLAND_DISPLAY` unset, from a copied binary with its own `rapfi-gui.settings` in `/tmp/ux10-run/app/` (`language=en`) so no user settings were touched. No Rapfi binary was available, so the engine was a **scripted fixture** at `/tmp/ux10-run/fixture_engine.py` (outside the repo). It speaks the Gomocup/Yixin subset the app uses (`START`, `YXBOARD`, `YXNBEST`, `STOP`) and streams `INFO` and `MESSAGE (n)` PV lines from a proximity heuristic, so the live numbers are illustrative. The game was entered by clicking the board with `xdotool`, screenshots by PIL `ImageGrab`.
 
 **Live baseline walkthrough** (states seen in the real app, screenshots in `docs/design/baseline/`): new game with the engine off (01), analysis from Analyze with 4 candidate lines and a branched tree (02), after Stop (03), Table and Visual tabs (04, 05, 13, 14), engine killed mid-search (06), bad engine path (07, 08), View menu (09), narrow window with default panels, logs hidden, and both hidden (10, 11, 12).
+
+**Reading and decisions checked.** [ux-research-usability](../knowledge/ux-research-usability.md) (heuristic walkthrough, not user evidence), UI-08, UI-21, UI-23, the 0.12.0 changelog entry and AGENTS.md were read. `python3.13 scripts/audit-search.py` was queried for the icon-first header, collapsible panels and empty-state decisions. The win-graph draw code was read to mark which graph cues exist today.
 
 **Mockup walkthrough against the acceptance criteria**, done by opening each rendered PNG:
 
