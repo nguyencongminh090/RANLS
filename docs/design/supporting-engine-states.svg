@@ -3,7 +3,7 @@
 <desc id="d">Four engine states plus two transient states, each with a text label and a distinct shape. A second row shows the same chips in grayscale.</desc>
 <defs><linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e7c190"/><stop offset="1" stop-color="#d6b07d"/></linearGradient><filter id="gray"><feColorMatrix type="saturate" values="0"/></filter><filter id="shadow" x="-5%" y="-5%" width="110%" height="110%"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity="0.45"/></filter></defs>
 <rect width="1810" height="880" fill="#f4f4f2"/>
-<text x="20" y="36" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="22" fill="#1d1d1d" font-weight="700" text-anchor="start" >UX-10 mockup 4 · Engine states without relying on color</text>
+<text x="20" y="36" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="22" fill="#1d1d1d" font-weight="700" text-anchor="start" >UX-10 supporting figure B · Engine states without relying on color</text>
 <text x="20" y="60" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#444" font-weight="400" text-anchor="start" >Each state has a word, a distinct shape and a different border or button label. The grayscale row is the same artwork with all color removed.</text>
 <text x="20" y="116" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >In color</text>
 <g transform="translate(20,128)">

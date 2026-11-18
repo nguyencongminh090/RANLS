@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1810" height="1020" viewBox="0 0 1810 1020" role="img" aria-labelledby="t d">
-<title id="t">UX-10 mockup 3 · Visual and Table views of the same selected position</title>
+<title id="t">UX-10 supporting figure A · Visual and Table views of the same selected position</title>
 <desc id="d">Visual and Table tree views side by side for one branched game with 5. H6 selected.</desc>
 <defs><linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e7c190"/><stop offset="1" stop-color="#d6b07d"/></linearGradient><filter id="gray"><feColorMatrix type="saturate" values="0"/></filter><filter id="shadow" x="-5%" y="-5%" width="110%" height="110%"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity="0.45"/></filter></defs>
 <rect width="1810" height="1020" fill="#f4f4f2"/>
-<text x="20" y="36" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="22" fill="#1d1d1d" font-weight="700" text-anchor="start" >UX-10 mockup 3 · Visual and Table, same game, same selected position</text>
-<text x="20" y="60" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#444" font-weight="400" text-anchor="start" >Position: 1 H8, 2 I9, 3 I7, then the selected branch 4 G7, 5 H6. The other branch is 4 G9, 5 H9, 6 J8. Proposal mockup, dark theme.</text>
+<text x="20" y="36" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="22" fill="#1d1d1d" font-weight="700" text-anchor="start" >UX-10 supporting figure A · Visual and Table, same game, same selected position</text>
+<text x="20" y="60" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#444" font-weight="400" text-anchor="start" >Position: 1 H8, 2 I9, 3 I7, 4 G7, 5 H6 selected. The fork is after 3. I7, 4. G7 is an alternate to 4. G9, and the other line is 4 G9, 5 H9, 6 J8. Proposal mockup, dark theme.</text>
 <rect x="20" y="90" width="350" height="400" rx="6" fill="#2b2b2b" stroke="#111" stroke-width="1" />
 <rect x="73" y="156" width="296" height="296" rx="7" fill="#00000055" />
 <rect x="70" y="152" width="296" height="296" rx="7" fill="url(#wood)" />
@@ -132,7 +132,7 @@
 <circle cx="794" cy="616" r="1.7" fill="#f2f2f2" />
 <circle cx="802" cy="607" r="1.7" fill="#f2f2f2" />
 <circle cx="794" cy="604" r="1.7" fill="#f2f2f2" />
-<text x="810" y="614" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11" fill="#f2f2f2" font-weight="700" text-anchor="start" >branch point · 2 lines</text>
+<text x="810" y="614" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11" fill="#f2f2f2" font-weight="700" text-anchor="start" >fork · 2 lines</text>
 <text x="976" y="666" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="10" fill="#f2f2f2" font-weight="400" text-anchor="start" ></text>
 <text x="776" y="734" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="10" fill="#f2f2f2" font-weight="400" text-anchor="start" ></text>
 </g>
@@ -178,7 +178,7 @@
 <text x="820" y="673" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13.5" fill="#f2f2f2" font-weight="400" text-anchor="start" >0.35</text>
 <text x="892" y="673" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13.5" fill="#f2f2f2" font-weight="400" text-anchor="start" >2.4M</text>
 <text x="970" y="673" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13.5" fill="#f2f2f2" font-weight="400" text-anchor="start" >21</text>
-<text x="1042" y="673" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#f2f2f2" font-weight="400" text-anchor="start" >branch of 4. G9</text>
+<text x="1042" y="673" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#f2f2f2" font-weight="400" text-anchor="start" >alternate to 4. G9</text>
 <rect x="660" y="686" width="604" height="32" rx="0" fill="#1a5fb4" />
 <path d="M670.0,697.2 L678.8,702 L670.0,706.8 Z" fill="#fff" />
 <text x="696" y="707" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13.5" fill="#fff" font-weight="700" text-anchor="start" >5.</text>
@@ -216,8 +216,8 @@
 <text x="85.0" y="663" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
 <text x="126" y="663" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Spotting a branch in Visual</text>
 <text x="50" y="681" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Today a branch is only a second column joined by a short stub, with no label (observed).</text>
-<text x="50" y="696" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Proposal: the fork leaves the parent with a badge 'branch point · 2 lines', and the line</text>
-<text x="50" y="711" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >not on the current path is gray and dashed with dashed rings.</text>
+<text x="50" y="696" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Proposal: the fork leaves the parent with a badge 'fork · 2 lines', and the line not on</text>
+<text x="50" y="711" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >the current path is gray and dashed with dashed rings.</text>
 <circle cx="941" cy="586" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
 <text x="941" y="590.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >3</text>
 <rect x="960" y="579" width="70" height="15" rx="7.5" fill="#1a5fb4" />
@@ -233,12 +233,11 @@
 <text x="995.0" y="678" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
 <text x="1036" y="678" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Branches in Table</text>
 <text x="960" y="696" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Because Table hides the other lines, a 'Line' column marks the fork row ('fork · 2</text>
-<text x="960" y="711" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >lines') and the first row on a side line ('branch of 4. G9'). Clicking either hint</text>
-<text x="960" y="726" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >selects the fork row.</text>
+<text x="960" y="711" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >lines') and the first row on a side line ('alternate to 4. G9').</text>
 <rect x="20" y="830" width="1770" height="170" rx="8" fill="#ffffff" stroke="#c9c9c4" stroke-width="1" />
-<text x="36" y="856" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="15" fill="#1d1d1d" font-weight="700" text-anchor="start" >Selection rules when switching views (proposal, consistent with how the app works today)</text>
+<text x="36" y="856" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="15" fill="#1d1d1d" font-weight="700" text-anchor="start" >Selection rules when switching views</text>
 <text x="40" y="878" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >One selection exists, the game's current node, defined by its move path. Visual and Table are two read-only projections of it, so switching tabs never changes it.</text>
 <text x="40" y="900" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Observed: switching between the tabs left the board and the highlighted move unchanged. The graph marker and the board were identical in both screenshots.</text>
 <text x="40" y="922" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Click a node in Visual or a row in Table jumps the board to that path. The other view re-renders: Visual moves the double ring, Table ends on the new row and scrolls it into view.</text>
-<text x="40" y="944" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Selecting a fork row in Table, for example 3. I7, keeps both continuations visible in Visual as dashed off-path lines. Proposal: Table keeps the rows after the selection dimmed, so one click does not shorten it.</text>
+<text x="40" y="944" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Table is root to selected move only. When the tab is shown it scrolls to the selected row without changing the position. Showing later moves after an earlier selection is a different design and is not part of this spec.</text>
 </svg>

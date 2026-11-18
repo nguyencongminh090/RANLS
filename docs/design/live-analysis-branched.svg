@@ -141,7 +141,7 @@
 <circle cx="377.98" cy="370.75" r="6.29" fill="#111" stroke="#fff" stroke-width="1" />
 <text x="377.98" y="373.34" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="7.4" fill="#fff" font-weight="700" text-anchor="middle" >4</text>
 <text x="61" y="704" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="14" fill="#f2f2f2" font-weight="700" text-anchor="start" >White to move</text>
-<text x="173" y="704" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#a8a8a8" font-weight="400" text-anchor="start" >· selected 5. H6 on a branch of 4. G9 · Freestyle Gomoku</text>
+<text x="173" y="704" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#a8a8a8" font-weight="400" text-anchor="start" >· selected 5. H6, alternate to 4. G9 (fork after 3. I7)</text>
 <rect x="652" y="58" width="620" height="736" rx="0" fill="#2d2d2d" stroke="#3c3c3c" stroke-width="1" />
 <rect x="664" y="70" width="160" height="28" rx="14" fill="#1d2f4a" stroke="#5499de" stroke-width="1.6" />
 <circle cx="681" cy="84" r="7" fill="none" stroke="#ffffff33" stroke-width="2.5" />
@@ -310,7 +310,7 @@
 <circle cx="794" cy="616" r="1.7" fill="#f2f2f2" />
 <circle cx="802" cy="607" r="1.7" fill="#f2f2f2" />
 <circle cx="794" cy="604" r="1.7" fill="#f2f2f2" />
-<text x="810" y="614" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11" fill="#f2f2f2" font-weight="700" text-anchor="start" >branch point · 2 lines</text>
+<text x="810" y="614" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11" fill="#f2f2f2" font-weight="700" text-anchor="start" >fork · 2 lines</text>
 <text x="976" y="666" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="10" fill="#f2f2f2" font-weight="400" text-anchor="start" ></text>
 <text x="776" y="734" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="10" fill="#f2f2f2" font-weight="400" text-anchor="start" ></text>
 <rect x="658" y="758" width="608" height="32" rx="0" fill="#232323" stroke="#3c3c3c" stroke-width="1" />
@@ -399,18 +399,17 @@
 <rect x="1362" y="662" width="70" height="15" rx="7.5" fill="#1a5fb4" />
 <text x="1397.0" y="673" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
 <text x="1438" y="673" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Visual tree: branch and selection</text>
-<text x="1362" y="691" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Nodes carry labels (move number and point). The</text>
-<text x="1362" y="706" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >branch point I7 has a fork badge 'branch point · 2</text>
-<text x="1362" y="721" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >lines'. The selected node H6 has a double ring and a</text>
-<text x="1362" y="736" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >'selected' tag. Off-path nodes use dashed gray</text>
-<text x="1362" y="751" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >rings.</text>
-<circle cx="1343" cy="772" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
-<text x="1343" y="776.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >8</text>
-<rect x="1362" y="765" width="70" height="15" rx="7.5" fill="#1a5fb4" />
-<text x="1397.0" y="776" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
-<text x="1438" y="776" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Log bar with counts</text>
-<text x="1362" y="794" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Collapsed bar shows both log tabs and '5 moves · 0</text>
-<text x="1362" y="809" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >errors'. Errors turn the count into text such as '1</text>
-<text x="1362" y="824" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >error', visible without opening the Engine Log.</text>
-<text x="20" y="922" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#555" font-weight="400" text-anchor="start" >Data source for live numbers: scripted fixture engine driving the real built app (not a real engine, values illustrative). Position: 1 H8, 2 I9, 3 I7, 4 G7, 5 H6 selected, main line G9 H9 J8 kept as the other branch.</text>
+<text x="1362" y="691" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Nodes carry labels (move number and point). The fork</text>
+<text x="1362" y="706" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >after 3. I7 has a badge 'fork · 2 lines'. The</text>
+<text x="1362" y="721" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >selected node H6 has a double ring and a 'selected'</text>
+<text x="1362" y="736" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >tag. Off-path nodes use dashed gray rings.</text>
+<circle cx="1343" cy="757" r="11" fill="#f5c211" stroke="#7a5d00" stroke-width="1.2" />
+<text x="1343" y="761.5" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1a1300" font-weight="700" text-anchor="middle" >8</text>
+<rect x="1362" y="750" width="70" height="15" rx="7.5" fill="#1a5fb4" />
+<text x="1397.0" y="761" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="9.5" fill="#fff" font-weight="700" text-anchor="middle" >PROPOSAL</text>
+<text x="1438" y="761" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Log bar with counts</text>
+<text x="1362" y="779" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >Collapsed bar shows both log tabs and '5 moves · 0</text>
+<text x="1362" y="794" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >errors'. Errors turn the count into text such as '1</text>
+<text x="1362" y="809" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#3a3a3a" font-weight="400" text-anchor="start" >error', visible without opening the Engine Log.</text>
+<text x="20" y="922" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#555" font-weight="400" text-anchor="start" >Data source for live numbers: scripted fixture engine driving the real built app (not a real engine, values illustrative). Position: 1 H8, 2 I9, 3 I7, 4 G7, 5 H6 selected. 4. G7 is an alternate to 4. G9 (fork after 3. I7), and G9 H9 J8 is the other line.</text>
 </svg>
