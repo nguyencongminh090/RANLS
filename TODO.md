@@ -25,7 +25,7 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 Sprint 28 (opened 2026-11-18, goal "Design the analysis workspace for a new game and live analysis") — pulled from Backlog:
 
-- 🔲 **UX-10.** Design the analysis workspace for a new game and live analysis. [Model: Sonnet 5] — [detail](docs/todo/UX-10-analysis-workspace-design.md) · [instruction](docs/instruction/UX-10-analysis-workspace-design.md)
+- ✅ **UX-10.** Design the analysis workspace for a new game and live analysis. [Model: Sonnet 5] — [detail](docs/todo/UX-10-analysis-workspace-design.md) · [instruction](docs/instruction/UX-10-analysis-workspace-design.md)
 
 ## Backlog
 
