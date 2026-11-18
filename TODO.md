@@ -23,9 +23,7 @@ Prefix legend: `RT` realtime pipeline · `STATE` state lifetime · `PROTO` engin
 
 ## Active
 
-Sprint 28 (opened 2026-11-18, goal "Design the analysis workspace for a new game and live analysis") — pulled from Backlog:
-
-- ✅ **UX-10.** Design the analysis workspace for a new game and live analysis. [Model: Sonnet 5] — [detail](docs/todo/UX-10-analysis-workspace-design.md) · [instruction](docs/instruction/UX-10-analysis-workspace-design.md)
+_Sprint 28 is open. All committed items are complete._
 
 ## Backlog
 
@@ -190,3 +188,7 @@ Sprint 27:
 - ✅ **UI-23.** Typography and layout polish: CSS type roles, tabular numerals, wrapping engine stats, Pango graph labels, BoardView min size (fixes a GtkPaned measure warning). Added 2026-11-11 on user request. [Model: Opus] — [detail](docs/todo/UI-23-typography-and-layout-polish.md) · [instruction](docs/instruction/UI-23-typography-and-layout-polish.md)
 - ✅ **UI-24.** Engine Log gutter clipped the "MESSAGE" tag: size request included CSS padding/border; now `set_content_width`. Pulled in 2026-11-12 on user request. [Model: Opus] — [detail](docs/todo/UI-24-engine-log-gutter-tag-clipped.md)
 - ✅ **PROTO-09.** Stable realtime winrate on the board in every Rapfi message mode: one PV-round model for INFO+MESSAGE (no PV-list collapse), MCTS ucilike/normal fields, round-based tag cleanup, eased board overlay. Pulled in 2026-11-12 on user request. [Model: Opus] — [detail](docs/todo/PROTO-09-stable-realtime-winrate.md)
+
+Sprint 28:
+
+- ✅ **UX-10.** Design the analysis workspace for a new game and live analysis. [Model: Sonnet 5] — [detail](docs/todo/UX-10-analysis-workspace-design.md) · [instruction](docs/instruction/UX-10-analysis-workspace-design.md) (PR #72)

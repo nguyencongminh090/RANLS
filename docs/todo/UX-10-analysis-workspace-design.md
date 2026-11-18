@@ -1,6 +1,6 @@
 # UX-10 — Design the analysis workspace for a new game and live analysis
 
-**Status:** ✅ DONE (Active — Sprint 28) — two annotated main-window mockups, three supporting figures and an interaction spec delivered under `docs/design/` (see Result). Verified by a live baseline review, a mockup walkthrough and ctest 5/5. Fix-log: [detail](../fix-log/2026-11-18-ux-10-analysis-workspace-design.md)
+**Status:** ✅ DONE (Sprint 28) — two annotated main-window mockups, three supporting figures and an interaction spec delivered under `docs/design/` (see Result). Verified by a live baseline review, a mockup walkthrough and ctest 5/5. [PR #72](https://github.com/nguyencongminh090/RANLS/pull/72) · [Fix log](../fix-log/2026-11-18-ux-10-analysis-workspace-design.md)
 **Area:** Main window layout, engine controls, analysis panel, move tree, and logs
 **Priority:** P3
 **Source:** User's main-window screenshot and UI design discussion, 2026-11-18

@@ -12,9 +12,11 @@
 
 | CODE | Summary | Depends on | Points | Status |
 |---|---|---|---|---|
-| UX-10 | Design the analysis workspace for a new game and live analysis | UI-08, UI-23, PR #66 (shipped baseline) | — | 🔲 Not started |
+| UX-10 | Design the analysis workspace for a new game and live analysis | UI-08, UI-23, PR #66 (shipped baseline) | — | ✅ Done ([PR #72](https://github.com/nguyencongminh090/RANLS/pull/72), `349f2ea`) |
 
 Points have yet to be estimated.
+
+Projects board sync for UX-10 is deferred to sprint close because the GitHub token lacks Projects access.
 
 **Lessons carried in from Sprint 27**
 
