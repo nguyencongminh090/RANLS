@@ -375,3 +375,8 @@ via a testable helper; same response semantics, no default response; add `Yes`/`
 Option (a): `settings_dialog` only — Apply always sensitive; with an invalid path, apply everything else
 and keep the base `enginePath`; tooltip explains. No `main_window`, `model/` or engine-guard changes.
 [detail](docs/instruction/UX-09-apply-disabled-when-engine-path-invalid.md)
+
+## UX-10 — analysis-workspace-design
+
+Review the main window with the engine off and during live analysis. Deliver two annotated mockups and an interaction spec for engine actions, tree navigation, panel visibility, and narrow windows.
+[detail](docs/instruction/UX-10-analysis-workspace-design.md)

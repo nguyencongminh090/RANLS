@@ -176,6 +176,7 @@ points at sprint start to 0 at the end date.
 | 2026-11-12 | 1 / 5 items | — | I18N-07 done (PR #70, squash `f400aa0`) — confirm-dialog Yes/No buttons now translated under `vi`. UX-09 remains (needs user design call a/b) |
 | 2026-11-12 | 0 / 5 items | — | UX-09 done (PR #71, squash `eb5c42e`) — Settings Apply stays available with an invalid engine path (option a). All Sprint 27 items done |
 | 2026-11-12 | 0 / 5 items | — | Sprint 27 closed — I18N-07, UX-09, UI-23, UI-24, PROTO-09 landed on `main`; archived to `docs/sprint/archive/sprint-27.md`, nothing rolled over (PROTO-08 stays in Backlog behind its design gate). Release `v0.12.0` cut (collapsible panels, stable realtime winrate, typography, vi fixes). Table reset below for Sprint 28 |
+| 2026-11-18 | 1 / 1 items | — | Sprint 28 opened (goal "Design the analysis workspace for a new game and live analysis"). UX-10 moved from Backlog to Active. Backlog has 1 item (PROTO-08). |
 
 To render this as a chart, ask for it explicitly (Artifact, on request — see `/CLAUDE.md` "Sprint
 cadence": don't auto-render on every update).
