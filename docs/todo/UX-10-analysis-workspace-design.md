@@ -1,10 +1,10 @@
 # UX-10 — Design the analysis workspace for a new game and live analysis
 
-**Status:** 🔲 OPEN (Active — Sprint 28)
+**Status:** ✅ DONE (Active — Sprint 28) — five annotated mockups and an interaction spec delivered under `docs/design/` (see Result). Verified by a live baseline review, a mockup walkthrough and ctest 5/5. Fix-log: docs/fix-log/2026-11-18-ux-10-analysis-workspace-design.md
 **Area:** Main window layout, engine controls, analysis panel, move tree, and logs
 **Priority:** P3
 **Source:** User's main-window screenshot and UI design discussion, 2026-11-18
-**Design:** Two annotated main-window mockups and a brief interaction spec
+**Design:** [Interaction spec](../design/UX-10-analysis-workspace-spec.md) and five annotated mockups in `docs/design/`
 **Depends on / relates to:** UI-08, UI-23, collapsible panels shipped in v0.12.0 (PR #66)
 
 ## Problem
@@ -55,3 +55,36 @@ preference.
 - The spec shows where the current move appears in each tree view and how switching views preserves
   the selected position.
 - A narrow-window annotation shows how the board stays legible and how users reveal the logs again.
+
+## Result (2026-11-18)
+
+Deliverables, all under [docs/design/](../design/):
+
+- [Interaction spec](../design/UX-10-analysis-workspace-spec.md) with the baseline findings B1 to B12, the shared layout, the engine actions and states, the tree-view and selection rules, and the panel proposals.
+- Mockup 1 [new game, engine off](../design/new-game-engine-off.svg) and mockup 2 [live analysis, branched game](../design/live-analysis-branched.svg). Mockup 3 [Visual and Table, same selection](../design/visual-and-table-views.svg). Mockup 4 [engine states](../design/engine-states.svg) with a grayscale check. Mockup 5 [narrow window and panel restore](../design/narrow-window-and-panels.svg). Each has a PNG render beside it.
+- [baseline/](../design/baseline/): 14 screenshots of the real built app that the review rests on.
+
+Headline proposals: keep the blue **Analyze** as the first action and add a labelled secondary **Start engine**, rename Stop to **Stop analysis**, give each engine state a word plus a shape (Off, Idle, Analyzing, Disconnected), mark the selected node and fork points in Visual, mark the current row and forks in Table, and replace the full-width log pane with a log bar so the board keeps its space.
+
+Findings worth a follow-up, none filed: a failed engine start stays at OFF with the error only in the Engine Log tab (B5), stale candidate rows stay after a crash (B6), and the panel toggles have no shortcut and are not in the command palette (B11).
+
+## Verification record
+
+**Data source.** The Release build of this worktree (v0.12.0, main `375532a`) ran under `xvfb-run` with `GDK_BACKEND=x11` and `WAYLAND_DISPLAY` unset, from a copied binary with its own `rapfi-gui.settings` in `/tmp/ux10-run/app/` (`language=en`) so no user settings were touched. No Rapfi binary was available, so the engine was a **scripted fixture** at `/tmp/ux10-run/fixture_engine.py` (outside the repo). It speaks the Gomocup/Yixin subset the app uses (`START`, `YXBOARD`, `YXNBEST`, `STOP`) and streams `INFO` and `MESSAGE (n)` PV lines from a proximity heuristic, so the live numbers are illustrative. The game was entered by clicking the board with `xdotool`, screenshots by PIL `ImageGrab`.
+
+**Live baseline walkthrough** (states seen in the real app, screenshots in `docs/design/baseline/`): new game with the engine off (01), analysis from Analyze with 4 candidate lines and a branched tree (02), after Stop (03), Table and Visual tabs (04, 05, 13, 14), engine killed mid-search (06), bad engine path (07, 08), View menu (09), narrow window with default panels, logs hidden, and both hidden (10, 11, 12).
+
+**Mockup walkthrough against the acceptance criteria**, done by opening each rendered PNG:
+
+| Criterion | Result |
+|---|---|
+| Two annotated mockups, live one has several candidate lines, graph, metrics and a selected move in a branched game | Pass. Mockup 2 shows 4 lines with 5 to 7 move continuations, a two-line graph with the move 5 marker, six metrics, and 5. H6 selected on a branch of 4. G9. |
+| New-game mockup makes the first engine action discoverable | Pass. Analyze is the only blue control, Start engine is a distinct labelled secondary, Stop analysis is dim. |
+| Off, idle, analyzing and disconnected distinguishable without color | Pass. Mockup 4 and the spec table give a word, a shape and distinct enabled controls. The grayscale row keeps all four apart. |
+| Current move in each tree view and selection preserved across views | Pass. Mockup 3 uses one position. The double-ringed node in Visual and the last, marked row in Table are both 5. H6, and the spec states the selection rules. |
+| Narrow-window annotation shows a readable board and how to restore both logs | Pass. Mockup 5 gives 382 px and 26 px cells in the proposal against 290 px and 19 px today, with 1:1 crops. The bar restores each log in one click and the View path is annotated. |
+| Board position, branch, selected move and candidate moves coherent across figures | Pass. Same stones in mockups 2, 3 and 5. Candidates H7, I8, G8, J8 and their continuations land on empty points only. |
+
+**Tests.** `cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release` then `cmake --build build -j4`, then `env -u WAYLAND_DISPLAY GDK_BACKEND=x11 xvfb-run -a ctest --test-dir build --output-on-failure`: ctest 5/5 passed (`ranls-gui-tests` 310 cases and 5111 assertions, `ranls-gui-ui-tests` 142 cases and 968 assertions, 0 skipped). No source, tests, protocol or persistence changed, so the suites are a build-health check only.
+
+**Not covered.** Light theme, board sizes other than 15, MultiPV above 4, Renju marks, languages other than English, screen readers. The estimated 395 px board with the log bar kept (mockup 5, panel D) is an estimate, the other sizes were measured.

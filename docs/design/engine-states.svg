@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1810" height="880" viewBox="0 0 1810 880" role="img" aria-labelledby="t d">
+<title id="t">UX-10 engine states</title>
+<desc id="d">Four engine states plus two transient states, each with a text label and a distinct shape. A second row shows the same chips in grayscale.</desc>
+<defs><linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e7c190"/><stop offset="1" stop-color="#d6b07d"/></linearGradient><filter id="gray"><feColorMatrix type="saturate" values="0"/></filter><filter id="shadow" x="-5%" y="-5%" width="110%" height="110%"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity="0.45"/></filter></defs>
+<rect width="1810" height="880" fill="#f4f4f2"/>
+<text x="20" y="36" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="22" fill="#1d1d1d" font-weight="700" text-anchor="start" >UX-10 mockup 4 · Engine states without relying on color</text>
+<text x="20" y="60" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#444" font-weight="400" text-anchor="start" >Each state has a word, a distinct shape and a different border or button label. The grayscale row is the same artwork with all color removed.</text>
+<text x="20" y="116" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >In color</text>
+<g transform="translate(20,128)">
+<rect x="0" y="0" width="420" height="100" rx="6" fill="#2d2d2d" stroke="#111" stroke-width="1" />
+<rect x="12" y="14" width="120" height="28" rx="14" fill="#3a3a3a" stroke="#9a9a9a" stroke-width="1.6" stroke-dasharray="4 3" />
+<circle cx="29" cy="28" r="7" fill="none" stroke="#d8d8d8" stroke-width="2" stroke-dasharray="3 2.5" />
+<text x="46" y="33" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#f2f2f2" font-weight="700" text-anchor="start" >Off</text>
+<rect x="142" y="14" width="118" height="28" rx="6" fill="#3a3a3a" stroke="#6a6a6a" stroke-width="1" />
+<path d="M152.5,23.8 L160.2,28 L152.5,32.2 Z" fill="#f2f2f2" />
+<text x="170" y="33" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#f2f2f2" font-weight="600" text-anchor="start" >Start engine</text>
+<text x="14" y="76" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#f2f2f2" font-weight="400" text-anchor="start" >Panes below stay empty (UI-08).</text>
+</g>
+<g transform="translate(460,128)">
+<rect x="0" y="0" width="420" height="100" rx="6" fill="#2d2d2d" stroke="#111" stroke-width="1" />
+<rect x="12" y="14" width="120" height="28" rx="14" fill="#1f3d2a" stroke="#3fb36b" stroke-width="1.6" />
+<circle cx="29" cy="28" r="8" fill="#3fb36b" />
+<path d="M25,28 L28,31 L33,25" fill="none" stroke="#0e2a18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+<text x="46" y="33" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#f2f2f2" font-weight="700" text-anchor="start" >Idle</text>
+<rect x="142" y="14" width="118" height="28" rx="6" fill="#3a3a3a" stroke="#6a6a6a" stroke-width="1" />
+<rect x="152.5" y="24.5" width="7.0" height="7.0" rx="1" fill="#f2f2f2" />
+<text x="170" y="33" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#f2f2f2" font-weight="600" text-anchor="start" >Stop engine</text>
+<text x="14" y="76" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#f2f2f2" font-weight="400" text-anchor="start" >Ready. Results of the last search stay visible.</text>
+</g>
+<g transform="translate(900,128)">
+<rect x="0" y="0" width="420" height="100" rx="6" fill="#2d2d2d" stroke="#111" stroke-width="1" />
+<rect x="12" y="14" width="160" height="28" rx="14" fill="#1d2f4a" stroke="#5499de" stroke-width="1.6" />
+<circle cx="29" cy="28" r="7" fill="none" stroke="#ffffff33" stroke-width="2.5" />
+<path d="M29,21 A7,7 0 1 1 22,28" fill="none" stroke="#5499de" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+<text x="46" y="33" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#f2f2f2" font-weight="700" text-anchor="start" >Analyzing</text>
+<rect x="182" y="14" width="118" height="28" rx="6" fill="#3a3a3a" stroke="#6a6a6a" stroke-width="1" />
+<rect x="192.5" y="24.5" width="7.0" height="7.0" rx="1" fill="#f2f2f2" />
+<text x="210" y="33" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#f2f2f2" font-weight="600" text-anchor="start" >Stop engine</text>
+<text x="14" y="76" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12.5" fill="#f2f2f2" font-weight="600" text-anchor="start" >Depth 20/26 · Nodes 15.3M · Time 8.4s</text>
+</g>
+<g transform="translate(1340,128)">
+<rect x="0" y="0" width="420" height="100" rx="6" fill="#2d2d2d" stroke="#111" stroke-width="1" />
+<rect x="12" y="14" width="178" height="28" rx="14" fill="#4a1f1f" stroke="#e0443e" stroke-width="1.6" />
+<path d="M29,20 L37,35 L21,35 Z" fill="#e0443e" stroke="#ffffff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="29" y1="25" x2="29" y2="30" stroke="#fff" stroke-width="1.8" />
+<circle cx="29" cy="33" r="0.9" fill="#fff" />
+<text x="46" y="33" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#f2f2f2" font-weight="700" text-anchor="start" >Disconnected</text>
+<rect x="200" y="14" width="118" height="28" rx="6" fill="#3a3a3a" stroke="#6a6a6a" stroke-width="1" />
+<path d="M210.5,23.8 L218.2,28 L210.5,32.2 Z" fill="#f2f2f2" />
+<text x="228" y="33" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#f2f2f2" font-weight="600" text-anchor="start" >Reconnect</text>
+<rect x="12" y="54" width="396" height="34" rx="6" fill="#5a2222" stroke="#e0443e" stroke-width="1.5" />
+<path d="M30,63 L38,78 L22,78 Z" fill="#e0443e" stroke="#ffffff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="30" y1="68" x2="30" y2="73" stroke="#fff" stroke-width="1.8" />
+<circle cx="30" cy="76" r="0.9" fill="#fff" />
+<text x="46" y="75" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#f2f2f2" font-weight="700" text-anchor="start" >Engine exited unexpectedly. Open Engine Log</text>
+</g>
+<text x="20" y="256" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#1d1d1d" font-weight="700" text-anchor="start" >Grayscale check</text>
+<g transform="translate(20,268)" filter="url(#gray)">
+<rect x="0" y="0" width="420" height="100" rx="6" fill="#2d2d2d" stroke="#111" stroke-width="1" />
+<rect x="12" y="14" width="120" height="28" rx="14" fill="#3a3a3a" stroke="#9a9a9a" stroke-width="1.6" stroke-dasharray="4 3" />
+<circle cx="29" cy="28" r="7" fill="none" stroke="#d8d8d8" stroke-width="2" stroke-dasharray="3 2.5" />
+<text x="46" y="33" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#f2f2f2" font-weight="700" text-anchor="start" >Off</text>
+<rect x="142" y="14" width="118" height="28" rx="6" fill="#3a3a3a" stroke="#6a6a6a" stroke-width="1" />
+<path d="M152.5,23.8 L160.2,28 L152.5,32.2 Z" fill="#f2f2f2" />
+<text x="170" y="33" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#f2f2f2" font-weight="600" text-anchor="start" >Start engine</text>
+<text x="14" y="76" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#f2f2f2" font-weight="400" text-anchor="start" >Panes below stay empty (UI-08).</text>
+</g>
+<g transform="translate(460,268)" filter="url(#gray)">
+<rect x="0" y="0" width="420" height="100" rx="6" fill="#2d2d2d" stroke="#111" stroke-width="1" />
+<rect x="12" y="14" width="120" height="28" rx="14" fill="#1f3d2a" stroke="#3fb36b" stroke-width="1.6" />
+<circle cx="29" cy="28" r="8" fill="#3fb36b" />
+<path d="M25,28 L28,31 L33,25" fill="none" stroke="#0e2a18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+<text x="46" y="33" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#f2f2f2" font-weight="700" text-anchor="start" >Idle</text>
+<rect x="142" y="14" width="118" height="28" rx="6" fill="#3a3a3a" stroke="#6a6a6a" stroke-width="1" />
+<rect x="152.5" y="24.5" width="7.0" height="7.0" rx="1" fill="#f2f2f2" />
+<text x="170" y="33" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#f2f2f2" font-weight="600" text-anchor="start" >Stop engine</text>
+<text x="14" y="76" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#f2f2f2" font-weight="400" text-anchor="start" >Ready. Results of the last search stay visible.</text>
+</g>
+<g transform="translate(900,268)" filter="url(#gray)">
+<rect x="0" y="0" width="420" height="100" rx="6" fill="#2d2d2d" stroke="#111" stroke-width="1" />
+<rect x="12" y="14" width="160" height="28" rx="14" fill="#1d2f4a" stroke="#5499de" stroke-width="1.6" />
+<circle cx="29" cy="28" r="7" fill="none" stroke="#ffffff33" stroke-width="2.5" />
+<path d="M29,21 A7,7 0 1 1 22,28" fill="none" stroke="#5499de" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+<text x="46" y="33" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#f2f2f2" font-weight="700" text-anchor="start" >Analyzing</text>
+<rect x="182" y="14" width="118" height="28" rx="6" fill="#3a3a3a" stroke="#6a6a6a" stroke-width="1" />
+<rect x="192.5" y="24.5" width="7.0" height="7.0" rx="1" fill="#f2f2f2" />
+<text x="210" y="33" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#f2f2f2" font-weight="600" text-anchor="start" >Stop engine</text>
+<text x="14" y="76" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12.5" fill="#f2f2f2" font-weight="600" text-anchor="start" >Depth 20/26 · Nodes 15.3M · Time 8.4s</text>
+</g>
+<g transform="translate(1340,268)" filter="url(#gray)">
+<rect x="0" y="0" width="420" height="100" rx="6" fill="#2d2d2d" stroke="#111" stroke-width="1" />
+<rect x="12" y="14" width="178" height="28" rx="14" fill="#4a1f1f" stroke="#e0443e" stroke-width="1.6" />
+<path d="M29,20 L37,35 L21,35 Z" fill="#e0443e" stroke="#ffffff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="29" y1="25" x2="29" y2="30" stroke="#fff" stroke-width="1.8" />
+<circle cx="29" cy="33" r="0.9" fill="#fff" />
+<text x="46" y="33" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="13" fill="#f2f2f2" font-weight="700" text-anchor="start" >Disconnected</text>
+<rect x="200" y="14" width="118" height="28" rx="6" fill="#3a3a3a" stroke="#6a6a6a" stroke-width="1" />
+<path d="M210.5,23.8 L218.2,28 L210.5,32.2 Z" fill="#f2f2f2" />
+<text x="228" y="33" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#f2f2f2" font-weight="600" text-anchor="start" >Reconnect</text>
+<rect x="12" y="54" width="396" height="34" rx="6" fill="#5a2222" stroke="#e0443e" stroke-width="1.5" />
+<path d="M30,63 L38,78 L22,78 Z" fill="#e0443e" stroke="#ffffff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="30" y1="68" x2="30" y2="73" stroke="#fff" stroke-width="1.8" />
+<circle cx="30" cy="76" r="0.9" fill="#fff" />
+<text x="46" y="75" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#f2f2f2" font-weight="700" text-anchor="start" >Engine exited unexpectedly. Open Engine Log</text>
+</g>
+<text x="20" y="410" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="17" fill="#1d1d1d" font-weight="700" text-anchor="start" >State reference</text>
+<rect x="20" y="422" width="1770" height="26" rx="0" fill="#e4e4e0" />
+<text x="28" y="440" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#1d1d1d" font-weight="700" text-anchor="start" >State</text>
+<text x="168" y="440" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#1d1d1d" font-weight="700" text-anchor="start" >Code state (today's label)</text>
+<text x="408" y="440" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#1d1d1d" font-weight="700" text-anchor="start" >Text cue</text>
+<text x="548" y="440" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#1d1d1d" font-weight="700" text-anchor="start" >Shape cue</text>
+<text x="768" y="440" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#1d1d1d" font-weight="700" text-anchor="start" >Header actions</text>
+<text x="1138" y="440" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#1d1d1d" font-weight="700" text-anchor="start" >Engine strip action</text>
+<text x="28" y="464" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="700" text-anchor="start" >Off</text>
+<text x="168" y="464" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >NotStarted (● OFF)</text>
+<text x="408" y="464" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >'Off'</text>
+<text x="548" y="464" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >dashed ring</text>
+<text x="768" y="464" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >Analyze enabled (starts the engine), Stop analysis</text>
+<text x="768" y="478" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >disabled</text>
+<text x="1138" y="464" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >Start engine enabled, Restart disabled</text>
+<rect x="20" y="486" width="1770" height="40" rx="0" fill="#efefeb" />
+<text x="28" y="504" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="700" text-anchor="start" >Idle</text>
+<text x="168" y="504" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >Idle (● ON)</text>
+<text x="408" y="504" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >'Idle' (was 'ON')</text>
+<text x="548" y="504" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >check mark in a disc</text>
+<text x="768" y="504" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >Analyze enabled, Stop analysis disabled</text>
+<text x="1138" y="504" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >Stop engine and Restart enabled</text>
+<text x="28" y="544" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="700" text-anchor="start" >Analyzing</text>
+<text x="168" y="544" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >Analyzing (● THINKING)</text>
+<text x="408" y="544" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >'Analyzing'</text>
+<text x="548" y="544" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >open spinner arc</text>
+<text x="768" y="544" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >Analyze shows 'Analyzing…' and is inactive, Stop analysis</text>
+<text x="768" y="558" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >enabled</text>
+<text x="1138" y="544" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >Stop engine and Restart enabled</text>
+<rect x="20" y="566" width="1770" height="40" rx="0" fill="#efefeb" />
+<text x="28" y="584" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="700" text-anchor="start" >Disconnected</text>
+<text x="168" y="584" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >Crashed (● CRASHED) or start</text>
+<text x="168" y="598" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >failed</text>
+<text x="408" y="584" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >'Disconnected' plus a</text>
+<text x="408" y="598" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >message</text>
+<text x="548" y="584" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >warning triangle</text>
+<text x="768" y="584" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >Analyze enabled (retries), Stop analysis disabled</text>
+<text x="1138" y="584" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >'Reconnect' replaces Start engine</text>
+<text x="28" y="624" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="700" text-anchor="start" >Starting</text>
+<text x="28" y="638" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="700" text-anchor="start" >(transient)</text>
+<text x="168" y="624" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >Starting (● STARTING)</text>
+<text x="408" y="624" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >'Starting…'</text>
+<text x="548" y="624" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >dashed ring</text>
+<text x="768" y="624" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >Analyze shows 'Starting…' and is inactive</text>
+<text x="1138" y="624" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >Button disabled</text>
+<rect x="20" y="646" width="1770" height="40" rx="0" fill="#efefeb" />
+<text x="28" y="664" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="700" text-anchor="start" >Stopping</text>
+<text x="28" y="678" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="700" text-anchor="start" >(transient)</text>
+<text x="168" y="664" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >Stopping (● STOPPING)</text>
+<text x="408" y="664" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >'Stopping…'</text>
+<text x="548" y="664" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >small square</text>
+<text x="768" y="664" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >Both disabled</text>
+<text x="1138" y="664" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="11.5" fill="#3a3a3a" font-weight="400" text-anchor="start" >Button disabled</text>
+<text x="20" y="710" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#333" font-weight="400" text-anchor="start" >Today (observed): the chip text is OFF, ON, THINKING, CRASHED with the same round dot, only the dot color changes. 'ON' does not say idle. A start failure (bad engine path) leaves the chip at OFF and the message only appears in the Engine Log tab.</text>
+<text x="20" y="728" font-family="Noto Sans, Cantarell, DejaVu Sans, sans-serif" font-size="12" fill="#333" font-weight="400" text-anchor="start" >Proposal for a failed start: show the Disconnected state with the inline message in the strip, not only a log line. A crash already shows a dismissible red banner today.</text>
+</svg>
